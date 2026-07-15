@@ -447,10 +447,37 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Tromboflebite" id="d-doe-46"><label for="d-doe-46">Tromboflebite</label></div>
           </div>
         </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Área do Corpo</label><input type="text" id="d-medica-area-corpo"></div>
+        <div class="mc-form-group"><label>Área do Corpo (Padronizada)</label>
+          <div class="chk-multi chk-multi-3">
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Abdômen" id="d-ac-1"><label for="d-ac-1">Abdômen</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Braço" id="d-ac-2"><label for="d-ac-2">Braço</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Cabeça" id="d-ac-3"><label for="d-ac-3">Cabeça</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Coluna" id="d-ac-4"><label for="d-ac-4">Coluna</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Cotovelo" id="d-ac-5"><label for="d-ac-5">Cotovelo</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Dedos Da Mão" id="d-ac-6"><label for="d-ac-6">Dedos Da Mão</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Depressão" id="d-ac-7"><label for="d-ac-7">Depressão</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Fêmur" id="d-ac-8"><label for="d-ac-8">Fêmur</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Joelho" id="d-ac-9"><label for="d-ac-9">Joelho</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Mão" id="d-ac-10"><label for="d-ac-10">Mão</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Olho" id="d-ac-11"><label for="d-ac-11">Olho</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Ombro" id="d-ac-12"><label for="d-ac-12">Ombro</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Ouvido" id="d-ac-13"><label for="d-ac-13">Ouvido</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Pele" id="d-ac-14"><label for="d-ac-14">Pele</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Perna" id="d-ac-15"><label for="d-ac-15">Perna</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Pulmão" id="d-ac-16"><label for="d-ac-16">Pulmão</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Punho" id="d-ac-17"><label for="d-ac-17">Punho</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Quadril" id="d-ac-18"><label for="d-ac-18">Quadril</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Sangue" id="d-ac-19"><label for="d-ac-19">Sangue</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Tendão de Aquiles" id="d-ac-20"><label for="d-ac-20">Tendão de Aquiles</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Tornozelo" id="d-ac-21"><label for="d-ac-21">Tornozelo</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-area-corpo-chk" value="Virilha" id="d-ac-22"><label for="d-ac-22">Virilha</label></div>
+          </div>
+        </div>
+        <div class="mc-form-grid">
           <div class="mc-form-group"><label>Motivos</label><input type="text" id="d-medica-motivos"></div>
-          <div class="mc-form-group"><label>Fonte de Informação</label><input type="text" id="d-medica-fonte-informacao"></div>
+          <div class="mc-form-group"><label>Fonte de Informação</label>
+            <select id="d-medica-fonte-informacao"><option value="">—</option><option>Petição Inicial</option><option>Laudo Pericial</option></select>
+          </div>
         </div>
         <div class="mc-form-group"><label>Resultado do Laudo</label><textarea id="d-medica-laudo-resultado" rows="2"></textarea></div>
 
@@ -1299,7 +1326,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     perito_medica: g('d-perito-medica'),
     data_pericia_medica: g('d-data-pericia-medica'),
     medica_doenca: marcados('d-medica-doenca-chk'),
-    medica_area_corpo: g('d-medica-area-corpo'),
+    medica_area_corpo: marcados('d-medica-area-corpo-chk'),
     medica_motivos: g('d-medica-motivos'),
     medica_fonte_informacao: g('d-medica-fonte-informacao'),
     medica_laudo_resultado: g('d-medica-laudo-resultado'),
