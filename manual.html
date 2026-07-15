@@ -135,6 +135,7 @@ table.field-table tr:last-child td{border-bottom:none;}
     <a href="#decisao"><span class="toc-emoji">📑</span>Reporte de Decisão</a>
     <a href="#acordos"><span class="toc-emoji">💰</span>Reporte de Acordos</a>
     <a href="#valores"><span class="toc-emoji">💲</span>Inserção de Valores</a>
+    <a href="#ia"><span class="toc-emoji">🤖</span>IA — Valor Histórico</a>
     <a href="#excluir"><span class="toc-emoji">🗑️</span>Excluir registros</a>
   </nav>
 
@@ -407,6 +408,24 @@ table.field-table tr:last-child td{border-bottom:none;}
           <div class="email-step"><div class="num">2</div><div><b>Botão condicional</b>: nota pro <b>Nicolau</b>, se alguma diferença ≥ R$ 400.000,00.</div></div>
           <div class="email-step"><div class="num">3</div><div><b>Botão condicional</b>: confirmação pro <b>Grupo Bridgestone</b>, se "Inserido no LM" ou "Inserido no Elaw" = Sim.</div></div>
         </div>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ IA — VALOR HISTÓRICO ============ -->
+    <section class="tab-section" id="ia">
+      <div class="tab-head">
+        <span class="emoji">🤖</span>
+        <div>
+          <h2>IA — Valor Histórico</h2>
+          <div class="who">Lê um PDF de cálculo/laudo e tenta extrair o valor histórico sozinha</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ Cole o link do PDF (o mesmo tipo de link usado em "Link do Cálculo" na aba Inserção de Valores) e, opcionalmente, o número do processo. A IA lê o documento e devolve: Valor Histórico, Data-base, um trecho do documento que comprova o valor, e qualquer observação/ressalva.</div>
+        <div class="warn-callout">⚠️ É uma leitura automática — <b>sempre confira o valor extraído</b> antes de usar em qualquer cálculo ou decisão. A IA pode errar, especialmente em documentos escaneados ou com formatação confusa.</div>
+        <h3>Como funciona por trás</h3>
+        <p>Diferente das outras abas, esta usa uma <b>Supabase Edge Function</b> como intermediária: o navegador nunca fala direto com a IA. A função recebe o link do PDF, envia pra Anthropic (Claude) processar o documento, e devolve o resultado — a chave de API fica guardada em segredo no servidor, nunca no código do site.</p>
         <a class="back-top" href="#intro">↑ Voltar ao topo</a>
       </div>
     </section>
