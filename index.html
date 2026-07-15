@@ -65,6 +65,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 .section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--azul-pc);margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--cyan-lt);}
 .section-title:first-child{margin-top:0;}
+.sub-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px;}
 
 .mc-form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
 .mc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
@@ -333,19 +334,6 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label><textarea id="d-laudo-peri-motivo" rows="2"></textarea></div>
 
-        <div class="section-title">Periculosidade — Decisão</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado das Decisões</label>
-            <select id="d-decisao-peri-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
-          </div>
-          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-peri-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-peri-data-final"></div>
-        </div>
-        <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Motivo da Periculosidade</label><textarea id="d-decisao-peri-motivo" rows="2"></textarea></div>
-          <div class="mc-form-group"><label>Detalhamento dos Casos Após Dez/2016</label><textarea id="d-peri-pos2016" rows="2"></textarea></div>
-        </div>
-
         <div class="section-title">Insalubridade — Laudo</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado do Laudo</label>
@@ -357,26 +345,6 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label><textarea id="d-laudo-insalu-motivo" rows="2"></textarea></div>
           <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
-        </div>
-
-        <div class="section-title">Insalubridade — Decisão</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado das Decisões</label>
-            <select id="d-decisao-insalu-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
-          </div>
-          <div class="mc-form-group"><label>Grau de Insalubridade</label>
-            <select id="d-decisao-insalu-grau"><option value="">—</option><option>Mínimo (10%)</option><option>Médio (20%)</option><option>Máximo (40%)</option></select>
-          </div>
-          <div class="mc-form-group"><label>Agentes Insalubres</label><input type="text" id="d-decisao-insalu-agentes"></div>
-        </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-insalu-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-insalu-data-final"></div>
-          <div class="mc-form-group"><label>Motivo da Insalubridade</label><input type="text" id="d-decisao-insalu-motivo"></div>
-        </div>
-        <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Outras observações sobre EPI</label><textarea id="d-insalu-obs-epi" rows="2"></textarea></div>
-          <div class="mc-form-group"><label>Análise complementar</label><textarea id="d-insalu-analise-complementar" rows="2"></textarea></div>
         </div>
 
         <div class="section-title">Ergonômico / Perícia Médica</div>
@@ -394,9 +362,19 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-group"><label>Resultado do Laudo</label><textarea id="d-medica-laudo-resultado" rows="2"></textarea></div>
 
         <div class="section-title">Sentença</div>
+        <div class="info-box">ℹ️ Os campos de Periculosidade e Insalubridade abaixo são o resultado da sentença sobre esses dois temas — compare com o "Resultado do Laudo" de cada um (lá em cima) pra ver se a sentença seguiu o laudo.</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado</label>
-            <select id="d-sentenca-resultado"><option value="">—</option><option>Procedente</option><option>Improcedente</option><option>Parcialmente Procedente</option><option>Pendente</option></select>
+            <select id="d-sentenca-resultado">
+              <option value="">—</option>
+              <option>Procedente</option>
+              <option>Improcedente</option>
+              <option>Parcialmente Procedente</option>
+              <option>Extinto com Resolução do Mérito</option>
+              <option>Extinto sem Resolução do Mérito</option>
+              <option>Acordo</option>
+              <option>Pendente</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Data da Sentença</label><input type="date" id="d-sentenca-data"></div>
           <div class="mc-form-group"><label>Juiz da Sentença</label><input type="text" id="d-sentenca-juiz"></div>
@@ -404,6 +382,50 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Pedidos deferidos em sentença</label><textarea id="d-sentenca-deferidos" rows="2"></textarea></div>
           <div class="mc-form-group"><label>Pedidos indeferidos em sentença</label><textarea id="d-sentenca-indeferidos" rows="2"></textarea></div>
+        </div>
+
+        <div class="sub-title">Sentença — Reintegração</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Há Reintegração?</label>
+            <select id="d-sentenca-reintegracao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Resultado da Reintegração</label>
+            <select id="d-sentenca-reintegracao-resultado"><option value="">—</option><option>Deferida</option><option>Indeferida</option><option>Parcialmente Deferida</option><option>Pendente</option></select>
+          </div>
+        </div>
+        <div class="mc-form-group"><label>Nota sobre a Reintegração</label><textarea id="d-sentenca-reintegracao-nota" rows="2"></textarea></div>
+
+        <div class="sub-title">Sentença — Periculosidade</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado das Decisões</label>
+            <select id="d-decisao-peri-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-peri-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-peri-data-final"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Motivo da Periculosidade</label><textarea id="d-decisao-peri-motivo" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Detalhamento dos Casos Após Dez/2016</label><textarea id="d-peri-pos2016" rows="2"></textarea></div>
+        </div>
+
+        <div class="sub-title">Sentença — Insalubridade</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado das Decisões</label>
+            <select id="d-decisao-insalu-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Grau de Insalubridade</label>
+            <select id="d-decisao-insalu-grau"><option value="">—</option><option>Mínimo (10%)</option><option>Médio (20%)</option><option>Máximo (40%)</option></select>
+          </div>
+          <div class="mc-form-group"><label>Agentes Insalubres</label><input type="text" id="d-decisao-insalu-agentes"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-insalu-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-insalu-data-final"></div>
+          <div class="mc-form-group"><label>Motivo da Insalubridade</label><input type="text" id="d-decisao-insalu-motivo"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Outras observações sobre EPI</label><textarea id="d-insalu-obs-epi" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Análise complementar</label><textarea id="d-insalu-analise-complementar" rows="2"></textarea></div>
         </div>
 
         <div class="section-title">Acórdão TRT</div>
@@ -1001,6 +1023,9 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     sentenca_resultado: g('d-sentenca-resultado'),
     sentenca_data: g('d-sentenca-data'),
     sentenca_juiz: g('d-sentenca-juiz'),
+    sentenca_reintegracao: g('d-sentenca-reintegracao'),
+    sentenca_reintegracao_resultado: g('d-sentenca-reintegracao-resultado'),
+    sentenca_reintegracao_nota: g('d-sentenca-reintegracao-nota'),
     sentenca_pedidos_deferidos: g('d-sentenca-deferidos'),
     sentenca_pedidos_indeferidos: g('d-sentenca-indeferidos'),
     acordao_trt_reclamada: g('d-acordao-trt-reclamada'),
