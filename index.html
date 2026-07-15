@@ -236,8 +236,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Data/Horário</th><th>Perito</th><th>Advogado</th><th>Enviado em</th></tr></thead>
-        <tbody id="p-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Data/Horário</th><th>Perito</th><th>Advogado</th><th>Enviado em</th><th>Ações</th></tr></thead>
+        <tbody id="p-tbody"><tr><td colspan="8" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -311,8 +311,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Prazo</th><th>Responsável</th><th>Enviado em</th></tr></thead>
-        <tbody id="c-tbody"><tr><td colspan="6" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Prazo</th><th>Responsável</th><th>Enviado em</th><th>Ações</th></tr></thead>
+        <tbody id="c-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -797,8 +797,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Status</th><th>Valor Pago</th><th>Economia</th><th>Data Pagamento</th><th>Atualizado em</th></tr></thead>
-        <tbody id="a-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Status</th><th>Valor Pago</th><th>Economia</th><th>Data Pagamento</th><th>Atualizado em</th><th>Ações</th></tr></thead>
+        <tbody id="a-tbody"><tr><td colspan="8" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -923,8 +923,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Dif. Histórico</th><th>Dif. Provisão</th><th>Dif. Accrual</th><th>Acima 400k</th><th>Inserido Elaw</th><th>Enviado em</th></tr></thead>
-        <tbody id="v-tbody"><tr><td colspan="9" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Dif. Histórico</th><th>Dif. Provisão</th><th>Dif. Accrual</th><th>Acima 400k</th><th>Inserido Elaw</th><th>Enviado em</th><th>Ações</th></tr></thead>
+        <tbody id="v-tbody"><tr><td colspan="10" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -945,6 +945,26 @@ function toast(msg, isErr){
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show' + (isErr?' err':'');
   setTimeout(()=>t.classList.remove('show'), 4500);
+}
+
+const RECARREGAR_POR_TABELA = {
+  comunicacoes_pericia: () => carregarHistoricoPericia(),
+  comunicacoes_calculos: () => carregarHistoricoCalculos(),
+  reportes_decisao: () => carregarHistoricoDecisao(),
+  reportes_acordos: () => carregarHistoricoAcordos(),
+  solicitacoes_insercao_valores: () => carregarHistoricoValores(),
+};
+async function excluirRegistro(tabela, id){
+  if(!confirm('Excluir este registro (id ' + id + ')? Essa ação não pode ser desfeita.')) return;
+  const { error } = await sb.from(tabela).delete().eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao excluir: ' + error.message, true);
+  } else {
+    toast('Registro excluído.');
+    const recarregar = RECARREGAR_POR_TABELA[tabela];
+    if(recarregar) recarregar();
+  }
 }
 
 /* O navegador bloqueia mailto: aberto via setTimeout (não é mais um clique do usuário).
@@ -1164,7 +1184,7 @@ function renderHistoricoPericia(){
   const rows = HIST_PERICIA.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
   HIST_PERICIA_FILTRADO = rows;
   const tbody = document.getElementById('p-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma comunicação encontrada.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Nenhuma comunicação encontrada.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
@@ -1173,6 +1193,7 @@ function renderHistoricoPericia(){
     <td>${esc(r.nome_perito)}</td>
     <td>${esc(r.advogado_responsavel)}</td>
     <td class="mono">${fmtDataHora(r.criado_em)}</td>
+    <td><button class="row-btn" onclick="excluirRegistro('comunicacoes_pericia', ${r.id})" title="Excluir">🗑️ Excluir</button></td>
   </tr>`).join('');
 }
 
@@ -1224,7 +1245,7 @@ function renderHistoricoCalculos(){
   const rows = HIST_CALCULOS.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
   HIST_CALCULOS_FILTRADO = rows;
   const tbody = document.getElementById('c-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
@@ -1232,6 +1253,7 @@ function renderHistoricoCalculos(){
     <td class="mono">${r.prazo_envio ? r.prazo_envio.split('-').reverse().join('/') : ''}</td>
     <td>${esc(r.responsavel_sigla)}</td>
     <td class="mono">${fmtDataHora(r.criado_em)}</td>
+    <td><button class="row-btn" onclick="excluirRegistro('comunicacoes_calculos', ${r.id})" title="Excluir">🗑️ Excluir</button></td>
   </tr>`).join('');
 }
 
@@ -1366,6 +1388,7 @@ function renderHistoricoDecisao(){
         <option value="tst">7 — Acórdão do TST</option>
         <option value="execucao">8 — Execução</option>
       </select>
+      <button class="row-btn" onclick="excluirRegistro('reportes_decisao', ${r.id})" title="Excluir" style="margin-top:5px;">🗑️ Excluir</button>
     </td>
   </tr>`).join('');
 }
@@ -1534,7 +1557,7 @@ function renderHistoricoAcordos(){
   const rows = HIST_ACORDOS.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
   HIST_ACORDOS_FILTRADO = rows;
   const tbody = document.getElementById('a-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum acordo reportado encontrado.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Nenhum acordo reportado encontrado.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
@@ -1543,6 +1566,7 @@ function renderHistoricoAcordos(){
     <td class="mono">${fmtMoeda(r.economia)}</td>
     <td class="mono">${r.data_pagamento ? r.data_pagamento.split('-').reverse().join('/') : ''}</td>
     <td class="mono">${fmtDataHora(r.atualizado_em)}</td>
+    <td><button class="row-btn" onclick="excluirRegistro('reportes_acordos', ${r.id})" title="Excluir">🗑️ Excluir</button></td>
   </tr>`).join('');
 }
 
@@ -1678,7 +1702,7 @@ function renderHistoricoValores(){
   const rows = HIST_VALORES.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
   HIST_VALORES_FILTRADO = rows;
   const tbody = document.getElementById('v-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="10" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
@@ -1689,6 +1713,7 @@ function renderHistoricoValores(){
     <td>${r.acima_400k ? '<span class="badge badge-orange">Sim</span>' : '<span class="badge badge-green">Não</span>'}</td>
     <td>${esc(r.inserido_sistema)}</td>
     <td class="mono">${fmtDataHora(r.criado_em)}</td>
+    <td><button class="row-btn" onclick="excluirRegistro('solicitacoes_insercao_valores', ${r.id})" title="Excluir">🗑️ Excluir</button></td>
   </tr>`).join('');
 }
 
