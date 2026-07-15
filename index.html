@@ -741,7 +741,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <div class="dash-card">
     <div class="dash-card-head">💲 Nova Solicitação de Inserção de Valores</div>
     <div class="dash-card-body">
-      <div class="info-box">ℹ️ O e-mail é aberto no seu Outlook, pronto pra enviar — vai para <b>Cícera Gabriela Ferreira Vicente</b>, com cópia para o Grupo Bridgestone. Se o Novo Valor for igual ou maior que R$ 400.000,00, uma nota extra é aberta automaticamente para o <b>Nicolau</b>.</div>
+      <div class="info-box">ℹ️ O pedido (seção Cálculo) é do advogado para a assistente — o e-mail vai para <b>Cícera Gabriela Ferreira Vicente</b>, com cópia para o Grupo Bridgestone. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, uma nota extra é aberta para o <b>Nicolau</b>. Quando a assistente marcar "Inserido no LM" ou "Inserido no Elaw" como <b>Sim</b> (seção Inserção), um terceiro e-mail de confirmação é aberto automaticamente para o <b>Advogado Solicitante</b>, também com cópia para o Grupo Bridgestone.</div>
       <form id="form-valores">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
@@ -1490,6 +1490,9 @@ document.getElementById('form-valores').addEventListener('submit', async functio
   const assunto = `Solicitação de Inserção de Valores — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
   const corpo = `Prezada Cícera,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
 
+  const inseridoConfirmado = (registro.inserido_lm === 'Sim') || (registro.inserido_sistema === 'Sim');
+  const emailAdvogado = inseridoConfirmado ? emailPorNome(registro.advogado_solicitante) : '';
+
   const { error } = await sb.from('solicitacoes_insercao_valores').insert(registro);
   if(error){
     console.error(error);
@@ -1505,6 +1508,17 @@ document.getElementById('form-valores').addEventListener('submit', async functio
       const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
       abrirEmail(NICOLAU_EMAIL, cc, assuntoNicolau, corpoNicolau);
     }, 700);
+  }
+  if(inseridoConfirmado){
+    if(emailAdvogado){
+      setTimeout(() => {
+        const assuntoConfirma = `Valores Inseridos — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
+        const corpoConfirma = `Prezado(a) ${nn(registro.advogado_solicitante)},\n\nConfirmamos a inserção dos valores solicitados no processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n\n${resumoValores}\n\nInserido no LM: ${nn(registro.inserido_lm)}${registro.data_insercao_lm ? ' (' + registro.data_insercao_lm.split('-').reverse().join('/') + ')' : ''}\nInserido no Elaw: ${nn(registro.inserido_sistema)}${registro.data_insercao_sistema ? ' (' + registro.data_insercao_sistema.split('-').reverse().join('/') + ')' : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nResponsável pela inserção: ${nn(registro.assistente_responsavel)}`;
+        abrirEmail(emailAdvogado, cc, assuntoConfirma, corpoConfirma);
+      }, 1400);
+    } else {
+      toast('Não encontrei o e-mail do Advogado Solicitante na lista de profissionais — envie a confirmação manualmente.', true);
+    }
   }
   this.reset();
   document.getElementById('v-diff-historico').value = '';
