@@ -357,6 +357,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Produtos Inflamáveis" id="d-lpm-6"><label for="d-lpm-6">Produtos Inflamáveis</label></div>
           </div>
         </div>
+        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-peri-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
 
         <div class="section-title">Insalubridade — Laudo</div>
         <div class="mc-form-grid cols-3">
@@ -390,6 +391,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
           <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
         </div>
+        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-insalu-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
 
         <div class="section-title">Ergonômico / Perícia Médica</div>
         <div class="mc-form-group"><label>Laudo Pericial Ergonômico</label><textarea id="d-laudo-ergonomico" rows="2"></textarea></div>
@@ -480,6 +482,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
         <div class="mc-form-group"><label>Resultado do Laudo</label><textarea id="d-medica-laudo-resultado" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-medica-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
 
         <div class="section-title">Sentença</div>
         <div class="info-box">ℹ️ Os campos de Periculosidade e Insalubridade abaixo são o resultado da sentença sobre esses dois temas — compare com o "Resultado do Laudo" de cada um (lá em cima) pra ver se a sentença seguiu o laudo.</div>
@@ -1304,6 +1307,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_periculosidade_data_inicio: g('d-laudo-peri-data-inicio'),
     laudo_periculosidade_data_final: g('d-laudo-peri-data-final'),
     laudo_periculosidade_motivo: marcados('d-laudo-peri-motivo-chk'),
+    laudo_periculosidade_fundamentacao: g('d-laudo-peri-fundamentacao'),
     decisao_periculosidade_resultado: g('d-decisao-peri-resultado'),
     decisao_periculosidade_data_inicio: g('d-decisao-peri-data-inicio'),
     decisao_periculosidade_data_final: g('d-decisao-peri-data-final'),
@@ -1313,6 +1317,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_insalubridade_data_inicio: g('d-laudo-insalu-data-inicio'),
     laudo_insalubridade_data_final: g('d-laudo-insalu-data-final'),
     laudo_insalubridade_motivo: marcados('d-laudo-insalu-motivo-chk'),
+    laudo_insalubridade_fundamentacao: g('d-laudo-insalu-fundamentacao'),
     laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
     decisao_insalubridade_resultado: g('d-decisao-insalu-resultado'),
     decisao_insalubridade_grau: g('d-decisao-insalu-grau'),
@@ -1330,6 +1335,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     medica_motivos: g('d-medica-motivos'),
     medica_fonte_informacao: g('d-medica-fonte-informacao'),
     medica_laudo_resultado: g('d-medica-laudo-resultado'),
+    medica_fundamentacao: g('d-medica-fundamentacao'),
     sentenca_resultado: g('d-sentenca-resultado'),
     sentenca_data: g('d-sentenca-data'),
     sentenca_juiz: g('d-sentenca-juiz'),

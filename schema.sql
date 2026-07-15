@@ -50,7 +50,8 @@ create table if not exists reportes_decisao (
   laudo_periculosidade_resultado text,
   laudo_periculosidade_data_inicio date,
   laudo_periculosidade_data_final date,
-  laudo_periculosidade_motivo text,
+  laudo_periculosidade_motivo text,          -- checkboxes: pode ter varios, separados por ", "
+  laudo_periculosidade_fundamentacao text,   -- por que o laudo foi favoravel, se aplicavel
   decisao_periculosidade_resultado text,
   decisao_periculosidade_data_inicio date,
   decisao_periculosidade_data_final date,
@@ -61,8 +62,9 @@ create table if not exists reportes_decisao (
   laudo_insalubridade_resultado text,
   laudo_insalubridade_data_inicio date,
   laudo_insalubridade_data_final date,
-  laudo_insalubridade_motivo text,
+  laudo_insalubridade_motivo text,           -- checkboxes: pode ter varios, separados por ", "
   laudo_insalubridade_outros text,
+  laudo_insalubridade_fundamentacao text,    -- por que o laudo foi favoravel, se aplicavel
   decisao_insalubridade_resultado text,
   decisao_insalubridade_grau text,
   decisao_insalubridade_data_inicio date,
@@ -76,11 +78,12 @@ create table if not exists reportes_decisao (
   laudo_ergonomico text,
   perito_medica text,
   data_pericia_medica text,
-  medica_doenca text,
-  medica_area_corpo text,
+  medica_doenca text,                        -- checkboxes: pode ter varias, separadas por ", "
+  medica_area_corpo text,                    -- checkboxes: pode ter varias, separadas por ", "
   medica_motivos text,
-  medica_fonte_informacao text,
+  medica_fonte_informacao text,              -- 'Petição Inicial' | 'Laudo Pericial'
   medica_laudo_resultado text,
+  medica_fundamentacao text,                 -- por que o laudo foi favoravel, se aplicavel
 
   -- Sentença
   sentenca_resultado text,
