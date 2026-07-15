@@ -358,6 +358,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Galpão é uma única edificação" id="d-lpm-7"><label for="d-lpm-7">Galpão é uma única edificação</label></div>
           </div>
         </div>
+        <div class="mc-form-group"><label>Detalhamento da Periculosidade</label><textarea id="d-laudo-peri-detalhamento" rows="2" placeholder="Ex: qual área/atividade específica, distância do agente, etc."></textarea></div>
         <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-peri-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
 
         <div class="section-title">Insalubridade — Laudo</div>
@@ -390,8 +391,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Radiação não Ionizante" id="d-lim-9"><label for="d-lim-9">Radiação não Ionizante</label></div>
             </div>
           </div>
-          <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Detalhamento da Insalubridade</label><textarea id="d-laudo-insalu-detalhamento" rows="2" placeholder="Ex: Ausência de EPI's, qual o agente químico, se é falta de creme, por que condenou (ex: hidrocarboneto)"></textarea></div>
         </div>
+        <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
         <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-insalu-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
 
         <div class="section-title">Ergonômico / Perícia Médica</div>
@@ -1315,6 +1317,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_periculosidade_data_inicio: g('d-laudo-peri-data-inicio'),
     laudo_periculosidade_data_final: g('d-laudo-peri-data-final'),
     laudo_periculosidade_motivo: marcados('d-laudo-peri-motivo-chk'),
+    laudo_periculosidade_detalhamento: g('d-laudo-peri-detalhamento'),
     laudo_periculosidade_fundamentacao: g('d-laudo-peri-fundamentacao'),
     decisao_periculosidade_resultado: g('d-decisao-peri-resultado'),
     decisao_periculosidade_data_inicio: g('d-decisao-peri-data-inicio'),
@@ -1326,6 +1329,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_insalubridade_data_final: g('d-laudo-insalu-data-final'),
     laudo_insalubridade_motivo: marcados('d-laudo-insalu-motivo-chk'),
     laudo_insalubridade_fundamentacao: g('d-laudo-insalu-fundamentacao'),
+    laudo_insalubridade_detalhamento: g('d-laudo-insalu-detalhamento'),
     laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
     decisao_insalubridade_resultado: g('d-decisao-insalu-resultado'),
     decisao_insalubridade_grau: g('d-decisao-insalu-grau'),

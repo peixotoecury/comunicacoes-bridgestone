@@ -51,6 +51,7 @@ create table if not exists reportes_decisao (
   laudo_periculosidade_data_inicio date,
   laudo_periculosidade_data_final date,
   laudo_periculosidade_motivo text,          -- checkboxes: pode ter varios, separados por ", "
+  laudo_periculosidade_detalhamento text,    -- detalhe livre sobre a periculosidade (area/atividade especifica, etc.)
   laudo_periculosidade_fundamentacao text,   -- por que o laudo foi favoravel, se aplicavel
   decisao_periculosidade_resultado text,
   decisao_periculosidade_data_inicio date,
@@ -63,6 +64,7 @@ create table if not exists reportes_decisao (
   laudo_insalubridade_data_inicio date,
   laudo_insalubridade_data_final date,
   laudo_insalubridade_motivo text,           -- checkboxes: pode ter varios, separados por ", "
+  laudo_insalubridade_detalhamento text,     -- detalhe livre (ex: qual agente quimico, falta de creme, motivo da condenacao)
   laudo_insalubridade_outros text,
   laudo_insalubridade_fundamentacao text,    -- por que o laudo foi favoravel, se aplicavel
   decisao_insalubridade_resultado text,
