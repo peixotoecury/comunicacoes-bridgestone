@@ -101,6 +101,10 @@ create table if not exists reportes_decisao (
   inserir_gerencia text,                  -- 'Sim' | 'Não' -- inclui a Shana como destinatária dos e-mails de decisão quando 'Sim'
   sentenca_pedidos_deferidos text,
   sentenca_pedidos_indeferidos text,
+  sentenca_causa_raiz text,
+  sentenca_principal_favoravel text,
+  sentenca_principal_desfavoravel text,
+  sentenca_obrigacao_fazer text,
 
   -- Acórdão TRT
   acordao_trt_reclamada text,

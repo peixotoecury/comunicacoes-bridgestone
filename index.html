@@ -404,7 +404,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-group"><label>Doença (Padronizada)</label>
           <div class="chk-multi chk-multi-3">
-            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Acidente Do Trabalho" id="d-doe-1"><label for="d-doe-1">Acidente Do Trabalho</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Acidente Típico" id="d-doe-1"><label for="d-doe-1">Acidente Típico</label></div>
             <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Alergia" id="d-doe-2"><label for="d-doe-2">Alergia</label></div>
             <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Anquilose" id="d-doe-3"><label for="d-doe-3">Anquilose</label></div>
             <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Artrose" id="d-doe-4"><label for="d-doe-4">Artrose</label></div>
@@ -509,6 +509,12 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Pedidos deferidos em sentença</label><textarea id="d-sentenca-deferidos" rows="2"></textarea></div>
           <div class="mc-form-group"><label>Pedidos indeferidos em sentença</label><textarea id="d-sentenca-indeferidos" rows="2"></textarea></div>
         </div>
+        <div class="mc-form-group"><label>Causa Raiz</label><textarea id="d-sentenca-causa-raiz" rows="2"></textarea></div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Principal Pedido Favorável</label><textarea id="d-sentenca-principal-favoravel" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Principal Pedido Desfavorável</label><textarea id="d-sentenca-principal-desfavoravel" rows="2"></textarea></div>
+        </div>
+        <div class="mc-form-group"><label>Obrigação de Fazer</label><textarea id="d-sentenca-obrigacao-fazer" rows="2" placeholder="Ex: reintegração imediata, retificação de CTPS, fornecimento de documentos..."></textarea></div>
 
         <div class="sub-title">Sentença — Reintegração</div>
         <div class="mc-form-grid cols-3">
@@ -1361,6 +1367,10 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     inserir_gerencia: g('d-inserir-gerencia'),
     sentenca_pedidos_deferidos: g('d-sentenca-deferidos'),
     sentenca_pedidos_indeferidos: g('d-sentenca-indeferidos'),
+    sentenca_causa_raiz: g('d-sentenca-causa-raiz'),
+    sentenca_principal_favoravel: g('d-sentenca-principal-favoravel'),
+    sentenca_principal_desfavoravel: g('d-sentenca-principal-desfavoravel'),
+    sentenca_obrigacao_fazer: g('d-sentenca-obrigacao-fazer'),
     acordao_trt_reclamada: g('d-acordao-trt-reclamada'),
     acordao_trt_data: g('d-acordao-trt-data'),
     acordao_trt_turma: g('d-acordao-trt-turma'),
