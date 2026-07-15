@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root {
   --azul-pc:  #00A9E0;
@@ -125,6 +126,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 .ep-btn:disabled{opacity:.55;cursor:default;background:var(--green-lt);border-color:rgba(17,122,101,.25);color:var(--green);}
 .ep-close{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline;padding:2px 0;font-family:var(--font);}
 
+.ia-verba-head{display:grid;grid-template-columns:1.3fr .8fr .8fr .8fr .8fr .8fr .9fr .9fr 1.1fr 28px;gap:6px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:0 4px;margin-bottom:6px;}
+.ia-verba-row{display:grid;grid-template-columns:1.3fr .8fr .8fr .8fr .8fr .8fr .9fr .9fr 1.1fr 28px;gap:6px;align-items:center;margin-bottom:6px;}
+.ia-verba-row input,.ia-verba-row select{width:100%;padding:7px 8px;border:1px solid #BFD6E4;border-radius:6px;font-size:11px;font-family:var(--font);outline:none;}
+.ia-verba-row input:focus,.ia-verba-row select:focus{border-color:var(--azul-pc);box-shadow:0 0 0 3px rgba(0,169,224,.14);}
+.ia-verba-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:2px;}
+@media (max-width: 900px){ .ia-verba-head{display:none;} .ia-verba-row{grid-template-columns:1fr 1fr;} }
+
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;margin-bottom:6px;}
 @media (max-width: 900px){ .check-grid{grid-template-columns:1fr;} }
 .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;}
@@ -153,7 +161,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <button class="tab-btn" id="tab-btn-decisao" onclick="mudarAba('decisao')">📑 Reporte de Decisão</button>
   <button class="tab-btn" id="tab-btn-acordos" onclick="mudarAba('acordos')">💰 Reporte de Acordos</button>
   <button class="tab-btn" id="tab-btn-valores" onclick="mudarAba('valores')">💲 Inserção de Valores</button>
-  <button class="tab-btn" id="tab-btn-ia" onclick="mudarAba('ia')">🤖 IA — Valor Histórico</button>
+  <button class="tab-btn" id="tab-btn-ia" onclick="mudarAba('ia')">🤖 Lançamento IA</button>
 </div>
 
 <div class="main">
@@ -984,32 +992,91 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   </div>
 </div>
 
-<!-- ================= ABA 6: IA — VALOR HISTÓRICO ================= -->
+<!-- ================= ABA 6: LANÇAMENTO IA (EXTRAÇÃO DE VERBAS) ================= -->
 <div class="view" id="view-ia">
   <div class="dash-card">
-    <div class="dash-card-head">🤖 Extrair Valor Histórico de um Cálculo (IA)</div>
+    <div class="dash-card-head">🤖 Lançamento IA — Extração de Valores</div>
     <div class="dash-card-body">
-      <div class="info-box">ℹ️ Cole o link do PDF do cálculo/laudo (o mesmo tipo de link usado em "Link do Cálculo" na aba Inserção de Valores). A IA lê o documento e tenta extrair o valor histórico, a data-base e o trecho onde encontrou essa informação. Confira sempre o resultado — é uma leitura automática, não substitui a conferência humana.</div>
-      <form id="form-ia">
-        <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Processo (opcional, ajuda a IA a confirmar o contexto)</label><input type="text" id="ia-processo" placeholder="0000000-00.0000.0.00.0000"></div>
-          <div class="mc-form-group"><label>Link do PDF (cálculo/laudo) <span class="req">*</span></label><input type="text" id="ia-link" required placeholder="https://..."></div>
-        </div>
-        <button type="submit" class="btn-cyan" id="ia-btn-extrair">🔍 Extrair valor com IA</button>
-      </form>
+      <div class="hint" style="margin-bottom:14px;">Suba a inicial, cálculo ou planilha (PDF, XLSX ou texto). O sistema identifica os pedidos/verbas e monta o quadro de valores para conferência — depois é só levar o total pra aba Inserção de Valores. Nada aqui é salvo automaticamente.</div>
 
-      <div id="ia-resultado" style="display:none;margin-top:20px;">
-        <div class="section-title">Resultado</div>
-        <table class="sol-table" style="min-width:0;">
-          <tbody>
-            <tr><td class="mono" style="white-space:nowrap;width:180px;">Valor Histórico</td><td id="ia-r-valor" style="font-weight:700;"></td></tr>
-            <tr><td class="mono" style="white-space:nowrap;">Data-base</td><td id="ia-r-data"></td></tr>
-            <tr><td class="mono" style="white-space:nowrap;">Trecho encontrado</td><td id="ia-r-trecho"></td></tr>
-            <tr><td class="mono" style="white-space:nowrap;">Observação</td><td id="ia-r-obs"></td></tr>
-          </tbody>
-        </table>
+      <div class="mc-form-grid">
+        <div class="mc-form-group"><label>Processo</label><input type="text" id="ia-processo" placeholder="0000000-00.0000.0.00.0000"></div>
+        <div class="mc-form-group"><label>Reclamante</label><input type="text" id="ia-reclamante"></div>
       </div>
-      <div id="ia-erro" class="error-banner" style="display:none;margin-top:20px;"></div>
+
+      <div style="background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--escuro-pc);margin-bottom:8px;">📐 Correção monetária — Tema 1191 STF (IPCA-E + Juros)</div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group">
+            <label>Data de Ajuizamento</label>
+            <input type="text" id="ia-dt-ajuiz" placeholder="dd/mm/aaaa">
+          </div>
+          <div class="mc-form-group">
+            <label>Data-base da Atualização</label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="ia-dt-base" placeholder="dd/mm/aaaa" style="flex:1;">
+              <button type="button" class="action-btn" style="white-space:nowrap;" onclick="iaSetDtBaseHoje()">📅 Hoje</button>
+            </div>
+          </div>
+          <div class="mc-form-group">
+            <label>Índice padrão</label>
+            <select id="ia-indice-padrao">
+              <option value="auto">⚙️ Automático (Tema 1191)</option>
+              <option value="ipca">IPCA-E (desde origem)</option>
+              <option value="tr_ipca">TR (até nov/2017) + IPCA-E</option>
+              <option value="selic">SELIC (desde origem)</option>
+              <option value="nenhum">Sem correção</option>
+            </select>
+          </div>
+          <div class="mc-form-group">
+            <label>Juros</label>
+            <select id="ia-juros-padrao">
+              <option value="auto">⚙️ Automático (1% a.m. → SELIC)</option>
+              <option value="selic_total">SELIC acumulada total</option>
+              <option value="1pct">1% ao mês simples</option>
+              <option value="nenhum">Sem juros</option>
+            </select>
+          </div>
+        </div>
+        <div class="hint">Informe a <b>Data de Origem</b> de cada verba na grade abaixo e clique em "Recalcular" — o sistema aplica IPCA-E/SELIC conforme a regra do Tema 1191 (correção IPCA-E desde a origem; juros de 1% a.m. até 10/11/2021 e SELIC acumulada depois).</div>
+        <div class="hint" style="color:var(--red);font-weight:600;margin-top:6px;">⚠️ Só preencha a Data de Origem em verbas cujo <b>Principal</b> seja o valor ORIGINAL (sem correção prévia). Se o valor veio de um cálculo/PDF que já traz colunas de Juros/Total/Valor Corrigido, o "Principal" extraído automaticamente pode já estar corrigido — recalcular por cima disso soma a correção em dobro. Nesses casos, confira o Principal manualmente antes de preencher a Data de Origem.</div>
+      </div>
+
+      <div id="ia-dropzone" style="border:2px dashed var(--azul-pc);border-radius:var(--radius-lg);padding:22px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:14px;" onclick="document.getElementById('ia-file').click()" ondragover="event.preventDefault();this.style.background='var(--cyan-lt)'" ondragleave="this.style.background='var(--surface2)'" ondrop="iaDropFile(event)">
+        <input id="ia-file" type="file" accept=".xlsx,.xls,.pdf,.txt" style="display:none" onchange="iaUploadFile(event)">
+        <div style="font-size:22px;">📤</div>
+        <div style="margin-top:6px;font-weight:600;color:var(--escuro-pc);">Clique ou arraste o arquivo aqui</div>
+        <div class="hint">PDF, XLSX ou TXT</div>
+      </div>
+      <div id="ia-file-info" class="hint" style="margin-bottom:10px;"></div>
+
+      <textarea id="ia-texto" rows="4" placeholder="O texto extraído aparece aqui — também dá pra colar direto e clicar em 'Preencher valores automaticamente'." style="width:100%;border:1px solid #BFD6E4;border-radius:var(--radius);padding:9px 12px;font-family:var(--mono);font-size:12px;margin-bottom:10px;resize:vertical;"></textarea>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <button type="button" class="btn-cyan" style="width:auto;padding:11px 20px;" onclick="iaExtrairVerbas()">✨ Preencher valores automaticamente</button>
+        <button type="button" class="action-btn" onclick="iaAddVerba()">+ Verba manual</button>
+        <button type="button" class="row-btn" onclick="iaLimpar()">Limpar</button>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+        <span class="hint" style="margin:0;">Preencher Data de Origem em todas as verbas:</span>
+        <input type="text" id="ia-dt-origem-todas" placeholder="dd/mm/aaaa" style="width:120px;border:1px solid #BFD6E4;border-radius:6px;padding:6px 8px;font-size:11px;">
+        <button type="button" class="action-btn" onclick="iaPreencherTodasDtOrigem()">Aplicar</button>
+        <button type="button" class="action-btn" onclick="iaPreencherDtOrigemAjuiz()">= Ajuizamento</button>
+        <button type="button" class="btn-cyan" style="width:auto;padding:8px 16px;margin-left:auto;" onclick="iaRecalcularTudo()">🧮 Recalcular com índice/juros</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <div id="ia-verbas-wrap" style="min-width:1180px;"></div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:24px;padding:12px 4px;font-weight:700;color:var(--escuro-pc);border-top:1px solid var(--border2);margin-top:10px;">
+        <span>Total</span><span id="ia-total">R$ 0,00</span>
+      </div>
+
+      <div style="margin-top:14px;">
+        <button type="button" class="btn-cyan" style="width:auto;padding:11px 20px;background:var(--green);" onclick="iaLevarParaValores()">→ Levar total para Inserção de Valores</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1840,52 +1907,675 @@ function assinarRealtime(tabela, recarregar){
     .subscribe();
 }
 
-/* ===================== ABA 6: IA — VALOR HISTÓRICO ===================== */
-const IA_EDGE_FUNCTION_URL = SUPABASE_URL + '/functions/v1/extrair-valor-pdf';
+/* ===================== ABA 6: LANÇAMENTO IA (EXTRAÇÃO DE VERBAS) =====================
+   Portado do sistema "Controle de Inserção de Cálculos". Não chama nenhuma IA/LLM externa —
+   é extração client-side por regex + leitura de posição real do PDF (pdf.js) + calculadora
+   de correção monetária (Tema 1191 STF, IPCA-E/SELIC). Nada aqui é salvo no Supabase. */
+let IA_VERBAS = [];
+let IA_PAGINAS_ITENS = null; // posição (x,y) de cada texto do último PDF lido, por página
 
-document.getElementById('form-ia').addEventListener('submit', async function(ev){
-  ev.preventDefault();
-  const processo = document.getElementById('ia-processo').value.trim();
-  const pdfUrl = document.getElementById('ia-link').value.trim();
-  const btn = document.getElementById('ia-btn-extrair');
-  const resultado = document.getElementById('ia-resultado');
-  const erroBox = document.getElementById('ia-erro');
-  resultado.style.display = 'none';
-  erroBox.style.display = 'none';
-  btn.disabled = true;
-  btn.textContent = '⏳ Lendo o documento…';
+const IA_PADROES = [
+  ['13º Salário', /13[ºo]\s*sal[aá]rio|d[eé]cimo terceiro/i],
+  ['Aviso prévio', /aviso pr[eé]vio/i],
+  ['Dano moral', /dano moral|danos morais/i],
+  ['Dano material', /dano material|danos materiais|pensão|pensionamento/i],
+  ['Estabilidade / doença ocupacional', /doen[çc]a ocupacional|estabilidade acident[áa]ria|garantia de emprego/i],
+  ['FGTS', /fgts/i],
+  ['FGTS + 40%', /40%|multa.*fgts/i],
+  ['Multa do art. 467 da CLT', /multa[^.]{0,40}467|art\.?\s*467/i],
+  ['Multa do art. 477 da CLT', /multa[^.]{0,40}477|art\.?\s*477/i],
+  ['DSR / Reflexos', /dsr|repouso semanal|reflexos/i],
+  ['Horas extras', /hora extra|horas extras|sobrejornada/i],
+  ['Intervalo intrajornada', /intervalo intrajornada|art\.?.*71/i],
+  ['Adicional de insalubridade', /insalubridade/i],
+  ['Adicional de periculosidade', /periculosidade/i],
+  ['Adicional noturno', /adicional noturno/i],
+  ['Férias + 1/3', /f[eé]rias|ter[çc]o constitucional/i],
+  ['Honorários', /honor[áa]rios/i],
+  ['Indenização', /indeniza[çc][aã]o/i],
+  ['PLR', /plr|participa[çc][aã]o nos lucros/i],
+  ['Valor da Causa', /valor da causa/i]
+];
 
-  try{
-    const resp = await fetch(IA_EDGE_FUNCTION_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-      },
-      body: JSON.stringify({ pdfUrl, processo }),
-    });
-    const data = await resp.json();
-    if(!resp.ok || data.error || data.erro){
-      erroBox.textContent = 'Erro: ' + (data.error || data.erro || ('HTTP ' + resp.status)) + (data.bruto ? ('\n\nResposta da IA: ' + data.bruto) : '') + (data.detalhe ? ('\n\nDetalhe: ' + JSON.stringify(data.detalhe)) : '');
-      erroBox.style.display = 'block';
-    } else {
-      document.getElementById('ia-r-valor').textContent = (data.valor_historico != null) ? fmtMoeda(data.valor_historico) : 'Não encontrado';
-      document.getElementById('ia-r-data').textContent = data.data_base || '—';
-      document.getElementById('ia-r-trecho').textContent = data.trecho || '—';
-      document.getElementById('ia-r-obs').textContent = data.observacao || '—';
-      resultado.style.display = 'block';
-      toast('Valor extraído. Confira o resultado antes de usar.');
+function iaNum(v){
+  if(typeof v === 'number' && isFinite(v)) return v;
+  let s = String(v||'').replace(/R\$/g,'').trim();
+  if(!s) return 0;
+  if(s.includes(',')) s = s.replace(/\s/g,'').replace(/\./g,'').replace(',','.');
+  else s = s.replace(/\s/g,'');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+function iaMoney(n){ return iaNum(n).toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
+function iaNormTxt(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,''); }
+
+function iaExtrairValorCausa(t){
+  const pats = [/valor\s+da\s+causa[^\d]{0,80}(?:R\$\s*)?(\d[\d\.]*,\d{2})/i, /d[aá]-se\s+à\s+causa[^\d]{0,80}(?:R\$\s*)?(\d[\d\.]*,\d{2})/i, /atribui\s+à\s+causa[^\d]{0,80}(?:R\$\s*)?(\d[\d\.]*,\d{2})/i];
+  for(const p of pats){ const m = t.match(p); if(m) return iaNum(m[1]); }
+  return 0;
+}
+// Retorna TODOS os números encontrados logo depois do termo (não só um), pra dar pra
+// quem chama decidir como combiná-los — em tabelas de cálculo cada linha traz vários
+// valores (ex.: Juros/Total/Valor Corrigido) e pegar só "um" descarta informação real.
+function iaValoresLinha(text, re){
+  const m = re.exec(text);
+  if(!m) return [];
+  // Só olha PRA FRENTE do termo encontrado — em planilhas/cálculos tabulares os valores
+  // da própria linha vêm logo depois do nome da verba; olhar pra trás pega o total da
+  // linha ANTERIOR. Janela generosa (rótulos de verba longos, tipo "Repouso Semanal
+  // Remunerado e Feriado...", empurram os números pra mais longe) — quem chama usa só
+  // os primeiros valores (mais próximos), então pegar "de sobra" aqui não contamina nada.
+  return iaValoresApartirDe(text, m.index + m[0].length, 220);
+}
+function iaMergeVerbas(arr){
+  const m = {};
+  arr.forEach(v => { const k = iaNormTxt(v.pedido); if(!k) return; if(!m[k] || iaNum(v.total) > iaNum(m[k].total)) m[k] = v; });
+  return Object.values(m);
+}
+// Diferente de iaMergeVerbas (que agrupa pelo NOME do pedido), isto remove pedidos
+// DIFERENTES que acabaram extraindo exatamente os mesmos números — sinal de que dois
+// padrões (ex.: "FGTS" e "FGTS + 40%") bateram no mesmo trecho do texto. Mantém a
+// versão com o nome mais específico (mais longo) e descarta a genérica.
+function iaRemoverDuplicatasPorValor(verbas){
+  const porValor = {};
+  const resultado = [];
+  verbas.forEach(v => {
+    if(!v.total){ resultado.push(v); return; }
+    const chave = [v.principal, v.correcao, v.juros, v.total].map(n => Math.round(n*100)).join('|');
+    const existente = porValor[chave];
+    if(!existente){ porValor[chave] = v; resultado.push(v); }
+    else if(v.pedido.length > existente.pedido.length){
+      resultado[resultado.indexOf(existente)] = v;
+      porValor[chave] = v;
     }
-  }catch(err){
-    console.error(err);
-    erroBox.textContent = 'Erro ao chamar a Edge Function: ' + (err.message || err) + '\n\nVerifique se a função "extrair-valor-pdf" já foi publicada no Supabase.';
-    erroBox.style.display = 'block';
-  }finally{
-    btn.disabled = false;
-    btn.textContent = '🔍 Extrair valor com IA';
+  });
+  return resultado;
+}
+function iaPreencherDadosProcesso(text){
+  const proc = (text.match(/\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}/) || [])[0];
+  if(proc){ const el = document.querySelector('#ia-processo'); if(!el.value) el.value = proc; }
+
+  const dtAjuiz = (text.match(/(?:Data\s+)?(?:de\s+)?(?:Ajuizamento|Distribui[çc][aã]o)[:\s]+(\d{2}\/\d{2}\/\d{4})/i) || [])[1]
+               || (text.match(/Dt\.?\s+Distrib[^:]{0,15}[:\s]+(\d{2}\/\d{2}\/\d{4})/i) || [])[1];
+  if(dtAjuiz){ const el = document.querySelector('#ia-dt-ajuiz'); if(el && !el.value) el.value = dtAjuiz; }
+
+  const dtLiquid = (text.match(/(?:Data\s+(?:de\s+)?)?Liquida[çc][aã]o[:\s]+(\d{2}\/\d{2}\/\d{4})/i) || [])[1]
+                || (text.match(/(?:Data\s+)?C[áa]lculo[:\s]+(\d{2}\/\d{2}\/\d{4})/i) || [])[1];
+  if(dtLiquid){ const el = document.querySelector('#ia-dt-base'); if(el && !el.value) el.value = dtLiquid; }
+}
+
+// Documentos tipo PJe-Calc trazem uma seção "Dados do Cálculo" com parâmetros de
+// configuração (ex.: "Prazo de Aviso Prévio: Calculado", "Projetar Aviso Prévio
+// Indenizado: Sim", "Considerar Feriados Estaduais: Sim") — são liga/desliga do
+// cálculo, não verbas devidas. Se um padrão de pedido bater ali, pega um número
+// qualquer da tabela de parâmetros ao lado (ex. o salário-base), sem relação com
+// o pedido. Removemos essa seção antes de procurar pedidos.
+function iaRemoverSecaoParametros(text){
+  const inicio = text.search(/Dados do C[áa]lculo/i);
+  if(inicio < 0) return text;
+  const fim = text.slice(inicio).search(/Faltas e F[ée]rias|Demonstrativo de Verbas|Demonstrativo de Juros|Resumo do C[áa]lculo/i);
+  if(fim < 0) return text;
+  return text.slice(0, inicio) + text.slice(inicio + fim);
+}
+
+// Extrai os números que aparecem numa janela a partir de um índice específico do texto
+// (usado tanto pra 1ª ocorrência de um pedido quanto pra ocorrências extras).
+function iaValoresApartirDe(text, startIndex, largura){
+  const end = Math.min(text.length, startIndex + largura);
+  const ctx = text.slice(startIndex, end);
+  return [...ctx.matchAll(/(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(x => iaNum(x[1])).filter(n => n>0);
+}
+// A partir dos números encontrados perto de um pedido, decide se são a trinca
+// [Juros, Total, Valor Corrigido] de uma tabela tipo PJe-Calc (confirma pela soma
+// bater) ou um valor único (petição/inicial) — mesma regra nos dois casos de uso.
+function iaTripletaOuSimples(valsAll){
+  const first3 = valsAll.slice(0, 3);
+  if(first3.length === 3 && Math.abs((first3[0] + first3[2]) - first3[1]) < 0.02){
+    return {juros: first3[0], total: first3[1], principal: first3[2], obs: 'Extraído da tabela do cálculo (Valor Corrigido + Juros já discriminados)'};
+  } else if(valsAll.length){
+    return {juros: 0, total: valsAll[0], principal: valsAll[0], obs: 'Valor extraído no contexto do pedido'};
   }
-});
+  return {juros: 0, total: 0, principal: 0, obs: 'Pedido identificado; sem valor individual no texto'};
+}
+
+// ══════════════════════════════════════════════════════
+// Leitura por POSIÇÃO REAL na página (x,y de cada texto do PDF), não por palavra-chave.
+// O pdf.js às vezes devolve o texto de uma tabela fora da ordem visual das colunas —
+// isso NUNCA acontece com a posição, então essa via é muito mais confiável que caçar
+// "Juros/Total/Valor Corrigido" no texto achatado. Só funciona quando o PDF tem as
+// tabelas padrão do PJe-Calc; documentos sem essa estrutura caem no método por
+// palavra-chave (IA_PADROES) como já fazia antes.
+// ══════════════════════════════════════════════════════
+
+// Agrupa itens de texto (com posição x/y) em linhas visuais, por proximidade de Y.
+function iaAgruparLinhas(itens){
+  const linhas = [];
+  const tolerancia = 3;
+  itens.forEach(it => {
+    let linha = linhas.find(l => Math.abs(l.y - it.y) <= tolerancia);
+    if(!linha){ linha = {y: it.y, itens: []}; linhas.push(linha); }
+    linha.itens.push(it);
+  });
+  linhas.forEach(l => l.itens.sort((a,b) => a.x - b.x));
+  linhas.sort((a,b) => b.y - a.y); // no pdf.js, Y maior = mais acima na página
+  return linhas;
+}
+
+// Reconstrói a tabela "Resumo do Cálculo" (Descrição | Valor Corrigido | Juros | Total)
+// pela posição de cada cabeçalho de coluna — pega o que estiver mais perto de cada
+// coluna, então funciona pra qualquer nome de verba (não depende de lista pré-definida).
+function iaReconstruirTabelaResumo(paginasItens){
+  if(!paginasItens) return null;
+  for(const itensPagina of paginasItens){
+    const linhas = iaAgruparLinhas(itensPagina);
+    const idxHeader = linhas.findIndex(l => {
+      const t = l.itens.map(i => i.str).join(' ').toLowerCase();
+      return t.includes('corrigido') && t.includes('juros') && t.includes('total');
+    });
+    if(idxHeader < 0) continue;
+    const header = linhas[idxHeader];
+    const colVC = header.itens.find(i => /corrigido/i.test(i.str));
+    const colJuros = header.itens.find(i => /juros/i.test(i.str));
+    const colTotal = header.itens.find(i => i.str.trim().toLowerCase() === 'total');
+    if(!colVC || !colJuros || !colTotal) continue;
+    const colunas = [{tipo:'valorCorrigido', x:colVC.x}, {tipo:'juros', x:colJuros.x}, {tipo:'total', x:colTotal.x}];
+    const limiteDescricao = Math.min(...colunas.map(c => c.x)) - 20;
+
+    const verbas = [];
+    for(let i = idxHeader+1; i < linhas.length; i++){
+      const linha = linhas[i];
+      const descItens = linha.itens.filter(it => it.x < limiteDescricao);
+      const numItens = linha.itens.filter(it => it.x >= limiteDescricao && /\d,\d{2}$/.test(it.str.replace(/\s/g,'')));
+      const descricao = descItens.map(it => it.str).join(' ').replace(/\s+/g,' ').trim();
+      if(!descricao) break; // linha sem descrição = acabou a tabela
+      if(descricao.toLowerCase() === 'total') break; // linha de total geral, para antes dela
+
+      const valores = {valorCorrigido:0, juros:0, total:0};
+      numItens.forEach(it => {
+        const maisProxima = colunas.reduce((a,b) => Math.abs(it.x-a.x) < Math.abs(it.x-b.x) ? a : b);
+        valores[maisProxima.tipo] = iaNum(it.str);
+      });
+      if(!valores.valorCorrigido && !valores.juros && !valores.total) continue;
+
+      verbas.push({
+        pedido: descricao, dtOrigem: '', indice: 'auto',
+        principal: valores.valorCorrigido, correcao: 0, juros: valores.juros,
+        total: valores.total || (valores.valorCorrigido + valores.juros),
+        probabilidade: 'Possível', obs: 'Lido diretamente da tabela do cálculo (posição real da página)'
+      });
+    }
+    if(verbas.length) return verbas;
+  }
+  return null;
+}
+
+// Reconstrói a tabela "Descrição de Débitos do Reclamado por Credor" (honorários etc.)
+// — fica ao lado direito da página, com colunas Descrição | Valor. Ao contrário da
+// busca por palavra-chave "honorários" (que se confunde quando o nome do credor repete
+// a palavra, tipo "HONORÁRIOS PERICIAIS"), aqui cada linha da tabela vira uma verba,
+// então pega honorários pra credores diferentes sem duplicar nem inventar.
+function iaReconstruirTabelaDebitos(paginasItens){
+  if(!paginasItens) return null;
+  for(const itensPagina of paginasItens){
+    const linhas = iaAgruparLinhas(itensPagina);
+    const idxHeader = linhas.findIndex(l => {
+      const t = l.itens.map(i => i.str).join(' ').toLowerCase();
+      return t.includes('débitos') && t.includes('credor');
+    });
+    if(idxHeader < 0) continue;
+    const header = linhas[idxHeader];
+    const itensDireita = header.itens.filter(it => it.x > 440);
+    const colValor = itensDireita.find(i => i.str.trim().toLowerCase() === 'valor');
+    if(!colValor) continue;
+    const xValor = colValor.x, xDescMin = 440;
+
+    const verbas = [];
+    for(let i = idxHeader+1; i < linhas.length; i++){
+      const linha = linhas[i];
+      const itensTabela = linha.itens.filter(it => it.x >= xDescMin - 10);
+      if(!itensTabela.length) continue;
+      const numeroItem = itensTabela.find(it => Math.abs(it.x - xValor) < 30 && /\d,\d{2}$/.test(it.str.replace(/\s/g,'')));
+      const descItens = itensTabela.filter(it => it !== numeroItem && it.x < xValor - 20);
+      const descricao = descItens.map(it => it.str).join(' ').replace(/\s+/g,' ').trim();
+      if(!descricao) continue;
+      if(/total devido pelo reclamado/i.test(descricao)) break;
+      if(/^l[íi]quido devido/i.test(descricao)) continue; // só repete o total já capturado no Resumo
+      if(!numeroItem) continue;
+      const valor = iaNum(numeroItem.str);
+      if(!valor) continue; // ignora linhas tipo IRRF = 0,00
+      verbas.push({pedido: descricao, dtOrigem:'', indice:'auto', principal:valor, correcao:0, juros:0, total:valor, probabilidade:'Possível', obs:'Lido diretamente da tabela de débitos (posição real da página)'});
+    }
+    if(verbas.length) return verbas;
+  }
+  return null;
+}
+
+function iaProcessarTexto(){
+  const text = document.querySelector('#ia-texto').value || '';
+  iaPreencherDadosProcesso(text);
+  const valorCausa = iaExtrairValorCausa(text);
+  let verbas = [];
+  let usouPosicao = false;
+
+  const verbasResumo = iaReconstruirTabelaResumo(IA_PAGINAS_ITENS);
+  if(verbasResumo){
+    usouPosicao = true;
+    verbas = verbasResumo.concat(iaReconstruirTabelaDebitos(IA_PAGINAS_ITENS) || []);
+  } else {
+    // Fallback: sem posição disponível (colou texto, XLSX, ou PDF sem essa estrutura) —
+    // caça por palavra-chave, como antes.
+    const textoBusca = iaRemoverSecaoParametros(text);
+    IA_PADROES.forEach(([nome, re]) => {
+      if(re.test(textoBusca)){
+        const valsAll = iaValoresLinha(textoBusca, re);
+        const r = iaTripletaOuSimples(valsAll);
+        verbas.push({pedido: nome, dtOrigem: '', indice: 'auto', principal: r.principal, correcao: 0, juros: r.juros, total: r.total, probabilidade: 'Possível', obs: r.obs});
+      }
+    });
+  }
+
+  if(valorCausa && !verbas.some(v => v.pedido === 'Valor da Causa')){
+    verbas.unshift({pedido: 'Valor da Causa', dtOrigem: '', indice: 'auto', principal: valorCausa, correcao: 0, juros: 0, total: valorCausa, probabilidade: 'Possível', obs: 'Valor da causa capturado da inicial'});
+  }
+  IA_VERBAS = iaMergeVerbas(iaRemoverDuplicatasPorValor(verbas));
+  iaDrawVerbas();
+  const info = document.querySelector('#ia-file-info');
+  const isCalculoTabular = usouPosicao || /PJe[\s\-]?Calc|PJC|Planilha\s+de\s+Liquid|C[ÁA]LCULO\s+TRABALHISTA|Valor\s+Corrigido/i.test(text);
+  const avisoDuplicacao = isCalculoTabular
+    ? ' ⚠️ Este texto parece vir de um cálculo/planilha já pronta (com colunas de Juros/Total/Valor Corrigido) — o "Principal" extraído pode já estar corrigido. NÃO preencha a Data de Origem dessas verbas antes de conferir, senão o recálculo soma a correção em dobro.'
+    : '';
+  const origemMsg = usouPosicao
+    ? `✅ ${IA_VERBAS.length} verba(s) lida(s) diretamente da tabela do PDF (por posição na página — mais confiável que busca por palavra-chave).`
+    : `✅ ${IA_VERBAS.length} verba(s) identificada(s) por reconhecimento de texto. Confira e ajuste os valores antes de usar.`;
+  info.textContent = IA_VERBAS.length ? `${origemMsg}${avisoDuplicacao}` : '⚠️ Nenhum valor identificado automaticamente — preencha manualmente com "+ Verba manual".';
+}
+
+function iaParseXLSXRows(rows){
+  const text = rows.map(r => r.join(' | ')).join('\n');
+  document.querySelector('#ia-texto').value = text;
+  iaPreencherDadosProcesso(text);
+  let header = [];
+  const verbas = [];
+  for(let ri=0; ri<rows.length; ri++){
+    const r = rows[ri].map(x => String(x||'').trim());
+    const joined = r.join(' ').toLowerCase();
+    if(joined.includes('valor') && (joined.includes('juros') || joined.includes('corre'))){ header = r.map(x => x.toLowerCase()); continue; }
+    const descIdx = r.findIndex((x, idx) => x && idx<4 && /[a-zA-ZÁ-ú]/.test(x) && !x.match(/^(r\$|valor|juros|total|moeda|fase)$/i));
+    if(descIdx >= 0){
+      const nums = r.map(x => iaNum(x));
+      if(nums.some(n => n>0)){
+        const pedido = r[descIdx];
+        const pick = (keys, fallback) => { for(let i=0;i<header.length;i++){ if(keys.some(k => header[i].includes(k)) && nums[i]) return nums[i]; } return nums[fallback]||0; };
+        const principal = pick(['original','corrigido','valor'], 2);
+        const correcao  = pick(['correção','correcao','monet'], 3);
+        const juros     = pick(['juros'], 4);
+        const total     = pick(['total','atualizado'], 5) || (principal+correcao+juros);
+        verbas.push({pedido, dtOrigem: '', indice: 'auto', principal, correcao, juros, total, probabilidade: 'Possível', obs: 'Extraído da planilha'});
+      }
+    }
+  }
+  if(verbas.length){
+    IA_VERBAS = iaMergeVerbas(verbas);
+    iaDrawVerbas();
+    document.querySelector('#ia-file-info').textContent = `✅ ${IA_VERBAS.length} verba(s) extraída(s) da planilha.`;
+  } else iaProcessarTexto();
+}
+
+async function iaHandleFile(file){
+  if(!file) return;
+  const info = document.querySelector('#ia-file-info');
+  info.textContent = 'Lendo: ' + file.name;
+  IA_PAGINAS_ITENS = null; // só vale pro PDF que está sendo lido agora
+  if(/\.xlsx?$/i.test(file.name)){
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    let linhas = [];
+    wb.SheetNames.forEach(n => { linhas = linhas.concat(XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, defval:''})); });
+    iaParseXLSXRows(linhas);
+  } else if(/\.pdf$/i.test(file.name) && window.pdfjsLib){
+    if(window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+    let text = '';
+    const paginasItens = [];
+    for(let p=1; p<=pdf.numPages; p++){
+      const page = await pdf.getPage(p);
+      const tc = await page.getTextContent();
+      text += tc.items.map(i => i.str).join(' ') + '\n';
+      // Guarda a posição (x,y) real de cada texto na página — permite reconstruir a
+      // tabela por coluna de verdade, em vez de adivinhar pela ordem em que o pdf.js
+      // devolve o texto (que não segue necessariamente a ordem visual das colunas).
+      paginasItens.push(tc.items.filter(i => i.str && i.str.trim()).map(i => ({str: i.str, x: i.transform[4], y: i.transform[5]})));
+    }
+    IA_PAGINAS_ITENS = paginasItens;
+    document.querySelector('#ia-texto').value = text;
+    info.textContent = '✓ PDF lido: ' + file.name;
+    iaProcessarTexto();
+  } else {
+    const text = await file.text().catch(() => '');
+    document.querySelector('#ia-texto').value = text;
+    info.textContent = '✓ Texto lido: ' + file.name;
+    iaProcessarTexto();
+  }
+}
+function iaDropFile(ev){ ev.preventDefault(); ev.currentTarget.style.background = 'var(--surface2)'; iaHandleFile(ev.dataTransfer.files[0]); }
+function iaUploadFile(ev){ iaHandleFile(ev.target.files[0]); }
+
+function iaExtrairVerbas(){
+  const text = document.querySelector('#ia-texto').value.trim();
+  if(!text){ alert('Cole ou faça upload do documento primeiro.'); return; }
+  iaProcessarTexto();
+}
+function iaAddVerba(){
+  IA_VERBAS.push({pedido:'', dtOrigem:'', indice:'auto', principal:0, correcao:0, juros:0, total:0, probabilidade:'Possível', obs:''});
+  iaDrawVerbas();
+}
+function iaRemoverVerba(i){ IA_VERBAS.splice(i,1); iaDrawVerbas(); }
+function iaAtualizarVerba(i, campo, valor){
+  if(!IA_VERBAS[i]) return;
+  if(['principal','correcao','juros','total'].includes(campo)) IA_VERBAS[i][campo] = iaNum(valor);
+  else IA_VERBAS[i][campo] = valor;
+  if(campo === 'principal' || campo === 'correcao' || campo === 'juros'){
+    IA_VERBAS[i].total = IA_VERBAS[i].principal + IA_VERBAS[i].correcao + IA_VERBAS[i].juros;
+  }
+  iaDrawVerbas();
+}
+function iaLimpar(){
+  IA_VERBAS = [];
+  IA_PAGINAS_ITENS = null;
+  ['ia-processo','ia-reclamante','ia-texto','ia-dt-ajuiz','ia-dt-base','ia-dt-origem-todas'].forEach(id => { const el = document.querySelector('#'+id); if(el) el.value = ''; });
+  document.querySelector('#ia-file-info').textContent = '';
+  document.querySelector('#ia-file').value = '';
+  iaDrawVerbas();
+}
+function iaDrawVerbas(){
+  const wrap = document.querySelector('#ia-verbas-wrap');
+  if(!IA_VERBAS.length){
+    wrap.innerHTML = '<div class="hint" style="padding:12px 0;">Nenhuma verba ainda — suba um documento ou adicione manualmente.</div>';
+    document.querySelector('#ia-total').textContent = 'R$ 0,00';
+    return;
+  }
+  const optsIndice = '<option value="auto">Auto (Tema 1191)</option><option value="ipca">IPCA-E</option><option value="tr_ipca">TR+IPCA-E</option><option value="selic">SELIC</option><option value="nenhum">Sem correção</option>';
+  const head = `<div class="ia-verba-head"><div>Pedido</div><div>Data Origem</div><div>Índice</div><div>Principal</div><div>Correção</div><div>Juros</div><div>Total</div><div>Probabilidade</div><div>Observação</div><div></div></div>`;
+  const rows = IA_VERBAS.map((v,i) => `
+    <div class="ia-verba-row">
+      <input type="text" value="${esc(v.pedido)}" onchange="iaAtualizarVerba(${i},'pedido',this.value)">
+      <input type="text" value="${esc(v.dtOrigem||'')}" placeholder="dd/mm/aaaa" onchange="iaAtualizarVerba(${i},'dtOrigem',this.value)">
+      <select onchange="iaAtualizarVerba(${i},'indice',this.value)">${optsIndice.replace('value="'+(v.indice||'auto')+'"','value="'+(v.indice||'auto')+'" selected')}</select>
+      <input type="text" value="${iaMoney(v.principal)}" onchange="iaAtualizarVerba(${i},'principal',this.value)">
+      <input type="text" value="${iaMoney(v.correcao)}" onchange="iaAtualizarVerba(${i},'correcao',this.value)">
+      <input type="text" value="${iaMoney(v.juros)}" onchange="iaAtualizarVerba(${i},'juros',this.value)">
+      <input type="text" value="${iaMoney(v.total)}" onchange="iaAtualizarVerba(${i},'total',this.value)">
+      <select onchange="iaAtualizarVerba(${i},'probabilidade',this.value)">
+        <option ${v.probabilidade==='Possível'?'selected':''}>Possível</option>
+        <option ${v.probabilidade==='Provável'?'selected':''}>Provável</option>
+        <option ${v.probabilidade==='Remoto'?'selected':''}>Remoto</option>
+      </select>
+      <input type="text" value="${esc(v.obs)}" onchange="iaAtualizarVerba(${i},'obs',this.value)">
+      <button type="button" class="ia-verba-del" onclick="iaRemoverVerba(${i})" title="Remover">✕</button>
+    </div>`).join('');
+  wrap.innerHTML = head + rows;
+  const total = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
+  document.querySelector('#ia-total').textContent = iaMoney(total);
+}
+
+function iaLevarParaValores(){
+  const total = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
+  if(!total){ alert('Ainda não há total calculado — extraia ou preencha as verbas primeiro.'); return; }
+  mudarAba('valores');
+  const processo = document.getElementById('ia-processo').value.trim();
+  if(processo && !document.getElementById('v-processo').value.trim()){
+    document.getElementById('v-processo').value = processo;
+  }
+  const reclamante = document.getElementById('ia-reclamante').value.trim();
+  if(reclamante && !document.getElementById('v-reclamante').value.trim()){
+    document.getElementById('v-reclamante').value = reclamante;
+  }
+  document.getElementById('v-novo-historico').value = total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  recalcularDiferencasValores();
+  document.getElementById('v-novo-historico').scrollIntoView({behavior:'smooth', block:'center'});
+  toast('Total levado para "Novo Valor do Histórico" — confira e complete os demais campos.');
+}
+
+// ══════════════════════════════════════════════════════
+// Correção monetária — Tema 1191 STF (ADC 58)
+// Correção: IPCA-E acumulado | Juros: 1% a.m. até 10/11/2021, SELIC depois
+// Portado da Calculadora do Controle de Requantificação — Bridgestone.
+// ══════════════════════════════════════════════════════
+
+// IPCA-E mensal (%) — fonte IBGE, jan/2000 a mai/2026 (atualizar conforme necessário)
+const IA_IPCA_E = {
+  "2000-01":0.62,"2000-02":0.13,"2000-03":0.08,"2000-04":0.24,"2000-05":0.19,"2000-06":0.18,
+  "2000-07":1.51,"2000-08":1.04,"2000-09":0.65,"2000-10":0.37,"2000-11":0.37,"2000-12":0.6,
+  "2001-01":0.64,"2001-02":0.49,"2001-03":0.58,"2001-04":0.8,"2001-05":0.61,"2001-06":0.53,
+  "2001-07":1.68,"2001-08":1.02,"2001-09":0.69,"2001-10":0.87,"2001-11":0.83,"2001-12":0.67,
+  "2002-01":0.58,"2002-02":0.21,"2002-03":0.47,"2002-04":0.76,"2002-05":0.41,"2002-06":0.45,
+  "2002-07":1.46,"2002-08":0.9,"2002-09":0.72,"2002-10":1.31,"2002-11":2.86,"2002-12":2.56,
+  "2003-01":2.13,"2003-02":1.58,"2003-03":1.35,"2003-04":0.97,"2003-05":0.6,"2003-06":0.03,
+  "2003-07":0.2,"2003-08":0.34,"2003-09":0.78,"2003-10":0.29,"2003-11":0.51,"2003-12":0.62,
+  "2004-01":0.76,"2004-02":0.69,"2004-03":0.74,"2004-04":0.61,"2004-05":0.48,"2004-06":0.63,
+  "2004-07":0.91,"2004-08":0.63,"2004-09":0.44,"2004-10":0.44,"2004-11":0.69,"2004-12":0.86,
+  "2005-01":0.62,"2005-02":0.59,"2005-03":0.61,"2005-04":0.87,"2005-05":0.49,"2005-06":0.02,
+  "2005-07":0.34,"2005-08":0.15,"2005-09":0.35,"2005-10":0.65,"2005-11":0.55,"2005-12":0.35,
+  "2006-01":0.36,"2006-02":0.1,"2006-04":0.09,"2006-05":0.13,"2006-06":0.27,"2006-07":0.19,
+  "2006-08":0.11,"2006-09":0.21,"2006-10":0.33,"2006-11":0.45,"2006-12":0.48,"2007-01":0.43,
+  "2007-02":0.44,"2007-03":0.37,"2007-04":0.25,"2007-05":0.28,"2007-06":0.37,"2007-07":0.28,
+  "2007-08":0.47,"2007-09":0.47,"2007-10":0.43,"2007-11":0.56,"2007-12":0.74,"2008-01":0.54,
+  "2008-02":0.49,"2008-03":0.6,"2008-04":0.55,"2008-05":0.73,"2008-06":0.99,"2008-07":1.12,
+  "2008-08":0.43,"2008-09":0.45,"2008-10":0.57,"2008-11":0.36,"2008-12":0.24,"2009-01":0.37,
+  "2009-02":0.17,"2009-03":0.05,"2009-04":0.35,"2009-05":0.53,"2009-06":0.34,"2009-07":0.19,
+  "2009-08":0.15,"2009-09":0.22,"2009-10":0.28,"2009-11":0.41,"2009-12":0.37,"2010-01":0.63,
+  "2010-02":0.83,"2010-03":0.54,"2010-04":0.69,"2010-05":0.43,"2010-06":0.29,"2010-07":0.02,
+  "2010-08":0.35,"2010-09":0.62,"2010-10":0.75,"2010-11":0.83,"2010-12":0.83,"2011-01":0.83,
+  "2011-02":0.8,"2011-03":0.64,"2011-04":0.77,"2011-05":0.55,"2011-06":0.15,"2011-07":0.08,
+  "2011-08":0.37,"2011-09":0.53,"2011-10":0.43,"2011-11":0.5,"2011-12":0.43,"2012-01":0.97,
+  "2012-02":0.45,"2012-03":0.43,"2012-04":0.56,"2012-05":0.35,"2012-06":0.13,"2012-07":0.43,
+  "2012-08":0.41,"2012-09":0.54,"2012-10":0.59,"2012-11":0.44,"2012-12":0.68,"2013-01":0.86,
+  "2013-02":0.6,"2013-03":0.47,"2013-04":0.51,"2013-05":0.31,"2013-06":0.47,"2013-07":0.26,
+  "2013-08":0.24,"2013-09":0.35,"2013-10":0.54,"2013-11":0.54,"2013-12":0.72,"2014-01":0.78,
+  "2014-02":0.69,"2014-03":0.72,"2014-04":0.67,"2014-05":0.46,"2014-06":0.4,"2014-07":0.23,
+  "2014-08":0.25,"2014-09":0.44,"2014-10":0.42,"2014-11":0.39,"2014-12":0.78,"2015-01":1.06,
+  "2015-02":1.22,"2015-03":1.32,"2015-04":0.92,"2015-05":0.6,"2015-06":0.6,"2015-07":0.59,
+  "2015-08":0.45,"2015-09":0.54,"2015-10":0.83,"2015-11":1.01,"2015-12":0.96,"2016-01":1.27,
+  "2016-02":1.42,"2016-03":0.97,"2016-04":0.61,"2016-05":0.78,"2016-06":0.35,"2016-07":0.52,
+  "2016-08":0.44,"2016-09":0.08,"2016-10":0.26,"2016-11":0.18,"2016-12":0.54,"2017-01":0.37,
+  "2017-02":0.42,"2017-03":0.3,"2017-04":0.14,"2017-08":0.19,"2017-09":0.15,"2017-10":0.42,
+  "2017-11":0.46,"2017-12":0.44,"2018-01":0.3,"2018-02":0.14,"2018-03":0.07,"2018-04":0.19,
+  "2018-05":0.61,"2018-06":1.32,"2018-07":0.19,"2018-09":0.48,"2018-10":0.45,"2018-12":0.29,
+  "2019-01":0.3,"2019-02":0.43,"2019-03":0.75,"2019-04":0.57,"2019-05":0.35,"2019-06":0.01,
+  "2019-07":0.19,"2019-08":0.11,"2019-10":0.24,"2019-11":0.51,"2019-12":1.06,"2020-01":0.54,
+  "2020-02":0.29,"2020-03":0.34,"2020-06":0.38,"2020-07":0.27,"2020-08":0.3,"2020-09":0.94,
+  "2020-10":0.83,"2020-11":0.86,"2020-12":1.35,"2021-01":0.76,"2021-02":0.97,"2021-03":0.93,
+  "2021-04":0.44,"2021-05":0.44,"2021-06":0.53,"2021-07":0.72,"2021-08":0.87,"2021-09":1.12,
+  "2021-10":1.2,"2021-11":0.95,"2021-12":0.69,"2022-01":0.54,"2022-02":0.99,"2022-03":1.62,
+  "2022-04":1.06,"2022-05":0.59,"2022-06":1.19,"2022-09":0.63,"2022-10":0.59,"2022-11":0.54,
+  "2022-12":0.54,"2023-01":0.53,"2023-02":0.84,"2023-03":0.71,"2023-04":0.57,"2023-05":0.23,
+  "2023-07":0.28,"2023-08":0.35,"2023-09":0.26,"2023-10":0.24,"2023-11":0.33,"2023-12":0.56,
+  "2024-01":0.42,"2024-02":0.83,"2024-03":0.36,"2024-04":0.38,"2024-05":0.44,"2024-06":0.26,
+  "2024-07":0.3,"2024-08":0.44,"2024-09":0.44,"2024-10":0.56,"2024-11":0.39,"2024-12":0.52,
+  "2025-01":0.16,"2025-02":1.23,"2025-03":0.64,"2025-04":0.43,"2025-05":0.51,"2025-06":0.69,
+  "2025-07":0.61,"2025-08":0.47,"2025-09":0.44,"2025-10":0.54,"2025-11":0.42,"2025-12":0.6,
+  "2026-01":0.76,"2026-02":1.31,"2026-03":0.64,"2026-04":0.43,"2026-05":0.51
+};
+
+// SELIC mensal (%) — efetiva mensal aproximada, jan/2000 a mai/2026
+const IA_SELIC_MENSAL = {
+  "2000-01":1.45,"2000-02":1.35,"2000-03":1.35,"2000-04":1.32,"2000-05":1.5,"2000-06":1.51,
+  "2000-07":1.53,"2000-08":1.52,"2000-09":1.21,"2000-10":1.1,"2000-11":1.1,"2000-12":1.07,
+  "2001-01":1.07,"2001-02":0.96,"2001-03":1.05,"2001-04":1.05,"2001-05":1.05,"2001-06":1.24,
+  "2001-07":1.5,"2001-08":1.5,"2001-09":1.5,"2001-10":1.5,"2001-11":1.5,"2001-12":1.39,
+  "2002-01":1.39,"2002-02":1.27,"2002-03":1.27,"2002-04":1.3,"2002-05":1.3,"2002-06":1.3,
+  "2002-07":1.37,"2002-08":1.37,"2002-09":1.37,"2002-10":1.67,"2002-11":1.82,"2002-12":1.97,
+  "2003-01":1.97,"2003-02":1.84,"2003-03":1.78,"2003-04":1.78,"2003-05":1.97,"2003-06":1.97,
+  "2003-07":1.72,"2003-08":1.57,"2003-09":1.57,"2003-10":1.57,"2003-11":1.34,"2003-12":1.28,
+  "2004-01":1.27,"2004-02":1.0,"2004-03":1.38,"2004-04":1.18,"2004-05":1.23,"2004-06":1.23,
+  "2004-07":1.29,"2004-08":1.29,"2004-09":1.29,"2004-10":1.29,"2004-11":1.29,"2004-12":1.29,
+  "2005-01":1.29,"2005-02":1.22,"2005-03":1.53,"2005-04":1.41,"2005-05":1.5,"2005-06":1.5,
+  "2005-07":1.5,"2005-08":1.66,"2005-09":1.5,"2005-10":1.41,"2005-11":1.38,"2005-12":1.38,
+  "2006-01":1.43,"2006-02":1.15,"2006-03":1.42,"2006-04":1.08,"2006-05":1.28,"2006-06":1.18,
+  "2006-07":1.18,"2006-08":1.26,"2006-09":1.06,"2006-10":1.09,"2006-11":1.02,"2006-12":0.93,
+  "2007-01":0.93,"2007-02":0.88,"2007-03":1.05,"2007-04":0.94,"2007-05":1.03,"2007-06":0.91,
+  "2007-07":0.97,"2007-08":0.97,"2007-09":0.84,"2007-10":0.93,"2007-11":0.84,"2007-12":0.84,
+  "2008-01":0.93,"2008-02":0.8,"2008-03":0.84,"2008-04":0.9,"2008-05":1.02,"2008-06":0.96,
+  "2008-07":1.07,"2008-08":1.02,"2008-09":1.1,"2008-10":1.18,"2008-11":1.02,"2008-12":1.12,
+  "2009-01":1.05,"2009-02":0.86,"2009-03":0.97,"2009-04":0.84,"2009-05":0.77,"2009-06":0.76,
+  "2009-07":0.79,"2009-08":0.69,"2009-09":0.69,"2009-10":0.69,"2009-11":0.66,"2009-12":0.73,
+  "2010-01":0.66,"2010-02":0.59,"2010-03":0.76,"2010-04":0.67,"2010-05":0.75,"2010-06":0.79,
+  "2010-07":0.86,"2010-08":0.89,"2010-09":0.85,"2010-10":0.81,"2010-11":0.81,"2010-12":0.93,
+  "2011-01":0.86,"2011-02":0.84,"2011-03":0.92,"2011-04":0.84,"2011-05":0.99,"2011-06":0.96,
+  "2011-07":0.97,"2011-08":1.07,"2011-09":0.94,"2011-10":0.88,"2011-11":0.88,"2011-12":0.91,
+  "2012-01":0.89,"2012-02":0.75,"2012-03":0.82,"2012-04":0.71,"2012-05":0.74,"2012-06":0.64,
+  "2012-07":0.68,"2012-08":0.69,"2012-09":0.54,"2012-10":0.61,"2012-11":0.55,"2012-12":0.55,
+  "2013-01":0.6,"2013-02":0.49,"2013-03":0.55,"2013-04":0.61,"2013-05":0.6,"2013-06":0.6,
+  "2013-07":0.72,"2013-08":0.71,"2013-09":0.71,"2013-10":0.81,"2013-11":0.72,"2013-12":0.79,
+  "2014-01":0.85,"2014-02":0.78,"2014-03":0.77,"2014-04":0.82,"2014-05":0.87,"2014-06":0.82,
+  "2014-07":0.95,"2014-08":0.87,"2014-09":0.91,"2014-10":0.95,"2014-11":0.84,"2014-12":0.96,
+  "2015-01":0.93,"2015-02":0.82,"2015-03":1.04,"2015-04":0.95,"2015-05":1.02,"2015-06":1.07,
+  "2015-07":1.18,"2015-08":1.11,"2015-09":1.11,"2015-10":1.11,"2015-11":1.06,"2015-12":1.16,
+  "2016-01":1.06,"2016-02":1.0,"2016-03":1.16,"2016-04":1.06,"2016-05":1.11,"2016-06":1.11,
+  "2016-07":1.11,"2016-08":1.22,"2016-09":1.11,"2016-10":1.05,"2016-11":1.04,"2016-12":1.12,
+  "2017-01":1.09,"2017-02":0.87,"2017-03":1.05,"2017-04":0.79,"2017-05":0.93,"2017-06":0.81,
+  "2017-07":0.8,"2017-08":0.8,"2017-09":0.64,"2017-10":0.64,"2017-11":0.57,"2017-12":0.54,
+  "2018-01":0.58,"2018-02":0.47,"2018-03":0.53,"2018-04":0.52,"2018-05":0.52,"2018-06":0.52,
+  "2018-07":0.54,"2018-08":0.57,"2018-09":0.47,"2018-10":0.54,"2018-11":0.49,"2018-12":0.49,
+  "2019-01":0.54,"2019-02":0.49,"2019-03":0.47,"2019-04":0.52,"2019-05":0.54,"2019-06":0.47,
+  "2019-07":0.57,"2019-08":0.5,"2019-09":0.45,"2019-10":0.45,"2019-11":0.38,"2019-12":0.37,
+  "2020-01":0.38,"2020-02":0.29,"2020-03":0.34,"2020-04":0.28,"2020-05":0.24,"2020-06":0.21,
+  "2020-07":0.19,"2020-08":0.16,"2020-09":0.16,"2020-10":0.16,"2020-11":0.15,"2020-12":0.16,
+  "2021-01":0.15,"2021-02":0.13,"2021-03":0.2,"2021-04":0.21,"2021-05":0.27,"2021-06":0.31,
+  "2021-07":0.36,"2021-08":0.43,"2021-09":0.44,"2021-10":0.49,"2021-11":0.59,"2021-12":0.77,
+  "2022-01":0.73,"2022-02":0.76,"2022-03":0.93,"2022-04":0.83,"2022-05":1.03,"2022-06":1.13,
+  "2022-07":1.03,"2022-08":1.01,"2022-09":1.07,"2022-10":1.05,"2022-11":1.07,"2022-12":1.07,
+  "2023-01":1.12,"2023-02":0.84,"2023-03":1.23,"2023-04":0.83,"2023-05":1.23,"2023-06":0.97,
+  "2023-07":1.07,"2023-08":0.91,"2023-09":0.99,"2023-10":0.92,"2023-11":0.92,"2023-12":0.92,
+  "2024-01":0.97,"2024-02":0.8,"2024-03":0.99,"2024-04":0.83,"2024-05":0.83,"2024-06":0.83,
+  "2024-07":0.9,"2024-08":0.89,"2024-09":1.07,"2024-10":0.96,"2024-11":1.0,"2024-12":1.08,
+  "2025-01":1.12,"2025-02":1.17,"2025-03":1.31,"2025-04":1.1,"2025-05":1.17,"2025-06":1.07,
+  "2025-07":1.07,"2025-08":1.07,"2025-09":1.07,"2025-10":1.07,"2025-11":1.07,"2025-12":1.07,
+  "2026-01":1.37,"2026-02":1.37,"2026-03":1.37,"2026-04":1.37,"2026-05":1.37
+};
+
+const IA_TEMA1191_DATE = new Date(2021, 10, 10); // marco: 10/11/2021
+
+function iaParseData(s){
+  if(!s) return null;
+  const m = String(s).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if(!m) return null;
+  return new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+}
+function iaDataHoje(){
+  const d = new Date();
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+function iaChaveYYYYMM(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
+function iaDiffMeses(d1, d2){ return (d2.getFullYear()-d1.getFullYear())*12 + (d2.getMonth()-d1.getMonth()); }
+
+// Acumula fator de correção IPCA-E entre dois meses (inclusive dtInicio, exclusive dtFim)
+function iaFatorIPCAE(dtInicio, dtFim){
+  let fator = 1.0;
+  let cur = new Date(dtInicio.getFullYear(), dtInicio.getMonth(), 1);
+  const fim = new Date(dtFim.getFullYear(), dtFim.getMonth(), 1);
+  while(cur < fim){
+    const taxa = (IA_IPCA_E[iaChaveYYYYMM(cur)] || 0) / 100;
+    fator *= (1+taxa);
+    cur.setMonth(cur.getMonth()+1);
+  }
+  return fator;
+}
+// Acumula fator SELIC composto entre duas datas
+function iaFatorSELIC(dtInicio, dtFim){
+  let fator = 1.0;
+  let cur = new Date(dtInicio.getFullYear(), dtInicio.getMonth(), 1);
+  const fim = new Date(dtFim.getFullYear(), dtFim.getMonth(), 1);
+  while(cur < fim){
+    const taxa = (IA_SELIC_MENSAL[iaChaveYYYYMM(cur)] || 0.083) / 100;
+    fator *= (1+taxa);
+    cur.setMonth(cur.getMonth()+1);
+  }
+  return fator;
+}
+
+// Calcula {correcao, juros, total} de UMA verba, dado o principal original,
+// a data de origem (vencimento da verba), a data de ajuizamento, a data-base
+// da atualização, o índice de correção e o tipo de juros escolhidos.
+function iaCalcularVerba(v, dtAjuiz, dtBase, indicePadrao, jurosPadrao){
+  const dtOrigem = iaParseData(v.dtOrigem);
+  if(!dtOrigem || !dtBase || dtBase <= dtOrigem) return {correcao:0, juros:0, total:v.principal};
+
+  const indice = (v.indice && v.indice !== 'auto') ? v.indice : indicePadrao;
+
+  // 1. Correção monetária — sobre o principal original, de dtOrigem até dtBase
+  let correcao = 0;
+  let indEf = indice;
+  if(indEf === 'auto' || indEf === 'tr_ipca') indEf = 'ipca'; // Tema 1191: IPCA-E (TR ≈ 0 após ADC 58)
+  if(indEf === 'ipca') correcao = v.principal * (iaFatorIPCAE(dtOrigem, dtBase) - 1);
+  else if(indEf === 'selic') correcao = v.principal * (iaFatorSELIC(dtOrigem, dtBase) - 1);
+  // 'nenhum' -> correcao fica 0
+
+  // 2. Juros de mora — sobre o principal original, de max(ajuizamento, origem) até dtBase
+  //    Regra Tema 1191: 1% a.m. simples até 10/11/2021, SELIC acumulada depois.
+  let juros = 0;
+  const dtInicioJuros = (dtAjuiz && dtAjuiz > dtOrigem) ? dtAjuiz : dtOrigem;
+  if(jurosPadrao !== 'nenhum' && dtInicioJuros < dtBase){
+    if(jurosPadrao === '1pct'){
+      juros = v.principal * 0.01 * iaDiffMeses(dtInicioJuros, dtBase);
+    } else if(jurosPadrao === 'selic_total'){
+      juros = v.principal * (iaFatorSELIC(dtInicioJuros, dtBase) - 1);
+    } else {
+      // auto = Tema 1191
+      if(dtInicioJuros < IA_TEMA1191_DATE){
+        const fimP1 = dtBase < IA_TEMA1191_DATE ? dtBase : IA_TEMA1191_DATE;
+        if(fimP1 > dtInicioJuros) juros += v.principal * 0.01 * iaDiffMeses(dtInicioJuros, fimP1);
+      }
+      if(dtBase > IA_TEMA1191_DATE){
+        const inicioSelic = dtInicioJuros > IA_TEMA1191_DATE ? dtInicioJuros : IA_TEMA1191_DATE;
+        if(dtBase > inicioSelic) juros += v.principal * (iaFatorSELIC(inicioSelic, dtBase) - 1);
+      }
+    }
+  }
+
+  correcao = Math.max(0, correcao);
+  juros = Math.max(0, juros);
+  return {correcao, juros, total: v.principal + correcao + juros};
+}
+
+function iaSetDtBaseHoje(){
+  document.querySelector('#ia-dt-base').value = iaDataHoje();
+}
+function iaPreencherTodasDtOrigem(){
+  const val = document.querySelector('#ia-dt-origem-todas').value.trim();
+  if(!iaParseData(val)){ alert('Informe uma data válida (dd/mm/aaaa).'); return; }
+  IA_VERBAS.forEach(v => { if(!v.dtOrigem) v.dtOrigem = val; });
+  iaDrawVerbas();
+}
+function iaPreencherDtOrigemAjuiz(){
+  const val = document.querySelector('#ia-dt-ajuiz').value.trim();
+  if(!iaParseData(val)){ alert('Informe a Data de Ajuizamento primeiro.'); return; }
+  IA_VERBAS.forEach(v => { if(!v.dtOrigem) v.dtOrigem = val; });
+  iaDrawVerbas();
+}
+function iaRecalcularTudo(){
+  const dtAjuiz = iaParseData(document.querySelector('#ia-dt-ajuiz').value);
+  const elDtBase = document.querySelector('#ia-dt-base');
+  if(!elDtBase.value){ elDtBase.value = iaDataHoje(); } // padrão: "até hoje", que é o caso mais comum
+  const dtBase = iaParseData(elDtBase.value);
+  if(!dtBase){ alert('A Data-base da Atualização informada é inválida. Use o formato dd/mm/aaaa.'); return; }
+  const indicePadrao = document.querySelector('#ia-indice-padrao').value;
+  const jurosPadrao = document.querySelector('#ia-juros-padrao').value;
+  let semData = 0;
+  IA_VERBAS.forEach(v => {
+    if(!v.dtOrigem){ semData++; return; }
+    const r = iaCalcularVerba(v, dtAjuiz, dtBase, indicePadrao, jurosPadrao);
+    v.correcao = r.correcao; v.juros = r.juros; v.total = r.total;
+  });
+  iaDrawVerbas();
+  const info = document.querySelector('#ia-file-info');
+  info.textContent = semData
+    ? `✅ Recalculado. ⚠️ ${semData} verba(s) sem Data de Origem — não foram atualizadas (use "Aplicar"/"= Ajuizamento" pra preencher todas).`
+    : '✅ Correção e juros recalculados para todas as verbas.';
+}
+
+iaDrawVerbas();
 
 /* ===================== INIT ===================== */
 if(!sb){

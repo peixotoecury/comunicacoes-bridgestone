@@ -135,7 +135,7 @@ table.field-table tr:last-child td{border-bottom:none;}
     <a href="#decisao"><span class="toc-emoji">📑</span>Reporte de Decisão</a>
     <a href="#acordos"><span class="toc-emoji">💰</span>Reporte de Acordos</a>
     <a href="#valores"><span class="toc-emoji">💲</span>Inserção de Valores</a>
-    <a href="#ia"><span class="toc-emoji">🤖</span>IA — Valor Histórico</a>
+    <a href="#ia"><span class="toc-emoji">🤖</span>Lançamento IA</a>
     <a href="#excluir"><span class="toc-emoji">🗑️</span>Excluir registros</a>
   </nav>
 
@@ -412,20 +412,29 @@ table.field-table tr:last-child td{border-bottom:none;}
       </div>
     </section>
 
-    <!-- ============ IA — VALOR HISTÓRICO ============ -->
+    <!-- ============ LANÇAMENTO IA ============ -->
     <section class="tab-section" id="ia">
       <div class="tab-head">
         <span class="emoji">🤖</span>
         <div>
-          <h2>IA — Valor Histórico</h2>
-          <div class="who">Lê um PDF de cálculo/laudo e tenta extrair o valor histórico sozinha</div>
+          <h2>Lançamento IA — Extração de Valores</h2>
+          <div class="who">Sobe a inicial, o cálculo ou a planilha e monta o quadro de verbas pra conferência</div>
         </div>
       </div>
       <div class="tab-body">
-        <div class="info-callout">ℹ️ Cole o link do PDF (o mesmo tipo de link usado em "Link do Cálculo" na aba Inserção de Valores) e, opcionalmente, o número do processo. A IA lê o documento e devolve: Valor Histórico, Data-base, um trecho do documento que comprova o valor, e qualquer observação/ressalva.</div>
-        <div class="warn-callout">⚠️ É uma leitura automática — <b>sempre confira o valor extraído</b> antes de usar em qualquer cálculo ou decisão. A IA pode errar, especialmente em documentos escaneados ou com formatação confusa.</div>
+        <div class="info-callout">ℹ️ Suba o arquivo (PDF, XLSX ou TXT) na área de upload, ou cole o texto direto na caixa abaixo, e clique em "Preencher valores automaticamente". O sistema identifica os pedidos/verbas do documento e monta uma grade editável (Pedido, Data Origem, Índice, Principal, Correção, Juros, Total, Probabilidade, Observação) — dá pra ajustar qualquer valor à mão antes de usar. <b>Nada aqui é salvo automaticamente</b> no banco de dados.</div>
+        <div class="warn-callout">⚠️ É uma leitura automática — <b>sempre confira as verbas e valores extraídos</b> antes de levar pra Inserção de Valores. Ela pode deixar algo de fora ou ler errado, especialmente em documentos escaneados ou com formatação confusa.</div>
         <h3>Como funciona por trás</h3>
-        <p>Diferente das outras abas, esta usa uma <b>Supabase Edge Function</b> como intermediária: o navegador nunca fala direto com a IA. A função recebe o link do PDF, envia pra Anthropic (Claude) processar o documento, e devolve o resultado — a chave de API fica guardada em segredo no servidor, nunca no código do site.</p>
+        <p>Não chama nenhuma IA/LLM externa — é extração feita inteiramente no navegador (client-side), por dois caminhos:</p>
+        <ul>
+          <li><b>Leitura por posição real do PDF</b> (via pdf.js): quando o documento tem as tabelas padrão de um cálculo (ex. PJe-Calc), o sistema reconstrói a tabela pela posição (x,y) de cada texto na página — mais confiável que procurar palavras-chave, porque não depende do pdf.js devolver o texto na ordem visual certa.</li>
+          <li><b>Busca por palavra-chave</b> (fallback): quando não há essa estrutura de tabela (texto colado, XLSX, ou PDF fora do padrão), o sistema procura por uma lista de pedidos comuns (13º salário, aviso prévio, dano moral, FGTS, horas extras, etc.) e pega os valores numéricos mais próximos de cada um.</li>
+        </ul>
+        <p>Depois de extrair, o sistema junta verbas duplicadas (mesmo nome ou mesmo conjunto de valores) e avisa quando o documento parece ser um cálculo já pronto — nesses casos, não preencha a Data de Origem sem antes conferir o Principal, pra não aplicar correção em dobro.</p>
+        <h3>Correção monetária (Tema 1191 STF)</h3>
+        <p>Informando a Data de Ajuizamento, a Data-base e a Data de Origem de cada verba, o botão "🧮 Recalcular com índice/juros" aplica IPCA-E desde a origem e juros de 1% a.m. até 10/11/2021 (SELIC acumulada depois) — ou os índices manuais escolhidos nos seletores.</p>
+        <h3>Levar para Inserção de Valores</h3>
+        <p>O botão "→ Levar total para Inserção de Valores" soma o total de todas as verbas, muda pra aba Inserção de Valores, preenche Processo e Reclamante (se estiverem vazios) e coloca o total em "Novo Valor do Histórico" — só falta conferir e completar os demais campos.</p>
         <a class="back-top" href="#intro">↑ Voltar ao topo</a>
       </div>
     </section>
