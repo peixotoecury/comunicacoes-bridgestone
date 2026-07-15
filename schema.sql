@@ -41,6 +41,7 @@ create table if not exists reportes_decisao (
   id bigint generated always as identity primary key,
   numero_processo text not null,
   nome_reclamante text,
+  advogado_parte_contraria text,
 
   -- Periculosidade
   perito_peri text,

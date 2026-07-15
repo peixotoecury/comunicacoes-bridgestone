@@ -318,6 +318,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="d-reclamante"></div>
           <div class="mc-form-group"><label>Responsável (sigla)</label><input type="text" id="d-responsavel"></div>
         </div>
+        <div class="mc-form-group"><label>Advogado da Parte Contrária</label><input type="text" id="d-advogado-contraria" placeholder="Nome completo"></div>
 
         <div class="section-title">Periculosidade — Perícia</div>
         <div class="mc-form-grid cols-3">
@@ -1213,6 +1214,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     numero_processo: g('d-processo'),
     nome_reclamante: g('d-reclamante'),
     responsavel_sigla: g('d-responsavel'),
+    advogado_parte_contraria: g('d-advogado-contraria'),
     perito_peri: g('d-perito-peri'),
     data_pericia_peri: g('d-data-pericia-peri'),
     pericia_dia_adicional: g('d-pericia-dia-adicional'),
