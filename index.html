@@ -117,6 +117,14 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 .toast.err{background:var(--red);}
 @keyframes toastin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
+.email-pendentes{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--border2);box-shadow:var(--shadow-pc);border-radius:var(--radius-lg);padding:16px 18px;z-index:998;display:none;max-width:380px;}
+.email-pendentes.show{display:block;animation:toastin .2s ease;}
+.ep-title{font-size:12px;font-weight:700;color:var(--escuro-pc);margin-bottom:10px;line-height:1.5;}
+.ep-btn{display:block;width:100%;text-align:left;background:rgba(0,169,224,.10);border:1px solid rgba(0,169,224,.3);color:var(--escuro-pc);border-radius:var(--radius);padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);margin-bottom:6px;transition:all .15s;}
+.ep-btn:hover{background:rgba(0,169,224,.2);}
+.ep-btn:disabled{opacity:.55;cursor:default;background:var(--green-lt);border-color:rgba(17,122,101,.25);color:var(--green);}
+.ep-close{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline;padding:2px 0;font-family:var(--font);}
+
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;margin-bottom:6px;}
 @media (max-width: 900px){ .check-grid{grid-template-columns:1fr;} }
 .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;}
@@ -656,7 +664,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="d-inserir-gerencia" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
-        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos (um de cada vez, no Outlook) assim que o reporte for salvo. Se <b>Envio para o Cliente = Sim</b>, o e-mail vai pro Higor e pra Maria (e pra Shana também, se "Inserir Gerência" for Sim), com cópia pro Grupo Bridgestone. Se for <b>Não</b> (ou em branco), o e-mail fica só interno — vai só pro Grupo Bridgestone, sem sair pro cliente.</div>
+        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo. O 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se <b>Envio para o Cliente = Sim</b>, o e-mail vai pro Higor e pra Maria (e pra Shana também, se "Inserir Gerência" for Sim), com cópia pro Grupo Bridgestone. Se for <b>Não</b> (ou em branco), o e-mail fica só interno — vai só pro Grupo Bridgestone, sem sair pro cliente.</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
@@ -802,7 +810,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <div class="dash-card">
     <div class="dash-card-head">💲 Nova Solicitação de Inserção de Valores</div>
     <div class="dash-card-body">
-      <div class="info-box">ℹ️ O pedido (seção Cálculo) é do advogado para a assistente — o e-mail vai para <b>Cícera Gabriela Ferreira Vicente</b>, com cópia para o Grupo Bridgestone. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, uma nota extra é aberta para o <b>Nicolau</b>. Quando a assistente marcar "Inserido no LM" ou "Inserido no Elaw" como <b>Sim</b> (seção Inserção), um terceiro e-mail de confirmação é aberto automaticamente para o <b>Grupo Bridgestone</b>, devolvendo que a inserção está OK.</div>
+      <div class="info-box">ℹ️ O pedido (seção Cálculo) é do advogado para a assistente — o e-mail vai para <b>Cícera Gabriela Ferreira Vicente</b>, com cópia para o Grupo Bridgestone, e abre direto ao salvar. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, aparece um botão pra abrir a nota extra pro <b>Nicolau</b>. Quando a assistente marcar "Inserido no LM" ou "Inserido no Elaw" como <b>Sim</b> (seção Inserção), aparece outro botão pra abrir a confirmação pro <b>Grupo Bridgestone</b>. Esses extras vêm como botão (não abrem sozinhos) porque o navegador bloqueia abrir vários e-mails automaticamente.</div>
       <form id="form-valores">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
@@ -925,6 +933,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="email-pendentes" id="email-pendentes"></div>
 
 <script>
 const SUPABASE_URL = 'https://sydamnqagkdmczmgkvso.supabase.co';
@@ -936,6 +945,26 @@ function toast(msg, isErr){
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show' + (isErr?' err':'');
   setTimeout(()=>t.classList.remove('show'), 4500);
+}
+
+/* O navegador bloqueia mailto: aberto via setTimeout (não é mais um clique do usuário).
+   Por isso, além do 1º e-mail (que abre direto no clique de Salvar), qualquer e-mail
+   extra vira um botão aqui — cada clique é uma ação nova do usuário, então abre garantido. */
+function mostrarEmailsPendentes(lista){
+  const cont = document.getElementById('email-pendentes');
+  if(!lista || !lista.length){ cont.classList.remove('show'); return; }
+  cont.innerHTML = '<div class="ep-title">📧 Clique pra abrir cada e-mail (o navegador não deixa abrir vários sozinho):</div>'
+    + lista.map((_, i) => `<button class="ep-btn" id="ep-btn-${i}">${esc(lista[i].label)}</button>`).join('')
+    + '<button class="ep-close" id="ep-fechar">fechar</button>';
+  lista.forEach((item, i) => {
+    document.getElementById('ep-btn-' + i).onclick = function(){
+      abrirEmail(item.to, item.cc, item.assunto, item.corpo);
+      this.disabled = true;
+      this.textContent = '✓ ' + item.label;
+    };
+  });
+  document.getElementById('ep-fechar').onclick = () => cont.classList.remove('show');
+  cont.classList.add('show');
 }
 
 function mudarAba(id){
@@ -1286,7 +1315,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
   try{
     const { error } = await sb.from('reportes_decisao').insert(registro);
     if(error) throw error;
-    toast('Reporte de decisão salvo com sucesso.' + (tiposEmail.length ? ' Abrindo ' + tiposEmail.length + ' e-mail(s)…' : ''));
+    toast('Reporte de decisão salvo com sucesso.' + (tiposEmail.length > 1 ? ' Abrindo o 1º e-mail — clique nos botões pros demais.' : tiposEmail.length === 1 ? ' Abrindo e-mail…' : ''));
     if(tiposEmail.length) enviarEmailsDecisao(registro, tiposEmail);
     this.reset();
     atualizarInserirGerencia();
@@ -1404,16 +1433,25 @@ function gerarEmailDecisao(id, modelo){
 
 /* Abre um e-mail por tipo marcado, um de cada vez (mailto sequencial precisa de intervalo
    pra não atropelar a abertura do Outlook). */
+const DECISAO_TIPO_LABEL = {
+  medico: 'Laudo Pericial Médico', ergonomico: 'Laudo Pericial Ergonômico',
+  tecnico: 'Laudo Pericial Técnico', sentenca: 'Sentença', embargos: 'Embargos de Declaração',
+  trt: 'Acórdão do TRT', tst: 'Acórdão do TST', execucao: 'Execução',
+};
+
+/* Só o 1º e-mail abre sozinho (é o clique de Salvar). Os demais viram botões —
+   o navegador não deixa abrir vários mailto: seguidos sem um clique novo pra cada um. */
 function enviarEmailsDecisao(registro, tipos){
   const { to, cc } = decisaoEnderecos(registro.envio_cliente, registro.inserir_gerencia);
-  tipos.forEach((tipo, i) => {
-    setTimeout(() => {
-      const modelo = EMAIL_MODELOS[tipo];
-      if(!modelo) return;
-      const { assunto, corpo } = modelo(registro);
-      abrirEmail(to, cc, assunto, corpo);
-    }, i * 700);
-  });
+  const emails = tipos.map(tipo => {
+    const modelo = EMAIL_MODELOS[tipo];
+    if(!modelo) return null;
+    const { assunto, corpo } = modelo(registro);
+    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo };
+  }).filter(Boolean);
+  if(!emails.length) return;
+  abrirEmail(emails[0].to, emails[0].cc, emails[0].assunto, emails[0].corpo);
+  mostrarEmailsPendentes(emails.slice(1));
 }
 
 /* ===================== ABA 4: REPORTE DE ACORDOS ===================== */
@@ -1597,24 +1635,24 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     console.error(error);
     toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
   } else {
-    toast('Solicitação registrada.' + (acima400k ? ' Abrindo e-mail e nota para o Nicolau…' : ' Abrindo e-mail…'));
+    toast('Solicitação registrada. Abrindo e-mail — clique nos botões pra abrir os e-mails extras.');
     carregarHistoricoValores();
   }
   abrirEmail(destinatarios, cc, assunto, corpo);
+
+  const pendentes = [];
   if(acima400k){
-    setTimeout(() => {
-      const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 400.000,00 — Processo ${registro.numero_processo}`;
-      const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
-      abrirEmail(NICOLAU_EMAIL, cc, assuntoNicolau, corpoNicolau);
-    }, 700);
+    const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 400.000,00 — Processo ${registro.numero_processo}`;
+    const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+    pendentes.push({ label: 'Nota pro Nicolau (acima de R$ 400k)', to: NICOLAU_EMAIL, cc, assunto: assuntoNicolau, corpo: corpoNicolau });
   }
   if(inseridoConfirmado){
-    setTimeout(() => {
-      const assuntoConfirma = `Valores Inseridos — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
-      const corpoConfirma = `Prezados,\n\nConfirmamos a inserção dos valores solicitados pelo(a) advogado(a) ${nn(registro.advogado_solicitante)} no processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n\n${resumoValores}\n\nInserido no LM: ${nn(registro.inserido_lm)}${registro.data_insercao_lm ? ' (' + registro.data_insercao_lm.split('-').reverse().join('/') + ')' : ''}\nInserido no Elaw: ${nn(registro.inserido_sistema)}${registro.data_insercao_sistema ? ' (' + registro.data_insercao_sistema.split('-').reverse().join('/') + ')' : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nResponsável pela inserção: ${nn(registro.assistente_responsavel)}`;
-      abrirEmail(cc, '', assuntoConfirma, corpoConfirma);
-    }, 1400);
+    const assuntoConfirma = `Valores Inseridos — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
+    const corpoConfirma = `Prezados,\n\nConfirmamos a inserção dos valores solicitados pelo(a) advogado(a) ${nn(registro.advogado_solicitante)} no processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n\n${resumoValores}\n\nInserido no LM: ${nn(registro.inserido_lm)}${registro.data_insercao_lm ? ' (' + registro.data_insercao_lm.split('-').reverse().join('/') + ')' : ''}\nInserido no Elaw: ${nn(registro.inserido_sistema)}${registro.data_insercao_sistema ? ' (' + registro.data_insercao_sistema.split('-').reverse().join('/') + ')' : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nResponsável pela inserção: ${nn(registro.assistente_responsavel)}`;
+    pendentes.push({ label: 'Confirmação de inserção pro Grupo', to: cc, cc: '', assunto: assuntoConfirma, corpo: corpoConfirma });
   }
+  mostrarEmailsPendentes(pendentes);
+
   this.reset();
   document.getElementById('v-diff-historico').value = '';
   document.getElementById('v-diff-provisao').value = '';
