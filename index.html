@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunicações Bridgestone — LAWgico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --azul-pc:  #00A9E0;
+  --cyan-lt:  rgba(0,169,224,.12);
+  --escuro-pc:#003B5C;
+  --preto-pc: #2D2926;
+  --bg:       #F4F9FC;
+  --surface:  #FFFFFF;
+  --surface2: #F7FCFF;
+  --border2:  #D8E7F0;
+  --text:     #2D2926;
+  --muted:    #5F7E92;
+  --muted2:   #7E98AA;
+  --red:      #C0392B;
+  --red-lt:   rgba(192,57,43,.10);
+  --orange:   #B85C00;
+  --orange-lt:rgba(230,126,34,.10);
+  --green:    #117A65;
+  --green-lt: rgba(17,122,101,.10);
+  --shadow-pc:0 8px 22px rgba(0,59,92,.08);
+  --font:     'Sora', sans-serif;
+  --mono:     'IBM Plex Mono', monospace;
+  --radius:   8px;
+  --radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,169,224,.25);border-radius:4px;}
+
+.topbar{background:linear-gradient(90deg,var(--escuro-pc),#00557B 72%,var(--azul-pc));border-bottom:4px solid var(--azul-pc);box-shadow:var(--shadow-pc);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.tb-lawgico{display:inline-block;line-height:1;position:relative;}
+.tb-law{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.5px;}
+.tb-gico{font-size:18px;font-weight:300;color:#fff;letter-spacing:-.5px;}
+.tb-modulo{font-size:9px;font-weight:300;color:rgba(255,255,255,.75);position:absolute;top:-5px;right:0;white-space:nowrap;}
+.tb-tagline{font-size:7.5px;font-weight:300;letter-spacing:3px;color:rgba(255,255,255,.65);margin-top:1px;}
+.topbar-divider{width:1px;height:28px;background:rgba(255,255,255,.25);}
+.topbar-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.85);}
+
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border2);padding:0 24px;display:flex;gap:4px;box-shadow:0 2px 10px rgba(0,59,92,.05);overflow-x:auto;}
+.tab-btn{background:none;border:none;padding:14px 18px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font);border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab-btn:hover{color:var(--escuro-pc);}
+.tab-btn.active{color:var(--escuro-pc);border-bottom-color:var(--azul-pc);}
+
+.main{max-width:1440px;margin:0 auto;padding:22px 24px 60px;}
+.view{display:none;}
+.view.active{display:block;}
+
+.dash-card{background:var(--surface);border:1px solid var(--border2);box-shadow:var(--shadow-pc);border-radius:var(--radius-lg);margin-bottom:20px;overflow:hidden;}
+.dash-card-head{padding:16px 20px;border-bottom:1px solid var(--border2);background:var(--surface2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--escuro-pc);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.dash-card-body{padding:20px;}
+
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--azul-pc);margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--cyan-lt);}
+.section-title:first-child{margin-top:0;}
+
+.mc-form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.mc-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+.mc-form-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+@media (max-width: 900px){ .mc-form-grid,.mc-form-grid.cols-3{grid-template-columns:1fr;} }
+.mc-form-group label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.mc-form-group label .req{color:var(--red);}
+.mc-form-group input,.mc-form-group select,.mc-form-group textarea{
+  background:#fff;border:1px solid #BFD6E4;border-radius:var(--radius);padding:9px 12px;color:var(--preto-pc);font-size:13px;font-family:var(--font);outline:none;transition:border .2s;width:100%;resize:vertical;
+}
+.mc-form-group input:focus,.mc-form-group select:focus,.mc-form-group textarea:focus{border-color:var(--azul-pc);box-shadow:0 0 0 3px rgba(0,169,224,.14);}
+.mc-form-group input::placeholder,.mc-form-group textarea::placeholder{color:var(--muted2);}
+.hint{font-size:10.5px;color:var(--muted2);margin-top:2px;}
+
+.info-box{display:flex;align-items:flex-start;gap:9px;background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius);padding:10px 12px;margin-bottom:16px;font-size:11.5px;color:var(--escuro-pc);line-height:1.5;}
+
+.btn-cyan{background:var(--escuro-pc);color:#fff;border:none;border-radius:var(--radius);padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font);width:100%;letter-spacing:.2px;}
+.btn-cyan:hover{background:#00557B;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,59,92,.25);}
+.btn-cyan:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+.action-btn{background:rgba(0,169,224,.10);border:1px solid rgba(0,169,224,.3);color:var(--escuro-pc);border-radius:var(--radius);padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);white-space:nowrap;}
+.action-btn:hover{background:rgba(0,169,224,.2);}
+
+.export-btn{background:var(--green);color:#fff;border:none;border-radius:var(--radius);padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font);display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.export-btn:hover{background:#0c5c4c;transform:translateY(-1px);box-shadow:0 4px 14px rgba(17,122,101,.3);}
+.row-btn{background:none;border:1px solid var(--border2);color:var(--escuro-pc);border-radius:6px;padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+.row-btn:hover{background:var(--cyan-lt);}
+
+.filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--border2);background:var(--surface2);}
+.filter-input{background:#fff;border:1px solid #BFD6E4;border-radius:var(--radius);padding:8px 12px;color:var(--preto-pc);font-size:12px;font-family:var(--font);outline:none;flex:1;min-width:200px;}
+.filter-input:focus{border-color:var(--azul-pc);box-shadow:0 0 0 3px rgba(0,169,224,.14);}
+
+.table-wrap{overflow-x:auto;}
+table.sol-table{width:100%;border-collapse:collapse;min-width:900px;background:#fff;}
+table.sol-table thead th{position:sticky;top:0;background:var(--escuro-pc);color:#fff;padding:10px 12px;text-transform:uppercase;font-size:10px;letter-spacing:.6px;text-align:left;white-space:nowrap;}
+table.sol-table tbody td{padding:10px 12px;border-bottom:1px solid #E5EEF4;color:var(--preto-pc);font-size:12px;vertical-align:middle;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+table.sol-table tbody tr:hover td{background:#F8FCFF;}
+td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid transparent;}
+.badge-blue{background:rgba(0,169,224,.10);color:var(--escuro-pc);border-color:rgba(0,169,224,.3);}
+.badge-green{background:var(--green-lt);color:var(--green);border-color:rgba(17,122,101,.25);}
+.badge-orange{background:var(--orange-lt);color:var(--orange);border-color:rgba(230,126,34,.25);}
+
+.empty-state{padding:48px 16px;text-align:center;color:var(--muted);font-size:13px;}
+.error-banner{background:var(--red-lt);border:1px solid rgba(192,57,43,.3);color:var(--red);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;font-size:12px;line-height:1.6;}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--escuro-pc);color:#fff;padding:14px 20px;border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;font-weight:600;z-index:999;display:none;max-width:360px;}
+.toast.show{display:block;animation:toastin .2s ease;}
+.toast.err{background:var(--red);}
+@keyframes toastin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;margin-bottom:6px;}
+@media (max-width: 900px){ .check-grid{grid-template-columns:1fr;} }
+.check-row{display:flex;align-items:center;gap:8px;padding:7px 0;}
+.check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--azul-pc);cursor:pointer;flex-shrink:0;}
+.check-row label{font-size:12.5px;color:var(--preto-pc);cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="tb-lawgico"><span class="tb-law">LAW</span><span class="tb-gico">gico</span><span class="tb-modulo">comunicações</span></div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">Comunicações Bridgestone</div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-btn-pericia" onclick="mudarAba('pericia')">🩺 Comunicação de Perícia</button>
+  <button class="tab-btn" id="tab-btn-calculos" onclick="mudarAba('calculos')">🧮 Solicitação de Cálculos</button>
+  <button class="tab-btn" id="tab-btn-decisao" onclick="mudarAba('decisao')">📑 Reporte de Decisão</button>
+  <button class="tab-btn" id="tab-btn-acordos" onclick="mudarAba('acordos')">💰 Reporte de Acordos</button>
+  <button class="tab-btn" id="tab-btn-valores" onclick="mudarAba('valores')">💲 Inserção de Valores</button>
+</div>
+
+<div class="main">
+<div id="erro-conexao"></div>
+
+<!-- ================= ABA 1: COMUNICAÇÃO DE PERÍCIA ================= -->
+<div class="view active" id="view-pericia">
+  <div class="dash-card">
+    <div class="dash-card-head">🩺 Nova Comunicação de Perícia Médica/Técnica/Ergonômica</div>
+    <div class="dash-card-body">
+      <div class="info-box">ℹ️ O e-mail é aberto no seu Outlook, pronto pra enviar — o remetente é sempre você (quem preenche o formulário). Os destinatários mudam automaticamente conforme o tipo de perícia.</div>
+      <form id="form-pericia">
+        <div class="mc-form-grid">
+          <div class="mc-form-group">
+            <label>Número do Processo <span class="req">*</span></label>
+            <input type="text" id="p-processo" required placeholder="0000000-00.0000.0.00.0000">
+          </div>
+          <div class="mc-form-group">
+            <label>Nome do Reclamante <span class="req">*</span></label>
+            <input type="text" id="p-reclamante" required placeholder="Nome completo">
+          </div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group">
+            <label>É caso de empregado próprio ou terceiro? <span class="req">*</span></label>
+            <select id="p-tipo-empregado" required>
+              <option value="" disabled selected>Selecione…</option>
+              <option>Caso de empregado terceirizado</option>
+              <option>Caso de empregado próprio</option>
+            </select>
+          </div>
+          <div class="mc-form-group">
+            <label>Qual tipo de perícia? <span class="req">*</span></label>
+            <select id="p-tipo-pericia" required onchange="atualizarDestinatariosPericia()">
+              <option value="" disabled selected>Selecione…</option>
+              <option>Médica</option>
+              <option>Técnica</option>
+              <option>Ergonômica</option>
+            </select>
+            <div class="hint" id="p-destinatarios-hint"></div>
+          </div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group">
+            <label>Data e horário da perícia <span class="req">*</span></label>
+            <input type="text" id="p-data-horario" required placeholder="dd/mm/aaaa 00:00hrs">
+          </div>
+          <div class="mc-form-group">
+            <label>Nome do perito <span class="req">*</span></label>
+            <input type="text" id="p-perito" required placeholder="Nome do perito">
+          </div>
+        </div>
+        <div class="mc-form-group">
+          <label>Endereço onde ocorrerá a perícia <span class="req">*</span></label>
+          <input type="text" id="p-endereco" required placeholder="Endereço completo">
+        </div>
+        <div class="mc-form-group">
+          <label>Link para acesso à íntegra <span class="req">*</span></label>
+          <input type="text" id="p-link" required placeholder="https://...">
+        </div>
+        <div class="mc-form-group">
+          <label>Texto do e-mail <span class="req">*</span></label>
+          <textarea id="p-texto-email" rows="5" required placeholder="Corpo principal do e-mail"></textarea>
+        </div>
+        <div class="mc-form-group">
+          <label>Observações adicionais</label>
+          <textarea id="p-observacoes" rows="3" placeholder="Opcional"></textarea>
+        </div>
+        <div class="mc-form-group">
+          <label>Advogado responsável pela comunicação <span class="req">*</span></label>
+          <select id="p-advogado" required><option value="" disabled selected>Selecione…</option></select>
+        </div>
+        <button type="submit" class="btn-cyan">✉️ Gerar e-mail e registrar comunicação</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📜 Histórico de Comunicações de Perícia <button class="export-btn" onclick="exportarExcel(HIST_PERICIA_FILTRADO, 'Comunicacoes_Pericia')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="p-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoPericia()">
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Data/Horário</th><th>Perito</th><th>Advogado</th><th>Enviado em</th></tr></thead>
+        <tbody id="p-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA 2: SOLICITAÇÃO DE CÁLCULOS ================= -->
+<div class="view" id="view-calculos">
+  <div class="dash-card">
+    <div class="dash-card-head">🧮 Nova Solicitação de Cálculos</div>
+    <div class="dash-card-body">
+      <div class="info-box">ℹ️ Vai sempre para <b>consulta@madiconsultoria.com.br</b>, com cópia para atendimento@madipericia.com, michele@madiconsultoria.com.br, Grupo Bridgestone e Grupo de Requantificação.</div>
+      <form id="form-calculos">
+        <div class="mc-form-grid">
+          <div class="mc-form-group">
+            <label>Número do Processo <span class="req">*</span></label>
+            <input type="text" id="c-processo" required placeholder="0000000-00.0000.0.00.0000">
+          </div>
+          <div class="mc-form-group">
+            <label>Nome do Reclamante <span class="req">*</span></label>
+            <input type="text" id="c-reclamante" required placeholder="Nome completo">
+          </div>
+        </div>
+        <div class="mc-form-group">
+          <label>Qual tipo de subsídio será necessário? <span class="req">*</span></label>
+          <select id="c-tipo-subsidio" required>
+            <option value="" disabled selected>Selecione…</option>
+            <option>Cálculo Inicial</option>
+            <option>Cálculo de Provisão Sentença</option>
+            <option>Cálculo de Provisão Acórdão</option>
+            <option>Cálculo de Provisão TST</option>
+            <option>Apresentação de cálculos</option>
+            <option>Impugnação aos cálculo do Reclamante</option>
+            <option>Impugnação aos cálculos do Perito Contábil</option>
+            <option>Impugnação aos esclarecimentos contábeis</option>
+            <option>Embargos à Execução</option>
+            <option>Agravo de Petição</option>
+            <option>Contraminuta de Agravo de Petição</option>
+            <option>Manifestação a Impugnação à Sentença de Liquidação</option>
+            <option>Quesitos</option>
+          </select>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group">
+            <label>Link para acesso/download da íntegra e documentos <span class="req">*</span></label>
+            <input type="text" id="c-link" required placeholder="https://...">
+          </div>
+          <div class="mc-form-group">
+            <label>Prazo para envio <span class="req">*</span></label>
+            <input type="date" id="c-prazo" required>
+          </div>
+        </div>
+        <div class="mc-form-group">
+          <label>Outros (maiores detalhamentos)</label>
+          <textarea id="c-outros" rows="4" placeholder="Opcional"></textarea>
+        </div>
+        <div class="mc-form-group">
+          <label>Responsável pela solicitação (sigla) <span class="req">*</span></label>
+          <input type="text" id="c-responsavel" required placeholder="Ex: ACM">
+        </div>
+        <button type="submit" class="btn-cyan">✉️ Gerar e-mail e registrar solicitação</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📜 Histórico de Solicitações de Cálculos <button class="export-btn" onclick="exportarExcel(HIST_CALCULOS_FILTRADO, 'Solicitacoes_Calculos')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="c-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoCalculos()">
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Prazo</th><th>Responsável</th><th>Enviado em</th></tr></thead>
+        <tbody id="c-tbody"><tr><td colspan="6" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA 3: REPORTE DE DECISÃO ================= -->
+<div class="view" id="view-decisao">
+  <div class="dash-card">
+    <div class="dash-card-head">📑 Novo Reporte de Decisão</div>
+    <div class="dash-card-body">
+      <form id="form-decisao">
+        <div class="section-title">Identificação</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Número do Processo <span class="req">*</span></label><input type="text" id="d-processo" required></div>
+          <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="d-reclamante"></div>
+          <div class="mc-form-group"><label>Responsável (sigla)</label><input type="text" id="d-responsavel"></div>
+        </div>
+
+        <div class="section-title">Periculosidade — Perícia</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Perito</label><input type="text" id="d-perito-peri"></div>
+          <div class="mc-form-group"><label>Data da Perícia</label><input type="text" id="d-data-pericia-peri" placeholder="dd/mm/aaaa"></div>
+          <div class="mc-form-group"><label>Mais um dia de perícia (especificar)</label><input type="text" id="d-pericia-dia-adicional"></div>
+        </div>
+
+        <div class="section-title">Periculosidade — Laudo</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado do Laudo</label>
+            <select id="d-laudo-peri-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data Início (Laudo)</label><input type="date" id="d-laudo-peri-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-peri-data-final"></div>
+        </div>
+        <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label><textarea id="d-laudo-peri-motivo" rows="2"></textarea></div>
+
+        <div class="section-title">Periculosidade — Decisão</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado das Decisões</label>
+            <select id="d-decisao-peri-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-peri-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-peri-data-final"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Motivo da Periculosidade</label><textarea id="d-decisao-peri-motivo" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Detalhamento dos Casos Após Dez/2016</label><textarea id="d-peri-pos2016" rows="2"></textarea></div>
+        </div>
+
+        <div class="section-title">Insalubridade — Laudo</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado do Laudo</label>
+            <select id="d-laudo-insalu-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data Início (Laudo)</label><input type="date" id="d-laudo-insalu-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-insalu-data-final"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label><textarea id="d-laudo-insalu-motivo" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
+        </div>
+
+        <div class="section-title">Insalubridade — Decisão</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado das Decisões</label>
+            <select id="d-decisao-insalu-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Grau de Insalubridade</label>
+            <select id="d-decisao-insalu-grau"><option value="">—</option><option>Mínimo (10%)</option><option>Médio (20%)</option><option>Máximo (40%)</option></select>
+          </div>
+          <div class="mc-form-group"><label>Agentes Insalubres</label><input type="text" id="d-decisao-insalu-agentes"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-insalu-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-insalu-data-final"></div>
+          <div class="mc-form-group"><label>Motivo da Insalubridade</label><input type="text" id="d-decisao-insalu-motivo"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Outras observações sobre EPI</label><textarea id="d-insalu-obs-epi" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Análise complementar</label><textarea id="d-insalu-analise-complementar" rows="2"></textarea></div>
+        </div>
+
+        <div class="section-title">Ergonômico / Perícia Médica</div>
+        <div class="mc-form-group"><label>Laudo Pericial Ergonômico</label><textarea id="d-laudo-ergonomico" rows="2"></textarea></div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Perito</label><input type="text" id="d-perito-medica"></div>
+          <div class="mc-form-group"><label>Data da Perícia</label><input type="text" id="d-data-pericia-medica" placeholder="dd/mm/aaaa"></div>
+          <div class="mc-form-group"><label>Doença</label><input type="text" id="d-medica-doenca"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Área do Corpo</label><input type="text" id="d-medica-area-corpo"></div>
+          <div class="mc-form-group"><label>Motivos</label><input type="text" id="d-medica-motivos"></div>
+          <div class="mc-form-group"><label>Fonte de Informação</label><input type="text" id="d-medica-fonte-informacao"></div>
+        </div>
+        <div class="mc-form-group"><label>Resultado do Laudo</label><textarea id="d-medica-laudo-resultado" rows="2"></textarea></div>
+
+        <div class="section-title">Sentença</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado</label>
+            <select id="d-sentenca-resultado"><option value="">—</option><option>Procedente</option><option>Improcedente</option><option>Parcialmente Procedente</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data da Sentença</label><input type="date" id="d-sentenca-data"></div>
+          <div class="mc-form-group"><label>Juiz da Sentença</label><input type="text" id="d-sentenca-juiz"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Pedidos deferidos em sentença</label><textarea id="d-sentenca-deferidos" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Pedidos indeferidos em sentença</label><textarea id="d-sentenca-indeferidos" rows="2"></textarea></div>
+        </div>
+
+        <div class="section-title">Acórdão TRT</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado (Reclamada)</label>
+            <select id="d-acordao-trt-reclamada"><option value="">—</option><option>Manteve</option><option>Reformou</option><option>Parcial</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data do Acórdão</label><input type="date" id="d-acordao-trt-data"></div>
+          <div class="mc-form-group"><label>Turma</label><input type="text" id="d-acordao-trt-turma"></div>
+        </div>
+        <div class="mc-form-group"><label>Relator</label><input type="text" id="d-acordao-trt-relator"></div>
+
+        <div class="section-title">Acórdão TST</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Resultado</label>
+            <select id="d-acordao-tst"><option value="">—</option><option>Manteve</option><option>Reformou</option><option>Parcial</option><option>Não conhecido</option><option>Pendente</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data do Acórdão TST</label><input type="date" id="d-acordao-tst-data"></div>
+          <div class="mc-form-group"><label>Câmara</label><input type="text" id="d-acordao-tst-camara"></div>
+        </div>
+        <div class="mc-form-group"><label>Ministro</label><input type="text" id="d-acordao-tst-ministro"></div>
+
+        <div class="section-title">Status</div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Execução</label>
+            <select id="d-execucao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Última Movimentação Processual</label><input type="text" id="d-ultima-movimentacao"></div>
+        </div>
+
+        <div class="section-title">Envio de E-mails</div>
+        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos (um de cada vez, no Outlook) assim que o reporte for salvo. Cada tipo usa seu próprio modelo, com destinatários fixos (Bridgestone).</div>
+        <div class="check-grid">
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="tecnico" id="d-email-tecnico"><label for="d-email-tecnico">Laudo Pericial Técnico (Insalu./Peric.)</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="sentenca" id="d-email-sentenca"><label for="d-email-sentenca">Sentença</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="embargos" id="d-email-embargos"><label for="d-email-embargos">Embargos de Declaração</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="trt" id="d-email-trt"><label for="d-email-trt">Acórdão do TRT</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="tst" id="d-email-tst"><label for="d-email-tst">Acórdão do TST</label></div>
+          <div class="check-row"><input type="checkbox" class="d-email-check" value="execucao" id="d-email-execucao"><label for="d-email-execucao">Execução</label></div>
+        </div>
+
+        <button type="submit" class="btn-cyan">💾 Salvar reporte de decisão e abrir e-mails marcados</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📊 Reportes Salvos <button class="export-btn" onclick="exportarExcel(HIST_DECISAO_FILTRADO, 'Reportes_Decisao')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="d-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoDecisao()">
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Laudo Peric.</th><th>Laudo Insalu.</th><th>Sentença</th><th>Execução</th><th>Atualizado em</th><th>Ações</th></tr></thead>
+        <tbody id="d-tbody"><tr><td colspan="8" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA 4: REPORTE DE ACORDOS ================= -->
+<div class="view" id="view-acordos">
+  <div class="dash-card">
+    <div class="dash-card-head">💰 Novo Reporte de Acordo</div>
+    <div class="dash-card-body">
+      <form id="form-acordos">
+        <div class="section-title">Identificação</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Número do Processo <span class="req">*</span></label><input type="text" id="a-processo" required></div>
+          <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="a-reclamante"></div>
+          <div class="mc-form-group"><label>Reclamada</label><input type="text" id="a-reclamada"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Departamento</label><input type="text" id="a-departamento"></div>
+          <div class="mc-form-group"><label>Comarca</label><input type="text" id="a-comarca"></div>
+          <div class="mc-form-group"><label>Vara (VT)</label><input type="text" id="a-vara"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Escritório</label><input type="text" id="a-escritorio"></div>
+          <div class="mc-form-group"><label>Advogado Responsável</label><select id="a-advogado"><option value="">Selecione…</option></select></div>
+        </div>
+
+        <div class="section-title">Negociação</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Status Acordo</label>
+            <select id="a-status-acordo">
+              <option value="">—</option>
+              <option>Settled</option>
+              <option>Settlement pending</option>
+              <option>Not settled</option>
+              <option>Not eligible</option>
+              <option>Negotiation to be started</option>
+              <option>Settlement reached in another lawsuit</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Status Homologação</label>
+            <select id="a-status-homologacao">
+              <option value="">—</option>
+              <option>Aguardando Homologação</option>
+              <option>Homologado</option>
+              <option>Não Homologado</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Tem contraproposta?</label>
+            <select id="a-tem-contraproposta"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Proposta (R$)</label><input type="number" step="0.01" id="a-proposta"></div>
+          <div class="mc-form-group"><label>Negociação em</label><input type="text" id="a-negociacao-em" placeholder="Ex: 2ª instância"></div>
+          <div class="mc-form-group"><label>PAUTÃO</label><input type="text" id="a-pautao"></div>
+        </div>
+        <div class="mc-form-group"><label>Justificativa</label><textarea id="a-justificativa" rows="2"></textarea></div>
+
+        <div class="section-title">Valores</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Total Provável (R$)</label><input type="number" step="0.01" id="a-total-provavel" oninput="recalcularEconomiaAcordo()"></div>
+          <div class="mc-form-group"><label>Total Accrual (R$)</label><input type="number" step="0.01" id="a-total-accrual" oninput="recalcularEconomiaAcordo()"></div>
+          <div class="mc-form-group"><label>Valor Pago no Acordo (R$)</label><input type="number" step="0.01" id="a-valor-pago" oninput="recalcularEconomiaAcordo()"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Economia (R$)</label><input type="number" step="0.01" id="a-economia" readonly></div>
+          <div class="mc-form-group"><label>% Economia</label><input type="text" id="a-percentual-economia" readonly></div>
+          <div class="mc-form-group"><label>Classificação da Economia</label>
+            <select id="a-classificacao-economia">
+              <option value="">—</option>
+              <option>Acima de 10%</option>
+              <option>Acima de 0 até 10%</option>
+              <option>Abaixo de 0% (custo adicional)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title">Datas</div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Data do Protocolo do Acordo</label><input type="date" id="a-data-protocolo"></div>
+          <div class="mc-form-group"><label>Data Pagamento</label><input type="date" id="a-data-pagamento"></div>
+        </div>
+
+        <div class="section-title">Aprovações</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Solicitamos autorização?</label>
+            <select id="a-solicitamos-autorizacao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Aprovação para acordo</label>
+            <select id="a-aprovacao-acordo"><option value="">—</option><option>Sim</option><option>Não</option><option>Pendente</option></select>
+          </div>
+        </div>
+        <div class="mc-form-group"><label>Informações adicionais</label><textarea id="a-informacoes-adicionais" rows="2"></textarea></div>
+
+        <button type="submit" class="btn-cyan">💾 Salvar reporte de acordo</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📊 Acordos Reportados <button class="export-btn" onclick="exportarExcel(HIST_ACORDOS_FILTRADO, 'Reportes_Acordos')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="a-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoAcordos()">
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Status</th><th>Valor Pago</th><th>Economia</th><th>Data Pagamento</th><th>Atualizado em</th></tr></thead>
+        <tbody id="a-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================= ABA 5: SOLICITAÇÃO DE INSERÇÃO DE VALORES ================= -->
+<div class="view" id="view-valores">
+  <div class="dash-card">
+    <div class="dash-card-head">💲 Nova Solicitação de Inserção de Valores</div>
+    <div class="dash-card-body">
+      <div class="info-box">ℹ️ O e-mail é aberto no seu Outlook, pronto pra enviar — vai para <b>Cícera Gabriela Ferreira Vicente</b>, com cópia para o Grupo Bridgestone. Se o Novo Valor for igual ou maior que R$ 400.000,00, uma nota extra é aberta automaticamente para o <b>Nicolau</b>.</div>
+      <form id="form-valores">
+        <div class="section-title">Identificação</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Processo <span class="req">*</span></label><input type="text" id="v-processo" required placeholder="0000000-00.0000.0.00.0000"></div>
+          <div class="mc-form-group"><label>Reclamante <span class="req">*</span></label><input type="text" id="v-reclamante" required placeholder="Nome completo"></div>
+          <div class="mc-form-group"><label>Reclamada</label><input type="text" id="v-reclamada"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Vara/Turma/Câmara</label><input type="text" id="v-vara"></div>
+          <div class="mc-form-group"><label>Comarca</label><input type="text" id="v-comarca"></div>
+          <div class="mc-form-group"><label>UF</label><input type="text" id="v-uf" maxlength="2" placeholder="SP" style="text-transform:uppercase;"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Advogado Solicitante</label><input type="text" id="v-advogado-solicitante" placeholder="Nome completo"></div>
+          <div class="mc-form-group"><label>Assistente Responsável</label><input type="text" id="v-assistente-responsavel" placeholder="Nome completo"></div>
+        </div>
+
+        <div class="section-title">Cálculo</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Tipo de Decisão</label>
+            <select id="v-tipo-decisao">
+              <option value="">—</option>
+              <option>Procedente</option>
+              <option>Procedente em Parte</option>
+              <option>Improcedente</option>
+              <option>Acordo</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Tipo de Cálculo</label>
+            <select id="v-tipo-calculo">
+              <option value="">N/A</option>
+              <option>Inicial</option>
+              <option>Sentença</option>
+              <option>Acórdão TRT</option>
+              <option>Acórdão TST</option>
+              <option>Embargos</option>
+              <option>Acordo</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Data do Cálculo</label><input type="date" id="v-data-calculo"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Revisado</label>
+            <select id="v-revisado"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Provisão/Accrual Atual (R$)</label><input type="number" step="0.01" id="v-provisao-atual"></div>
+          <div class="mc-form-group"><label>Novo Valor (R$) <span class="req">*</span></label><input type="number" step="0.01" id="v-novo-valor" required oninput="atualizarAlertaValor()"></div>
+        </div>
+        <div class="mc-form-group"><label>Justificativa Revisão</label><textarea id="v-justificativa-revisao" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
+        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Novo Valor acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
+
+        <div class="section-title">Inserção</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Inserido no LM</label>
+            <select id="v-inserido-lm"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data Inserção LM</label><input type="date" id="v-data-insercao-lm"></div>
+          <div class="mc-form-group"><label>Inserido no Sistema</label>
+            <select id="v-inserido-sistema"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+        </div>
+        <div class="mc-form-group"><label>Data Inserção Sistema</label><input type="date" id="v-data-insercao-sistema"></div>
+
+        <div class="section-title">Envio ao Cliente</div>
+        <div class="mc-form-group"><label>Já Enviado ao Cliente</label>
+          <select id="v-enviado-cliente"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        </div>
+        <div class="mc-form-group"><label>Justificativa Envio</label><textarea id="v-justificativa-envio" rows="2"></textarea></div>
+
+        <button type="submit" class="btn-cyan">✉️ Gerar e-mail e registrar solicitação</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📜 Histórico de Solicitações de Inserção de Valores <button class="export-btn" onclick="exportarExcel(HIST_VALORES_FILTRADO, 'Solicitacoes_Insercao_Valores')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="v-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoValores()">
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Novo Valor</th><th>Acima 400k</th><th>Inserido Sistema</th><th>Enviado em</th></tr></thead>
+        <tbody id="v-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://sydamnqagkdmczmgkvso.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kA_IDYtEdATSygg7EajrdQ_cEi4d57N';
+let sb = null;
+try{ sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }catch(e){ console.error(e); }
+
+function toast(msg, isErr){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (isErr?' err':'');
+  setTimeout(()=>t.classList.remove('show'), 4500);
+}
+
+function mudarAba(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.getElementById('tab-btn-'+id).classList.add('active');
+}
+
+/* ===================== ROSTER ===================== */
+const PROFISSIONAIS = [
+  {n:'Alícia Marcondes Hamati', g:'Equipe A', email:'alicia.hamati@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Aline Amorim Oliveira', g:'Equipe A', email:'aline.oliveira@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Aline Ferreira Miron', g:'Equipe E', email:'aline.miron@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Amanda Mesquita de Lima Araujo', g:'Equipe E', email:'amanda.araujo@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Ana Carolina Honório Martini', g:'Equipe B', email:'anacarolina.martini@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Ana Julia Thomaz Carmona', g:'Equipe A', email:'anajulia.carmona@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'André Alessandro de Paula', g:'Equipe E', email:'andre.alessandro@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Anna Carolina Balbino Gatti Baani', g:'Equipe B', email:'annacarolina.baani@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Antonio Carlos Aguiar', g:'TRABALHISTA', email:'antoniocarlos.aguiar@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Arthur Rodrigues Rios Toledo de Castro', g:'Equipe E', email:'arthur.castro@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Beatriz Helena Maguetta Feitosa', g:'Equipe C', email:'beatriz.feitosa@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Beatriz Rodrigues Luna', g:'Equipe Controladoria', email:'beatriz.rodrigues@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Beatriz Santiago de Souza', g:'Equipe B', email:'beatriz.souza@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Bianca Bolanhi Camacho', g:'Equipe D', email:'bianca.camacho@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Brenda da Silva dos Santos', g:'Equipe E', email:'brenda.santos@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Brenna Braga Freitas Malta', g:'Equipe B', email:'brenna.malta@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Bruna Cembranelli Fazenda', g:'Equipe B', email:'bruna.fazenda@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Camila Alves Magalhães de Paula', g:'Equipe E', email:'camila.paula@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Chris Carvalho', g:'Equipe A', email:'chris.carvalho@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Cícera Gabriela Ferreira Vicente', g:'Equipe B', email:'cicera.vicente@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Daniela Prandi Pedro Ricca', g:'Equipe E', email:'daniela.ricca@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Ellen Mary Maciel Silva', g:'Equipe E', email:'ellenmary.silva@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Erick Yuji Nakama', g:'Equipe A', email:'erick.nakama@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Erik Mota Coppi', g:'Equipe C', email:'erik.coppi@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Evandro Vecchio Vessoni', g:'Equipe B', email:'evandro.vessoni@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Fabiana Correia dos Anjos Gomes', g:'Equipe E', email:'fabiana.gomes@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Fabrício Lima da Silva', g:'Equipe E', email:'fabricio.silva@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Gabriel Fretas de Oliveira', g:'Equipe E', email:'gabriel.oliveira@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Gabriela de Souza Pedroso', g:'Equipe E', email:'gabriela.pedroso@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Geovanna Rodrigues Silva', g:'Equipe B', email:'geovanna.rodrigues@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Giovanna Malheiros Gatto', g:'Equipe B', email:'giovanna.gatto@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Giovanna Teixeira Franco', g:'Equipe E', email:'giovanna.teixeira@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Giovanni Comunale Oliveira', g:'Equipe A', email:'giovanni.oliveira@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Gisela da Silva Freire', g:'TRABALHISTA', email:'gisela.freire@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Giulia Vendramini Milani', g:'Equipe E', email:'giulia.milani@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Giullia Peleje Leme', g:'Equipe Controladoria', email:'giullia.leme@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Guilherme Silva Morimoto', g:'Equipe B', email:'guilherme.morimoto@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Hanyelle Alves da Silva', g:'Equipe A', email:'hanyelle.silva@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Henrique Remorini Pantuzo', g:'Equipe A', email:'henrique.pantuzo@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Isadora Silva Gagliardi', g:'Equipe B', email:'isadora.gagliardi@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Jackeline Romeu Torres', g:'Equipe E', email:'jackeline.torres@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Jaqueline Jahel Moraes', g:'Equipe A', email:'jaqueline.moraes@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Jenifer de Jesus Silva', g:'Equipe B', email:'jenifer.silva@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Jessica Cerqueira Silva', g:'Equipe D', email:'jessica.cerqueira@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Joice Ramos Miranda', g:'Equipe E', email:'joice.miranda@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Juan Leonardo Ikier Moraes', g:'Equipe E', email:'juanleonardo.moraes@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Júlia Priego Lopes da Silva', g:'Equipe E', email:'julia.priego@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Juliana Pereira Nascimento', g:'Equipe Relatórios', email:'juliana.nascimento@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Juliana Perucci', g:'Equipe B', email:'juliana.perucci@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Karoline de Castro Torres', g:'Equipe E', email:'karoline.torres@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Keyla Maria Barbosa Silva Moraes', g:'Equipe E', email:'keyla.moraes@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Larissa Lekich Lobenwein', g:'Equipe E', email:'larissa.lekich@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Letícia Meneghini Fontes', g:'Equipe B', email:'leticia.fontes@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Lorena Rodrigues Costa Gonçalves', g:'Equipe B', email:'lorena.goncalves@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Marcel Tadeu Matos Alves da Silva', g:'TRABALHISTA', email:'marcel.alves@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Maria Carolina Silva Santos Dias', g:'Equipe B', email:'mariacarolina.dias@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Mariana Borges de Menezes Fávaro', g:'Equipe E', email:'mariana.favaro@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Marina de Novaes Brechiani', g:'Equipe A', email:'marina.brechiani@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Matheus de Jesus Trindade', g:'Equipe E', email:'matheus.trindade@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Michael Oliveira Coqueiro', g:'Equipe Relatórios', email:'michael.coqueiro@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Natalia Bezerra Baliero', g:'Equipe E', email:'natalia.baliero@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Natália Biondi Gaggini Robles', g:'Equipe A', email:'natalia.gaggini@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Nathalie Louise dos Santos Rodrigues Dias', g:'Equipe E', email:'nathalie.louise@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Nicolau Rafael Guimarães Coelho', g:'Equipe B', email:'nicolau.coelho@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Paloma da Silva Santos', g:'Equipe E', email:'paloma.santos@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Poliana Banqueri da Silva Guimarães', g:'TRABALHISTA', email:'poliana.banqueri@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Rafael Camargo Felisbino', g:'Equipe E', email:'rafael.camargo@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Rafael Rocha Ferreira', g:'Equipe B', email:'rafael.ferreira@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Rafael Yepez do Lago', g:'Equipe E', email:'rafael.lago@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Rafaella Wittmann Domenicis', g:'Equipe B', email:'rafaella.domenicis@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Raica Fernandes Kwok', g:'Equipe B', email:'raica.kwok@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Richard Ruan Leo da Silva', g:'Equipe E', email:'richard.silva@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Rodrigo Souichi Nishijima', g:'Equipe B', email:'rodrigo.nishijima@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Sofia Freire', g:'Equipe A', email:'sofia.freire@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Tabata Neves Caramelli', g:'Equipe A', email:'tabata.caramelli@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Tamires Lins Costa', g:'Equipe E', email:'tamireslins.costa@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Tamara Silva Marcílio', g:'Equipe B', email:'tamara.marcilio@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Thais Catharine Cardozo Esteves', g:'Equipe A', email:'thais.esteves@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Thiago Frid Figueiredo Rossi', g:'Equipe C', email:'thiago.rossi@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Vanessa de Cassia Castrequini Rosa', g:'Equipe B', email:'vanessa.rosa@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Vinicius da Silva Cerqueira', g:'Equipe A', email:'vinicius.dasilva@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Vinicius Ferreira Garcia', g:'Equipe A', email:'vinicius.garcia@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Vinícius Ronchi Arruda', g:'Equipe E', email:'vinicius.ronchi@peixotoecury.com.br', cargo:'Advogado'},
+  {n:'Vitoria Araujo Carvalho', g:'Equipe B', email:'vitoria.carvalho@peixotoecury.com.br', cargo:'Assistente'},
+  {n:'Washington Soares Silva Filho', g:'Equipe E', email:'washington.soares@peixotoecury.com.br', cargo:'Advogado'}
+];
+function emailPorNome(nome){ const p = PROFISSIONAIS.find(x => x.n === nome); return p ? p.email : ''; }
+function popularSelectProfissionais(select, cargo){
+  const grupos = {};
+  PROFISSIONAIS.filter(p => !cargo || p.cargo === cargo).forEach(p => { (grupos[p.g] = grupos[p.g] || []).push(p.n); });
+  Object.keys(grupos).sort().forEach(g => {
+    const og = document.createElement('optgroup');
+    og.label = g;
+    grupos[g].sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(nome => {
+      const opt = document.createElement('option');
+      opt.value = nome; opt.textContent = nome;
+      og.appendChild(opt);
+    });
+    select.appendChild(og);
+  });
+}
+popularSelectProfissionais(document.getElementById('p-advogado'), 'Advogado');
+popularSelectProfissionais(document.getElementById('a-advogado'), 'Advogado');
+
+function abrirEmail(destinatarios, cc, assunto, corpo){
+  const link = `mailto:${destinatarios}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  window.location.href = link;
+}
+function fmtDataHora(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+}
+function esc(v){ return String(v==null||v===''?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ===================== ABA 1: PERÍCIA ===================== */
+function atualizarDestinatariosPericia(){
+  const tipo = document.getElementById('p-tipo-pericia').value;
+  const hint = document.getElementById('p-destinatarios-hint');
+  if(tipo === 'Técnica'){
+    hint.textContent = 'Vai para: cirellipericias@hotmail.com | c/c: grupobridgestone@peixotoecury.com.br';
+  } else if(tipo === 'Médica' || tipo === 'Ergonômica'){
+    hint.textContent = 'Vai para: cirellipericias@hotmail.com; consultorio@nko.med.br; nelson@nko.med.br | c/c: grupobridgestone@peixotoecury.com.br';
+  } else {
+    hint.textContent = '';
+  }
+}
+
+document.getElementById('form-pericia').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const tipo = document.getElementById('p-tipo-pericia').value;
+  let destinatarios;
+  if(tipo === 'Técnica'){
+    destinatarios = 'cirellipericias@hotmail.com';
+  } else {
+    destinatarios = 'cirellipericias@hotmail.com,consultorio@nko.med.br,nelson@nko.med.br';
+  }
+  const cc = 'grupobridgestone@peixotoecury.com.br';
+
+  const registro = {
+    numero_processo: document.getElementById('p-processo').value.trim(),
+    nome_reclamante: document.getElementById('p-reclamante').value.trim(),
+    tipo_empregado: document.getElementById('p-tipo-empregado').value,
+    tipo_pericia: tipo,
+    data_horario_pericia: document.getElementById('p-data-horario').value.trim(),
+    endereco_pericia: document.getElementById('p-endereco').value.trim(),
+    nome_perito: document.getElementById('p-perito').value.trim(),
+    link_integra: document.getElementById('p-link').value.trim(),
+    texto_email: document.getElementById('p-texto-email').value.trim(),
+    observacoes_adicionais: document.getElementById('p-observacoes').value.trim() || null,
+    advogado_responsavel: document.getElementById('p-advogado').value,
+    destinatarios: destinatarios + ' (cc: ' + cc + ')',
+  };
+
+  const assunto = `Comunicação de Perícia ${tipo} — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
+  const corpo = `${registro.texto_email}\n\n---\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de empregado: ${registro.tipo_empregado}\nTipo de perícia: ${tipo}\nData/Horário: ${registro.data_horario_pericia}\nEndereço: ${registro.endereco_pericia}\nPerito: ${registro.nome_perito}\nLink para acesso à íntegra: ${registro.link_integra}\n${registro.observacoes_adicionais ? '\nObservações: ' + registro.observacoes_adicionais : ''}\n\nAdvogado responsável: ${registro.advogado_responsavel}`;
+
+  const { error } = await sb.from('comunicacoes_pericia').insert(registro);
+  if(error){
+    console.error(error);
+    toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
+  } else {
+    toast('Comunicação registrada. Abrindo e-mail…');
+    carregarHistoricoPericia();
+  }
+  abrirEmail(destinatarios, cc, assunto, corpo);
+  this.reset();
+  document.getElementById('p-destinatarios-hint').textContent = '';
+});
+
+let HIST_PERICIA = [];
+let HIST_PERICIA_FILTRADO = [];
+async function carregarHistoricoPericia(){
+  try{
+    const { data, error } = await sb.from('comunicacoes_pericia').select('*').order('criado_em', {ascending:false}).limit(200);
+    if(error) throw error;
+    HIST_PERICIA = data || [];
+    renderHistoricoPericia();
+  }catch(err){
+    console.error(err);
+    document.getElementById('p-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function renderHistoricoPericia(){
+  const termo = document.getElementById('p-busca').value.toLowerCase();
+  const rows = HIST_PERICIA.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  HIST_PERICIA_FILTRADO = rows;
+  const tbody = document.getElementById('p-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma comunicação encontrada.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td class="mono">${esc(r.numero_processo)}</td>
+    <td>${esc(r.nome_reclamante)}</td>
+    <td><span class="badge badge-blue">${esc(r.tipo_pericia)}</span></td>
+    <td>${esc(r.data_horario_pericia)}</td>
+    <td>${esc(r.nome_perito)}</td>
+    <td>${esc(r.advogado_responsavel)}</td>
+    <td class="mono">${fmtDataHora(r.criado_em)}</td>
+  </tr>`).join('');
+}
+
+/* ===================== ABA 2: CÁLCULOS ===================== */
+document.getElementById('form-calculos').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const registro = {
+    numero_processo: document.getElementById('c-processo').value.trim(),
+    nome_reclamante: document.getElementById('c-reclamante').value.trim(),
+    tipo_subsidio: document.getElementById('c-tipo-subsidio').value,
+    link_documentos: document.getElementById('c-link').value.trim(),
+    prazo_envio: document.getElementById('c-prazo').value,
+    outros_detalhes: document.getElementById('c-outros').value.trim() || null,
+    responsavel_sigla: document.getElementById('c-responsavel').value.trim(),
+  };
+  const destinatarios = 'consulta@madiconsultoria.com.br';
+  const cc = 'atendimento@madipericia.com,michele@madiconsultoria.com.br,grupobridgestone@peixotoecury.com.br,grupo.requantificacao@peixotoecury.com.br';
+  const prazoFmt = registro.prazo_envio ? registro.prazo_envio.split('-').reverse().join('/') : '';
+  const assunto = `Solicitação de Cálculos — ${registro.tipo_subsidio} — Processo ${registro.numero_processo}`;
+  const corpo = `Prezados,\n\nSolicitamos ${registro.tipo_subsidio} referente ao processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de subsídio: ${registro.tipo_subsidio}\nLink para acesso/download: ${registro.link_documentos}\nPrazo para envio: ${prazoFmt}\n${registro.outros_detalhes ? '\nOutros detalhes: ' + registro.outros_detalhes : ''}\n\nResponsável pela solicitação: ${registro.responsavel_sigla}`;
+
+  const { error } = await sb.from('comunicacoes_calculos').insert(registro);
+  if(error){
+    console.error(error);
+    toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
+  } else {
+    toast('Solicitação registrada. Abrindo e-mail…');
+    carregarHistoricoCalculos();
+  }
+  abrirEmail(destinatarios, cc, assunto, corpo);
+  this.reset();
+});
+
+let HIST_CALCULOS = [];
+let HIST_CALCULOS_FILTRADO = [];
+async function carregarHistoricoCalculos(){
+  try{
+    const { data, error } = await sb.from('comunicacoes_calculos').select('*').order('criado_em', {ascending:false}).limit(200);
+    if(error) throw error;
+    HIST_CALCULOS = data || [];
+    renderHistoricoCalculos();
+  }catch(err){
+    console.error(err);
+    document.getElementById('c-tbody').innerHTML = `<tr><td colspan="6" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function renderHistoricoCalculos(){
+  const termo = document.getElementById('c-busca').value.toLowerCase();
+  const rows = HIST_CALCULOS.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  HIST_CALCULOS_FILTRADO = rows;
+  const tbody = document.getElementById('c-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td class="mono">${esc(r.numero_processo)}</td>
+    <td>${esc(r.nome_reclamante)}</td>
+    <td><span class="badge badge-blue">${esc(r.tipo_subsidio)}</span></td>
+    <td class="mono">${r.prazo_envio ? r.prazo_envio.split('-').reverse().join('/') : ''}</td>
+    <td>${esc(r.responsavel_sigla)}</td>
+    <td class="mono">${fmtDataHora(r.criado_em)}</td>
+  </tr>`).join('');
+}
+
+/* ===================== ABA 3: REPORTE DE DECISÃO ===================== */
+document.getElementById('form-decisao').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const g = id => document.getElementById(id).value.trim() || null;
+  const registro = {
+    numero_processo: g('d-processo'),
+    nome_reclamante: g('d-reclamante'),
+    responsavel_sigla: g('d-responsavel'),
+    perito_peri: g('d-perito-peri'),
+    data_pericia_peri: g('d-data-pericia-peri'),
+    pericia_dia_adicional: g('d-pericia-dia-adicional'),
+    laudo_periculosidade_resultado: g('d-laudo-peri-resultado'),
+    laudo_periculosidade_data_inicio: g('d-laudo-peri-data-inicio'),
+    laudo_periculosidade_data_final: g('d-laudo-peri-data-final'),
+    laudo_periculosidade_motivo: g('d-laudo-peri-motivo'),
+    decisao_periculosidade_resultado: g('d-decisao-peri-resultado'),
+    decisao_periculosidade_data_inicio: g('d-decisao-peri-data-inicio'),
+    decisao_periculosidade_data_final: g('d-decisao-peri-data-final'),
+    decisao_periculosidade_motivo: g('d-decisao-peri-motivo'),
+    periculosidade_detalhamento_pos2016: g('d-peri-pos2016'),
+    laudo_insalubridade_resultado: g('d-laudo-insalu-resultado'),
+    laudo_insalubridade_data_inicio: g('d-laudo-insalu-data-inicio'),
+    laudo_insalubridade_data_final: g('d-laudo-insalu-data-final'),
+    laudo_insalubridade_motivo: g('d-laudo-insalu-motivo'),
+    laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
+    decisao_insalubridade_resultado: g('d-decisao-insalu-resultado'),
+    decisao_insalubridade_grau: g('d-decisao-insalu-grau'),
+    decisao_insalubridade_data_inicio: g('d-decisao-insalu-data-inicio'),
+    decisao_insalubridade_data_final: g('d-decisao-insalu-data-final'),
+    decisao_insalubridade_motivo: g('d-decisao-insalu-motivo'),
+    decisao_insalubridade_agentes: g('d-decisao-insalu-agentes'),
+    insalubridade_obs_epi: g('d-insalu-obs-epi'),
+    insalubridade_analise_complementar: g('d-insalu-analise-complementar'),
+    laudo_ergonomico: g('d-laudo-ergonomico'),
+    perito_medica: g('d-perito-medica'),
+    data_pericia_medica: g('d-data-pericia-medica'),
+    medica_doenca: g('d-medica-doenca'),
+    medica_area_corpo: g('d-medica-area-corpo'),
+    medica_motivos: g('d-medica-motivos'),
+    medica_fonte_informacao: g('d-medica-fonte-informacao'),
+    medica_laudo_resultado: g('d-medica-laudo-resultado'),
+    sentenca_resultado: g('d-sentenca-resultado'),
+    sentenca_data: g('d-sentenca-data'),
+    sentenca_juiz: g('d-sentenca-juiz'),
+    sentenca_pedidos_deferidos: g('d-sentenca-deferidos'),
+    sentenca_pedidos_indeferidos: g('d-sentenca-indeferidos'),
+    acordao_trt_reclamada: g('d-acordao-trt-reclamada'),
+    acordao_trt_data: g('d-acordao-trt-data'),
+    acordao_trt_turma: g('d-acordao-trt-turma'),
+    acordao_trt_relator: g('d-acordao-trt-relator'),
+    acordao_tst: g('d-acordao-tst'),
+    acordao_tst_data: g('d-acordao-tst-data'),
+    acordao_tst_camara: g('d-acordao-tst-camara'),
+    acordao_tst_ministro: g('d-acordao-tst-ministro'),
+    execucao: g('d-execucao'),
+    ultima_movimentacao: g('d-ultima-movimentacao'),
+    atualizado_em: new Date().toISOString(),
+  };
+  const tiposEmail = Array.from(document.querySelectorAll('.d-email-check:checked')).map(cb => cb.value);
+  try{
+    const { error } = await sb.from('reportes_decisao').insert(registro);
+    if(error) throw error;
+    toast('Reporte de decisão salvo com sucesso.' + (tiposEmail.length ? ' Abrindo ' + tiposEmail.length + ' e-mail(s)…' : ''));
+    if(tiposEmail.length) enviarEmailsDecisao(registro, tiposEmail);
+    this.reset();
+    carregarHistoricoDecisao();
+  }catch(err){
+    console.error(err);
+    toast('Erro ao salvar: ' + (err.message||err), true);
+    if(tiposEmail.length) enviarEmailsDecisao(registro, tiposEmail);
+  }
+});
+
+let HIST_DECISAO = [];
+let HIST_DECISAO_FILTRADO = [];
+async function carregarHistoricoDecisao(){
+  try{
+    const { data, error } = await sb.from('reportes_decisao').select('*').order('atualizado_em', {ascending:false}).limit(200);
+    if(error) throw error;
+    HIST_DECISAO = data || [];
+    renderHistoricoDecisao();
+  }catch(err){
+    console.error(err);
+    document.getElementById('d-tbody').innerHTML = `<tr><td colspan="8" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function renderHistoricoDecisao(){
+  const termo = document.getElementById('d-busca').value.toLowerCase();
+  const rows = HIST_DECISAO.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  HIST_DECISAO_FILTRADO = rows;
+  const tbody = document.getElementById('d-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Nenhum reporte encontrado.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td class="mono">${esc(r.numero_processo)}</td>
+    <td>${esc(r.nome_reclamante)}</td>
+    <td>${esc(r.laudo_periculosidade_resultado)}</td>
+    <td>${esc(r.laudo_insalubridade_resultado)}</td>
+    <td>${esc(r.sentenca_resultado)}</td>
+    <td>${r.execucao ? `<span class="badge ${r.execucao==='Sim'?'badge-orange':'badge-green'}">${esc(r.execucao)}</span>` : ''}</td>
+    <td class="mono">${fmtDataHora(r.atualizado_em)}</td>
+    <td>
+      <select class="row-btn" onchange="if(this.value){ gerarEmailDecisao(${r.id}, this.value); this.value=''; }">
+        <option value="">✉️ Modelo de e-mail…</option>
+        <option value="medico">1 — Laudo Pericial Médico</option>
+        <option value="ergonomico">2 — Laudo Pericial Ergonômico</option>
+        <option value="tecnico">3 — Laudo Pericial Técnico (Insalu/Peric.)</option>
+        <option value="sentenca">4 — Sentença</option>
+        <option value="embargos">5 — Embargos de Declaração</option>
+        <option value="trt">6 — Acórdão do TRT</option>
+        <option value="tst">7 — Acórdão do TST</option>
+        <option value="execucao">8 — Execução</option>
+      </select>
+    </td>
+  </tr>`).join('');
+}
+
+/* ===================== MODELOS DE E-MAIL — REPORTE DE DECISÃO =====================
+   Destinatários fixos pra todos os 8 modelos (Bridgestone). */
+const DECISAO_TO = 'MenezesShana@la-bridgestone.com,VialiHigor@la-bridgestone.com,mullermaria@la-bridgestone.com';
+const DECISAO_CC = 'grupobridgestone@peixotoecury.com.br';
+const PH = '[Preencher]';
+function nn(v){ return v || PH; }
+
+const EMAIL_MODELOS = {
+  medico: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Médico`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial médico referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}\nData da Perícia: ${nn(r.data_pericia_medica)}\nDoença Alegada: ${nn(r.medica_doenca)}\nParte do Corpo: ${nn(r.medica_area_corpo)}\nPerito Médico do Juízo: ${nn(r.perito_medica)}\n\n\nConclusão da perícia:\n- ${PH} [Ex.: Não foi constatada incapacidade laborativa / nexo causal / incapacidade parcial e permanente]\n\nPrincipais fundamentos do perito:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA equipe analisará o conteúdo técnico para verificar eventual necessidade de apresentação de impugnação, esclarecimentos ou outras medidas processuais cabíveis.\n\nManteremos todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+  }),
+  ergonomico: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Ergonômico`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial ergonômico referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}\nData da Perícia: ${nn(r.data_pericia_medica)}\nÁrea vistoriada: ${nn(r.medica_area_corpo)}\nTipo de Pedido: ${nn(r.medica_motivos)}\nPerito Técnico do Juízo: ${nn(r.perito_medica)}\n\n\nConclusão da perícia:\n- ${PH} [Ex.: Não foram identificadas inadequações ergonômicas / oportunidades de melhoria / risco ergonômico]\n\nPrincipais fundamentos:\n- ${PH}\n- ${PH}\n- ${PH}\n\nNossa equipe avaliará tecnicamente o conteúdo do laudo para definição das medidas processuais cabíveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+  }),
+  tecnico: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Técnico`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial técnico referente ao processo.\n\nConclusão da perícia:\n- Insalubridade: ${nn(r.laudo_insalubridade_resultado || r.decisao_insalubridade_resultado)}\n- Grau: ${nn(r.decisao_insalubridade_grau)}\n- Periculosidade: ${nn(r.laudo_periculosidade_resultado || r.decisao_periculosidade_resultado)}\n\nPrincipais fundamentos do perito:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA nossa equipe analisará o laudo para definição da estratégia processual e eventual apresentação de impugnação ou esclarecimentos.\n\nSeguiremos acompanhando o andamento do processo e manteremos vocês informados.\n\nAtenciosamente,`,
+  }),
+  sentenca: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Publicação da Sentença`,
+    corpo: `Prezados,\n\nInformamos que foi publicada a sentença referente ao processo em epígrafe.\n\nResultado da decisão:\n- Pedidos julgados procedentes: ${nn(r.sentenca_pedidos_deferidos)}\n- Pedidos julgados improcedentes: ${nn(r.sentenca_pedidos_indeferidos)}\n- Pedidos parcialmente procedentes: ${PH}\n\nPrincipais fundamentos da sentença:\n- ${PH}\n- ${PH}\n- ${PH}\n\nPróximos passos:\nA equipe jurídica está analisando a decisão para definição da estratégia recursal e adoção das medidas cabíveis dentro do prazo legal.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+  }),
+  embargos: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Julgamento dos Embargos de Declaração`,
+    corpo: `Prezados,\n\nInformamos que foram julgados os Embargos de Declaração opostos no processo em epígrafe.\n\nResultado:\n( ) Acolhidos\n( ) Parcialmente acolhidos\n( ) Rejeitados\n\nPrincipais fundamentos da decisão:\n- ${PH}\n- ${PH}\n\nCaso a decisão tenha alterado o conteúdo do julgamento anterior, as respectivas modificações serão consideradas na definição da estratégia processual.\n\nSeguiremos acompanhando o processo.\n\nAtenciosamente,`,
+  }),
+  trt: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TRT`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nResultado do julgamento:\n- Recurso da Reclamada: ${nn(r.acordao_trt_reclamada)}\n- Recurso da Reclamante: ${PH}\n\nPrincipais fundamentos:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA equipe jurídica avaliará a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+  }),
+  tst: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TST`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Superior do Trabalho.\n\nResultado do julgamento:\n- ${nn(r.acordao_tst)}\n\nPrincipais fundamentos:\n- ${PH}\n- ${PH}\n- ${PH}\n\nNossa equipe analisará a decisão para definição das medidas processuais eventualmente cabíveis e manterá todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+  }),
+  execucao: (r) => ({
+    assunto: `Processo nº ${r.numero_processo} – Atualização da Fase de Execução`,
+    corpo: `Prezados,\n\nInformamos a atualização referente à fase de execução do processo em epígrafe.\n\nMovimentação processual:\n- ${nn(r.ultima_movimentacao)}\n\nImpactos da decisão:\n- ${PH}\n\nPróximos passos: Nossa equipe seguirá acompanhando a execução e adotará todas as medidas processuais necessárias para resguardar os interesses da empresa.\n\nPermanecemos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,`,
+  }),
+};
+
+function gerarEmailDecisao(id, modelo){
+  const r = HIST_DECISAO.find(x => x.id === id);
+  if(!r || !EMAIL_MODELOS[modelo]) return;
+  const { assunto, corpo } = EMAIL_MODELOS[modelo](r);
+  abrirEmail(DECISAO_TO, DECISAO_CC, assunto, corpo);
+}
+
+/* Abre um e-mail por tipo marcado, um de cada vez (mailto sequencial precisa de intervalo
+   pra não atropelar a abertura do Outlook). */
+function enviarEmailsDecisao(registro, tipos){
+  tipos.forEach((tipo, i) => {
+    setTimeout(() => {
+      const modelo = EMAIL_MODELOS[tipo];
+      if(!modelo) return;
+      const { assunto, corpo } = modelo(registro);
+      abrirEmail(DECISAO_TO, DECISAO_CC, assunto, corpo);
+    }, i * 700);
+  });
+}
+
+/* ===================== ABA 4: REPORTE DE ACORDOS ===================== */
+function recalcularEconomiaAcordo(){
+  const accrual = parseFloat(document.getElementById('a-total-accrual').value) || 0;
+  const pago = parseFloat(document.getElementById('a-valor-pago').value) || 0;
+  if(!accrual && !pago){
+    document.getElementById('a-economia').value = '';
+    document.getElementById('a-percentual-economia').value = '';
+    return;
+  }
+  const economia = accrual - pago;
+  document.getElementById('a-economia').value = economia.toFixed(2);
+  document.getElementById('a-percentual-economia').value = accrual ? (economia/accrual*100).toFixed(1) + '%' : '';
+}
+
+document.getElementById('form-acordos').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const g = id => document.getElementById(id).value.trim() || null;
+  const num = id => { const v = document.getElementById(id).value; return v===''?null:parseFloat(v); };
+  const registro = {
+    numero_processo: g('a-processo'),
+    nome_reclamante: g('a-reclamante'),
+    reclamada: g('a-reclamada'),
+    departamento: g('a-departamento'),
+    comarca: g('a-comarca'),
+    escritorio: g('a-escritorio'),
+    vara: g('a-vara'),
+    advogado_responsavel: g('a-advogado'),
+    status_acordo: g('a-status-acordo'),
+    status_homologacao: g('a-status-homologacao'),
+    tem_contraproposta: g('a-tem-contraproposta'),
+    proposta: num('a-proposta'),
+    negociacao_em: g('a-negociacao-em'),
+    justificativa: g('a-justificativa'),
+    pautao: g('a-pautao'),
+    total_provavel: num('a-total-provavel'),
+    total_accrual: num('a-total-accrual'),
+    valor_pago: num('a-valor-pago'),
+    economia: num('a-economia'),
+    percentual_economia: document.getElementById('a-percentual-economia').value ? parseFloat(document.getElementById('a-percentual-economia').value) : null,
+    classificacao_economia: g('a-classificacao-economia'),
+    data_protocolo_acordo: g('a-data-protocolo'),
+    data_pagamento: g('a-data-pagamento'),
+    solicitamos_autorizacao: g('a-solicitamos-autorizacao'),
+    aprovacao_acordo: g('a-aprovacao-acordo'),
+    informacoes_adicionais: g('a-informacoes-adicionais'),
+    atualizado_em: new Date().toISOString(),
+  };
+  try{
+    const { error } = await sb.from('reportes_acordos').insert(registro);
+    if(error) throw error;
+    toast('Reporte de acordo salvo com sucesso.');
+    this.reset();
+    document.getElementById('a-economia').value = '';
+    document.getElementById('a-percentual-economia').value = '';
+    carregarHistoricoAcordos();
+  }catch(err){
+    console.error(err);
+    toast('Erro ao salvar: ' + (err.message||err), true);
+  }
+});
+
+let HIST_ACORDOS = [];
+let HIST_ACORDOS_FILTRADO = [];
+async function carregarHistoricoAcordos(){
+  try{
+    const { data, error } = await sb.from('reportes_acordos').select('*').order('atualizado_em', {ascending:false}).limit(200);
+    if(error) throw error;
+    HIST_ACORDOS = data || [];
+    renderHistoricoAcordos();
+  }catch(err){
+    console.error(err);
+    document.getElementById('a-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function fmtMoeda(v){ return v==null ? '' : Number(v).toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
+function renderHistoricoAcordos(){
+  const termo = document.getElementById('a-busca').value.toLowerCase();
+  const rows = HIST_ACORDOS.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  HIST_ACORDOS_FILTRADO = rows;
+  const tbody = document.getElementById('a-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum acordo reportado encontrado.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td class="mono">${esc(r.numero_processo)}</td>
+    <td>${esc(r.nome_reclamante)}</td>
+    <td><span class="badge badge-blue">${esc(r.status_acordo)}</span></td>
+    <td class="mono">${fmtMoeda(r.valor_pago)}</td>
+    <td class="mono">${fmtMoeda(r.economia)}</td>
+    <td class="mono">${r.data_pagamento ? r.data_pagamento.split('-').reverse().join('/') : ''}</td>
+    <td class="mono">${fmtDataHora(r.atualizado_em)}</td>
+  </tr>`).join('');
+}
+
+/* ===================== ABA 5: SOLICITAÇÃO DE INSERÇÃO DE VALORES ===================== */
+const LIMIAR_ALERTA_VALOR = 400000;
+const NICOLAU_EMAIL = 'nicolau.coelho@peixotoecury.com.br';
+
+function atualizarAlertaValor(){
+  const v = parseFloat(document.getElementById('v-novo-valor').value) || 0;
+  document.getElementById('v-alerta-400k').style.display = (v >= LIMIAR_ALERTA_VALOR) ? 'flex' : 'none';
+}
+
+document.getElementById('form-valores').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const g = id => document.getElementById(id).value.trim() || null;
+  const num = id => { const v = document.getElementById(id).value; return v===''?null:parseFloat(v); };
+  const novoValor = num('v-novo-valor') || 0;
+  const acima400k = novoValor >= LIMIAR_ALERTA_VALOR;
+  const registro = {
+    numero_processo: g('v-processo'),
+    nome_reclamante: g('v-reclamante'),
+    reclamada: g('v-reclamada'),
+    vara_turma_camara: g('v-vara'),
+    comarca: g('v-comarca'),
+    uf: g('v-uf') ? g('v-uf').toUpperCase() : null,
+    advogado_solicitante: g('v-advogado-solicitante'),
+    assistente_responsavel: g('v-assistente-responsavel'),
+    tipo_decisao: g('v-tipo-decisao'),
+    tipo_calculo: g('v-tipo-calculo'),
+    data_calculo: g('v-data-calculo'),
+    revisado: g('v-revisado'),
+    justificativa_revisao: g('v-justificativa-revisao'),
+    inserido_lm: g('v-inserido-lm'),
+    data_insercao_lm: g('v-data-insercao-lm'),
+    inserido_sistema: g('v-inserido-sistema'),
+    data_insercao_sistema: g('v-data-insercao-sistema'),
+    provisao_accrual_atual: num('v-provisao-atual'),
+    novo_valor: novoValor,
+    link_calculo: g('v-link-calculo'),
+    acima_400k: acima400k,
+    enviado_cliente: g('v-enviado-cliente'),
+    justificativa_envio: g('v-justificativa-envio'),
+  };
+  const destinatarios = 'cicera.vicente@peixotoecury.com.br';
+  const cc = 'grupobridgestone@peixotoecury.com.br';
+  const valorFmt = fmtMoeda(registro.novo_valor);
+  const provisaoFmt = fmtMoeda(registro.provisao_accrual_atual);
+  const assunto = `Solicitação de Inserção de Valores — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
+  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção do valor abaixo referente ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\nProvisão/Accrual Atual: ${provisaoFmt}\nNovo Valor: ${valorFmt}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+
+  const { error } = await sb.from('solicitacoes_insercao_valores').insert(registro);
+  if(error){
+    console.error(error);
+    toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
+  } else {
+    toast('Solicitação registrada.' + (acima400k ? ' Abrindo e-mail e nota para o Nicolau…' : ' Abrindo e-mail…'));
+    carregarHistoricoValores();
+  }
+  abrirEmail(destinatarios, cc, assunto, corpo);
+  if(acima400k){
+    setTimeout(() => {
+      const assuntoNicolau = `⚠️ Inserção de Valor Acima de R$ 400.000,00 — Processo ${registro.numero_processo}`;
+      const corpoNicolau = `Nicolau,\n\nNota de atenção: o valor abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nNovo Valor: ${valorFmt}\nProvisão/Accrual Atual: ${provisaoFmt}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+      abrirEmail(NICOLAU_EMAIL, cc, assuntoNicolau, corpoNicolau);
+    }, 700);
+  }
+  this.reset();
+  document.getElementById('v-alerta-400k').style.display = 'none';
+});
+
+let HIST_VALORES = [];
+let HIST_VALORES_FILTRADO = [];
+async function carregarHistoricoValores(){
+  try{
+    const { data, error } = await sb.from('solicitacoes_insercao_valores').select('*').order('criado_em', {ascending:false}).limit(200);
+    if(error) throw error;
+    HIST_VALORES = data || [];
+    renderHistoricoValores();
+  }catch(err){
+    console.error(err);
+    document.getElementById('v-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function renderHistoricoValores(){
+  const termo = document.getElementById('v-busca').value.toLowerCase();
+  const rows = HIST_VALORES.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  HIST_VALORES_FILTRADO = rows;
+  const tbody = document.getElementById('v-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td class="mono">${esc(r.numero_processo)}</td>
+    <td>${esc(r.nome_reclamante)}</td>
+    <td><span class="badge badge-blue">${esc(r.tipo_calculo)}</span></td>
+    <td class="mono">${fmtMoeda(r.novo_valor)}</td>
+    <td>${r.acima_400k ? '<span class="badge badge-orange">Sim</span>' : '<span class="badge badge-green">Não</span>'}</td>
+    <td>${esc(r.inserido_sistema)}</td>
+    <td class="mono">${fmtDataHora(r.criado_em)}</td>
+  </tr>`).join('');
+}
+
+/* ===================== EXPORTAR EXCEL (todas as abas) ===================== */
+function exportarExcel(rows, nomeArquivo){
+  if(!rows || !rows.length){ toast('Nada para exportar.', true); return; }
+  const limpo = rows.map(r => { const c = {...r}; delete c.id; return c; });
+  const ws = XLSX.utils.json_to_sheet(limpo);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Dados');
+  XLSX.writeFile(wb, `${nomeArquivo}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* ===================== REALTIME (atualiza sozinho quando alguém salva algo) ===================== */
+function assinarRealtime(tabela, recarregar){
+  sb.channel('realtime:' + tabela)
+    .on('postgres_changes', { event: '*', schema: 'public', table: tabela }, () => recarregar())
+    .subscribe();
+}
+
+/* ===================== INIT ===================== */
+if(!sb){
+  document.getElementById('erro-conexao').innerHTML = `<div class="error-banner"><strong>Erro:</strong> não foi possível conectar ao Supabase.</div>`;
+} else {
+  carregarHistoricoPericia();
+  carregarHistoricoCalculos();
+  carregarHistoricoDecisao();
+  carregarHistoricoAcordos();
+  carregarHistoricoValores();
+
+  assinarRealtime('comunicacoes_pericia', carregarHistoricoPericia);
+  assinarRealtime('comunicacoes_calculos', carregarHistoricoCalculos);
+  assinarRealtime('reportes_decisao', carregarHistoricoDecisao);
+  assinarRealtime('reportes_acordos', carregarHistoricoAcordos);
+  assinarRealtime('solicitacoes_insercao_valores', carregarHistoricoValores);
+}
+</script>
+</body>
+</html>
