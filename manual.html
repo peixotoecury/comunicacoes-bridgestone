@@ -299,10 +299,11 @@ table.field-table tr:last-child td{border-bottom:none;}
           <tr><td class="campo">Envio para o Cliente?</td><td>Sim/Não — só um registro, não trava nada sozinho</td></tr>
           <tr><td class="campo">Inserir Gerência?</td><td>Só fica liberado se "Envio para o Cliente" = Sim</td></tr>
         </table>
+        <div class="warn-callout">⚠️ <b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> "Envio para o Cliente" decide só PRA QUEM vai (cliente ou só internamente), nunca SE vai. Não existe reporte de decisão que fique sem nenhum envio.</div>
         <div class="email-flow">
           <div class="email-flow-title">✉️ Regra dos destinatários</div>
           <div class="email-step"><div class="num">1</div><div><b>Envio para o Cliente = Sim</b> → vai para <b>Higor Viali e Maria Muller</b> (contatos Bridgestone), + <b>Shana Menezes</b> também se "Inserir Gerência" = Sim. Cc <b>Grupo Bridgestone</b> (interno).</div></div>
-          <div class="email-step"><div class="num">2</div><div><b>Envio para o Cliente = Não</b> (ou em branco) → fica só interno, vai só pro <b>Grupo Bridgestone</b>, sem sair pro cliente.</div></div>
+          <div class="email-step"><div class="num">2</div><div><b>Envio para o Cliente = Não</b> (ou em branco) → fica só interno, vai só pro <b>Grupo Bridgestone</b> — mas <b>ainda assim é enviado</b>, não é dispensado.</div></div>
         </div>
         <div class="section-title">Marque quais e-mails abrir</div>
         <p style="margin-bottom:8px;">8 modelos disponíveis, cada um com texto próprio: <span class="badge badge-blue">Laudo Pericial Médico</span><span class="badge badge-blue">Laudo Pericial Ergonômico</span><span class="badge badge-blue">Laudo Pericial Técnico</span><span class="badge badge-blue">Sentença</span><span class="badge badge-blue">Embargos de Declaração</span><span class="badge badge-blue">Acórdão do TRT</span><span class="badge badge-blue">Acórdão do TST</span><span class="badge badge-blue">Execução</span></p>
