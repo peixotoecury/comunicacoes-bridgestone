@@ -355,6 +355,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Energia Elétrica" id="d-lpm-4"><label for="d-lpm-4">Energia Elétrica</label></div>
             <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Ingresso à sala de cimento" id="d-lpm-5"><label for="d-lpm-5">Ingresso à sala de cimento</label></div>
             <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Produtos Inflamáveis" id="d-lpm-6"><label for="d-lpm-6">Produtos Inflamáveis</label></div>
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Galpão é uma única edificação" id="d-lpm-7"><label for="d-lpm-7">Galpão é uma única edificação</label></div>
           </div>
         </div>
         <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-peri-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
@@ -731,13 +732,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="section-title">Envio de E-mails</div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Envio para o Cliente?</label>
-            <select id="d-envio-cliente"><option value="">—</option><option>Sim</option><option>Não</option></select>
+            <select id="d-envio-cliente" onchange="atualizarInserirGerencia()"><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
           <div class="mc-form-group"><label>Inserir Gerência?</label>
-            <select id="d-inserir-gerencia"><option value="">—</option><option>Sim</option><option>Não</option></select>
+            <select id="d-inserir-gerencia" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
-        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos (um de cada vez, no Outlook) assim que o reporte for salvo. Cada tipo usa seu próprio modelo, com destinatários fixos (Bridgestone). A Shana só é incluída como destinatária se "Inserir Gerência" for <b>Sim</b> — caso contrário, os e-mails vão só para o Higor e a Maria.</div>
+        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos (um de cada vez, no Outlook) assim que o reporte for salvo. Se <b>Envio para o Cliente = Sim</b>, o e-mail vai pro Higor e pra Maria (e pra Shana também, se "Inserir Gerência" for Sim), com cópia pro Grupo Bridgestone. Se for <b>Não</b> (ou em branco), o e-mail fica só interno — vai só pro Grupo Bridgestone, sem sair pro cliente.</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
@@ -1288,6 +1289,13 @@ function renderHistoricoCalculos(){
 }
 
 /* ===================== ABA 3: REPORTE DE DECISÃO ===================== */
+function atualizarInserirGerencia(){
+  const envio = document.getElementById('d-envio-cliente').value;
+  const sel = document.getElementById('d-inserir-gerencia');
+  sel.disabled = envio !== 'Sim';
+  if(sel.disabled) sel.value = '';
+}
+
 document.getElementById('form-decisao').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
@@ -1368,6 +1376,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     toast('Reporte de decisão salvo com sucesso.' + (tiposEmail.length ? ' Abrindo ' + tiposEmail.length + ' e-mail(s)…' : ''));
     if(tiposEmail.length) enviarEmailsDecisao(registro, tiposEmail);
     this.reset();
+    atualizarInserirGerencia();
     carregarHistoricoDecisao();
   }catch(err){
     console.error(err);
@@ -1424,8 +1433,15 @@ function renderHistoricoDecisao(){
 const DECISAO_TO_BASE = 'VialiHigor@la-bridgestone.com,mullermaria@la-bridgestone.com';
 const DECISAO_SHANA = 'MenezesShana@la-bridgestone.com';
 const DECISAO_CC = 'grupobridgestone@peixotoecury.com.br';
-function decisaoDestinatarios(inserirGerencia){
-  return (inserirGerencia === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
+/* Envio para o Cliente = Sim -> vai pros contatos externos da Bridgestone (Higor/Maria,
+   + Shana se Inserir Gerência = Sim), cc Grupo Bridgestone (interno).
+   Envio para o Cliente = Não (ou vazio) -> fica só interno, vai só pro Grupo Bridgestone. */
+function decisaoEnderecos(envioCliente, inserirGerencia){
+  if(envioCliente === 'Sim'){
+    const to = (inserirGerencia === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
+    return { to, cc: DECISAO_CC };
+  }
+  return { to: DECISAO_CC, cc: '' };
 }
 const PH = '[Preencher]';
 function nn(v){ return v || PH; }
@@ -1469,19 +1485,20 @@ function gerarEmailDecisao(id, modelo){
   const r = HIST_DECISAO.find(x => x.id === id);
   if(!r || !EMAIL_MODELOS[modelo]) return;
   const { assunto, corpo } = EMAIL_MODELOS[modelo](r);
-  abrirEmail(decisaoDestinatarios(r.inserir_gerencia), DECISAO_CC, assunto, corpo);
+  const { to, cc } = decisaoEnderecos(r.envio_cliente, r.inserir_gerencia);
+  abrirEmail(to, cc, assunto, corpo);
 }
 
 /* Abre um e-mail por tipo marcado, um de cada vez (mailto sequencial precisa de intervalo
    pra não atropelar a abertura do Outlook). */
 function enviarEmailsDecisao(registro, tipos){
-  const destinatarios = decisaoDestinatarios(registro.inserir_gerencia);
+  const { to, cc } = decisaoEnderecos(registro.envio_cliente, registro.inserir_gerencia);
   tipos.forEach((tipo, i) => {
     setTimeout(() => {
       const modelo = EMAIL_MODELOS[tipo];
       if(!modelo) return;
       const { assunto, corpo } = modelo(registro);
-      abrirEmail(destinatarios, DECISAO_CC, assunto, corpo);
+      abrirEmail(to, cc, assunto, corpo);
     }, i * 700);
   });
 }
