@@ -122,9 +122,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;}
 .check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--azul-pc);cursor:pointer;flex-shrink:0;}
 .check-row label{font-size:12.5px;color:var(--preto-pc);cursor:pointer;}
-.chk-multi{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;border:1px solid #BFD6E4;border-radius:var(--radius);padding:8px 14px;background:#fff;}
+.chk-multi{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;border:1px solid #BFD6E4;border-radius:var(--radius);padding:8px 14px;background:#fff;max-height:260px;overflow-y:auto;}
 .chk-multi .check-row{padding:4px 0;}
-@media (max-width: 900px){ .chk-multi{grid-template-columns:1fr;} }
+.chk-multi.chk-multi-3{grid-template-columns:1fr 1fr 1fr;}
+@media (max-width: 900px){ .chk-multi{grid-template-columns:1fr;} .chk-multi.chk-multi-3{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -343,8 +344,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Sem Pedido</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data Início (Laudo)</label><input type="date" id="d-laudo-peri-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-peri-data-final"></div>
+          <div class="mc-form-group"><label>Data Início (Imprescrito)</label><input type="date" id="d-laudo-peri-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final (Imprescrito)</label><input type="date" id="d-laudo-peri-data-final"></div>
         </div>
         <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label>
           <div class="chk-multi">
@@ -370,8 +371,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Sem Pedido</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data Início (Laudo)</label><input type="date" id="d-laudo-insalu-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-insalu-data-final"></div>
+          <div class="mc-form-group"><label>Data Início (Imprescrito)</label><input type="date" id="d-laudo-insalu-data-inicio"></div>
+          <div class="mc-form-group"><label>Data Final (Imprescrito)</label><input type="date" id="d-laudo-insalu-data-final"></div>
         </div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label>
@@ -395,7 +396,56 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Perito</label><input type="text" id="d-perito-medica"></div>
           <div class="mc-form-group"><label>Data da Perícia</label><input type="text" id="d-data-pericia-medica" placeholder="dd/mm/aaaa"></div>
-          <div class="mc-form-group"><label>Doença</label><input type="text" id="d-medica-doenca"></div>
+        </div>
+        <div class="mc-form-group"><label>Doença (Padronizada)</label>
+          <div class="chk-multi chk-multi-3">
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Acidente Do Trabalho" id="d-doe-1"><label for="d-doe-1">Acidente Do Trabalho</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Alergia" id="d-doe-2"><label for="d-doe-2">Alergia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Anquilose" id="d-doe-3"><label for="d-doe-3">Anquilose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Artrose" id="d-doe-4"><label for="d-doe-4">Artrose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Bursite" id="d-doe-5"><label for="d-doe-5">Bursite</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Cancer" id="d-doe-6"><label for="d-doe-6">Cancer</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Cervicobraquialgia" id="d-doe-7"><label for="d-doe-7">Cervicobraquialgia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Cisto Sinovial" id="d-doe-8"><label for="d-doe-8">Cisto Sinovial</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Depressão" id="d-doe-9"><label for="d-doe-9">Depressão</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Disacusia" id="d-doe-10"><label for="d-doe-10">Disacusia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Discopatia" id="d-doe-11"><label for="d-doe-11">Discopatia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Doença de Kienbock" id="d-doe-12"><label for="d-doe-12">Doença de Kienbock</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Doença Pulmonar" id="d-doe-13"><label for="d-doe-13">Doença Pulmonar</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Entorse" id="d-doe-14"><label for="d-doe-14">Entorse</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Epicondilite" id="d-doe-15"><label for="d-doe-15">Epicondilite</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Escoliose" id="d-doe-16"><label for="d-doe-16">Escoliose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Espondiloartrose" id="d-doe-17"><label for="d-doe-17">Espondiloartrose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Espondilodiscoartrose" id="d-doe-18"><label for="d-doe-18">Espondilodiscoartrose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Espondilodiscopatia" id="d-doe-19"><label for="d-doe-19">Espondilodiscopatia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Espondilose" id="d-doe-20"><label for="d-doe-20">Espondilose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Fratura de Fêmur" id="d-doe-21"><label for="d-doe-21">Fratura de Fêmur</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Gonartrose" id="d-doe-22"><label for="d-doe-22">Gonartrose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Hérnia de Disco" id="d-doe-23"><label for="d-doe-23">Hérnia de Disco</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Hérnia Umbilical" id="d-doe-24"><label for="d-doe-24">Hérnia Umbilical</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Infecção" id="d-doe-25"><label for="d-doe-25">Infecção</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="LER" id="d-doe-26"><label for="d-doe-26">LER</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Lesão de Hill-Sachs" id="d-doe-27"><label for="d-doe-27">Lesão de Hill-Sachs</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Lesão Meniscal" id="d-doe-28"><label for="d-doe-28">Lesão Meniscal</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Lombalgia" id="d-doe-29"><label for="d-doe-29">Lombalgia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Luxação" id="d-doe-30"><label for="d-doe-30">Luxação</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Osteoartrose" id="d-doe-31"><label for="d-doe-31">Osteoartrose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Osteomielite" id="d-doe-32"><label for="d-doe-32">Osteomielite</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Patologia Degenerativa" id="d-doe-33"><label for="d-doe-33">Patologia Degenerativa</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Perda Auditiva" id="d-doe-34"><label for="d-doe-34">Perda Auditiva</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Protusão Discal" id="d-doe-35"><label for="d-doe-35">Protusão Discal</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Púrpura Trombocitopênica" id="d-doe-36"><label for="d-doe-36">Púrpura Trombocitopênica</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Rompimento Do Ligamento Talofibular" id="d-doe-37"><label for="d-doe-37">Rompimento Do Ligamento Talofibular</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Síndrome De Impacto" id="d-doe-38"><label for="d-doe-38">Síndrome De Impacto</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Síndrome Do Manguito Rotador" id="d-doe-39"><label for="d-doe-39">Síndrome Do Manguito Rotador</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Síndrome Do Túnel Do Carpo" id="d-doe-40"><label for="d-doe-40">Síndrome Do Túnel Do Carpo</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Síndrome Mielodisplásica" id="d-doe-41"><label for="d-doe-41">Síndrome Mielodisplásica</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Tendinite" id="d-doe-42"><label for="d-doe-42">Tendinite</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Tendinopatia" id="d-doe-43"><label for="d-doe-43">Tendinopatia</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Tendinose" id="d-doe-44"><label for="d-doe-44">Tendinose</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Tenossinovite" id="d-doe-45"><label for="d-doe-45">Tenossinovite</label></div>
+            <div class="check-row"><input type="checkbox" class="d-medica-doenca-chk" value="Tromboflebite" id="d-doe-46"><label for="d-doe-46">Tromboflebite</label></div>
+          </div>
         </div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Área do Corpo</label><input type="text" id="d-medica-area-corpo"></div>
@@ -1248,7 +1298,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_ergonomico: g('d-laudo-ergonomico'),
     perito_medica: g('d-perito-medica'),
     data_pericia_medica: g('d-data-pericia-medica'),
-    medica_doenca: g('d-medica-doenca'),
+    medica_doenca: marcados('d-medica-doenca-chk'),
     medica_area_corpo: g('d-medica-area-corpo'),
     medica_motivos: g('d-medica-motivos'),
     medica_fonte_informacao: g('d-medica-fonte-informacao'),
