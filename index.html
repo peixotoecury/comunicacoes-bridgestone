@@ -597,7 +597,15 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
 
         <div class="section-title">Envio de E-mails</div>
-        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos (um de cada vez, no Outlook) assim que o reporte for salvo. Cada tipo usa seu próprio modelo, com destinatários fixos (Bridgestone).</div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Envio para o Cliente?</label>
+            <select id="d-envio-cliente"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Inserir Gerência?</label>
+            <select id="d-inserir-gerencia"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+        </div>
+        <div class="info-box">ℹ️ Marque os e-mails que devem ser abertos (um de cada vez, no Outlook) assim que o reporte for salvo. Cada tipo usa seu próprio modelo, com destinatários fixos (Bridgestone). A Shana só é incluída como destinatária se "Inserir Gerência" for <b>Sim</b> — caso contrário, os e-mails vão só para o Higor e a Maria.</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
@@ -1192,6 +1200,8 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     coisa_julgada: g('d-coisa-julgada'),
     coisa_julgada_resultado: g('d-coisa-julgada-resultado'),
     coisa_julgada_motivo: g('d-coisa-julgada-motivo'),
+    envio_cliente: g('d-envio-cliente'),
+    inserir_gerencia: g('d-inserir-gerencia'),
     sentenca_pedidos_deferidos: g('d-sentenca-deferidos'),
     sentenca_pedidos_indeferidos: g('d-sentenca-indeferidos'),
     acordao_trt_reclamada: g('d-acordao-trt-reclamada'),
@@ -1266,8 +1276,12 @@ function renderHistoricoDecisao(){
 
 /* ===================== MODELOS DE E-MAIL — REPORTE DE DECISÃO =====================
    Destinatários fixos pra todos os 8 modelos (Bridgestone). */
-const DECISAO_TO = 'MenezesShana@la-bridgestone.com,VialiHigor@la-bridgestone.com,mullermaria@la-bridgestone.com';
+const DECISAO_TO_BASE = 'VialiHigor@la-bridgestone.com,mullermaria@la-bridgestone.com';
+const DECISAO_SHANA = 'MenezesShana@la-bridgestone.com';
 const DECISAO_CC = 'grupobridgestone@peixotoecury.com.br';
+function decisaoDestinatarios(inserirGerencia){
+  return (inserirGerencia === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
+}
 const PH = '[Preencher]';
 function nn(v){ return v || PH; }
 
@@ -1310,18 +1324,19 @@ function gerarEmailDecisao(id, modelo){
   const r = HIST_DECISAO.find(x => x.id === id);
   if(!r || !EMAIL_MODELOS[modelo]) return;
   const { assunto, corpo } = EMAIL_MODELOS[modelo](r);
-  abrirEmail(DECISAO_TO, DECISAO_CC, assunto, corpo);
+  abrirEmail(decisaoDestinatarios(r.inserir_gerencia), DECISAO_CC, assunto, corpo);
 }
 
 /* Abre um e-mail por tipo marcado, um de cada vez (mailto sequencial precisa de intervalo
    pra não atropelar a abertura do Outlook). */
 function enviarEmailsDecisao(registro, tipos){
+  const destinatarios = decisaoDestinatarios(registro.inserir_gerencia);
   tipos.forEach((tipo, i) => {
     setTimeout(() => {
       const modelo = EMAIL_MODELOS[tipo];
       if(!modelo) return;
       const { assunto, corpo } = modelo(registro);
-      abrirEmail(DECISAO_TO, DECISAO_CC, assunto, corpo);
+      abrirEmail(destinatarios, DECISAO_CC, assunto, corpo);
     }, i * 700);
   });
 }

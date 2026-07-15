@@ -91,6 +91,8 @@ create table if not exists reportes_decisao (
   coisa_julgada text,                     -- 'Sim' | 'Não'
   coisa_julgada_resultado text,
   coisa_julgada_motivo text,
+  envio_cliente text,                     -- 'Sim' | 'Não' (só registro, não trava nada)
+  inserir_gerencia text,                  -- 'Sim' | 'Não' -- inclui a Shana como destinatária dos e-mails de decisão quando 'Sim'
   sentenca_pedidos_deferidos text,
   sentenca_pedidos_indeferidos text,
 
