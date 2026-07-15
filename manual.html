@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual — Comunicações Bridgestone — LAWgico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --azul-pc:  #00A9E0;
+  --cyan-lt:  rgba(0,169,224,.12);
+  --escuro-pc:#003B5C;
+  --preto-pc: #2D2926;
+  --bg:       #F4F9FC;
+  --surface:  #FFFFFF;
+  --surface2: #F7FCFF;
+  --border2:  #D8E7F0;
+  --text:     #2D2926;
+  --muted:    #5F7E92;
+  --muted2:   #7E98AA;
+  --red:      #C0392B;
+  --red-lt:   rgba(192,57,43,.10);
+  --orange:   #B85C00;
+  --orange-lt:rgba(230,126,34,.10);
+  --green:    #117A65;
+  --green-lt: rgba(17,122,101,.10);
+  --shadow-pc:0 8px 22px rgba(0,59,92,.08);
+  --font:     'Sora', sans-serif;
+  --mono:     'IBM Plex Mono', monospace;
+  --radius:   8px;
+  --radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,169,224,.25);border-radius:4px;}
+
+.topbar{background:linear-gradient(90deg,var(--escuro-pc),#00557B 72%,var(--azul-pc));border-bottom:4px solid var(--azul-pc);box-shadow:var(--shadow-pc);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.tb-lawgico{display:inline-block;line-height:1;position:relative;}
+.tb-law{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px;}
+.tb-gico{font-size:20px;font-weight:300;color:#fff;letter-spacing:-.5px;}
+.tb-modulo{font-size:9.5px;font-weight:300;color:rgba(255,255,255,.75);position:absolute;top:-11px;right:0;white-space:nowrap;}
+.topbar-divider{width:1px;height:30px;background:rgba(255,255,255,.25);}
+.topbar-title{font-size:14px;font-weight:600;color:rgba(255,255,255,.9);}
+.topbar-back{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--radius);padding:8px 16px;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--font);white-space:nowrap;}
+.topbar-back:hover{background:rgba(255,255,255,.22);}
+
+.layout{display:grid;grid-template-columns:250px 1fr;max-width:1320px;margin:0 auto;align-items:start;}
+.toc{position:sticky;top:64px;padding:28px 16px;max-height:calc(100vh - 64px);overflow-y:auto;}
+.toc-title{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;padding-left:12px;}
+.toc a{display:block;padding:8px 12px;border-radius:var(--radius);font-size:12.5px;font-weight:600;color:var(--escuro-pc);text-decoration:none;margin-bottom:2px;transition:background .15s;}
+.toc a:hover{background:var(--cyan-lt);}
+.toc .toc-emoji{margin-right:6px;}
+
+.content{padding:28px 24px 80px;min-width:0;}
+.hero{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);box-shadow:var(--shadow-pc);padding:28px 32px;margin-bottom:28px;}
+.hero h1{font-size:24px;font-weight:800;color:var(--escuro-pc);margin-bottom:8px;}
+.hero p{color:var(--muted);font-size:13.5px;max-width:760px;}
+.hero .downloads{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;background:var(--escuro-pc);color:#fff;border-radius:var(--radius);padding:10px 18px;font-size:12.5px;font-weight:700;text-decoration:none;transition:all .2s;}
+.dl-btn:hover{background:#00557B;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,59,92,.25);}
+.dl-btn.pdf{background:var(--red);}
+.dl-btn.pdf:hover{background:#a5301f;}
+.dl-btn.ppt{background:var(--orange);}
+.dl-btn.ppt:hover{background:#9c4d00;}
+
+.tab-section{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);box-shadow:var(--shadow-pc);margin-bottom:24px;overflow:hidden;scroll-margin-top:80px;}
+.tab-head{background:linear-gradient(90deg,var(--escuro-pc),#00557B);padding:20px 28px;display:flex;align-items:center;gap:14px;}
+.tab-head .emoji{font-size:26px;}
+.tab-head h2{color:#fff;font-size:19px;font-weight:800;}
+.tab-head .who{color:rgba(255,255,255,.75);font-size:12px;margin-top:2px;}
+.tab-body{padding:24px 28px 28px;}
+
+.info-callout{display:flex;gap:10px;background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--escuro-pc);line-height:1.6;}
+.warn-callout{display:flex;gap:10px;background:var(--red-lt);border:1px solid rgba(192,57,43,.3);border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--red);line-height:1.6;}
+
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--azul-pc);margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--cyan-lt);}
+.section-title:first-child{margin-top:0;}
+
+table.field-table{width:100%;border-collapse:collapse;margin-bottom:6px;}
+table.field-table th{background:var(--surface2);color:var(--escuro-pc);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:9px 12px;border-bottom:2px solid var(--border2);}
+table.field-table td{padding:10px 12px;border-bottom:1px solid #E5EEF4;font-size:12.5px;vertical-align:top;}
+table.field-table td.campo{font-weight:700;color:var(--preto-pc);white-space:nowrap;}
+table.field-table tr:last-child td{border-bottom:none;}
+.req-tag{color:var(--red);font-weight:800;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid transparent;margin:1px 3px 1px 0;}
+.badge-blue{background:rgba(0,169,224,.10);color:var(--escuro-pc);border-color:rgba(0,169,224,.3);}
+.badge-green{background:var(--green-lt);color:var(--green);border-color:rgba(17,122,101,.25);}
+.badge-orange{background:var(--orange-lt);color:var(--orange);border-color:rgba(230,126,34,.25);}
+
+.email-flow{background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius);padding:16px 18px;margin:14px 0;}
+.email-flow-title{font-size:11.5px;font-weight:800;color:var(--escuro-pc);margin-bottom:10px;}
+.email-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:12.5px;}
+.email-step:last-child{margin-bottom:0;}
+.email-step .num{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--azul-pc);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.email-step b{color:var(--escuro-pc);}
+
+.steps{margin:12px 0;padding-left:0;list-style:none;counter-reset:step;}
+.steps li{counter-increment:step;position:relative;padding:8px 0 8px 34px;font-size:13px;border-bottom:1px solid #F0F5F9;}
+.steps li:last-child{border-bottom:none;}
+.steps li::before{content:counter(step);position:absolute;left:0;top:8px;width:22px;height:22px;background:var(--cyan-lt);color:var(--escuro-pc);border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+
+.tip{font-size:12px;color:var(--muted);font-style:italic;margin-top:4px;}
+.back-top{display:inline-block;margin-top:20px;font-size:11.5px;color:var(--azul-pc);text-decoration:none;font-weight:600;}
+.back-top:hover{text-decoration:underline;}
+
+@media (max-width: 900px){
+  .layout{grid-template-columns:1fr;}
+  .toc{position:static;max-height:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="tb-lawgico"><span class="tb-law">LAW</span><span class="tb-gico">gico</span><span class="tb-modulo">comunicações</span></div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-title">Manual — Comunicações Bridgestone</div>
+  </div>
+  <a class="topbar-back" href="index.html">← Voltar pro sistema</a>
+</div>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="toc-title">Neste manual</div>
+    <a href="#intro"><span class="toc-emoji">📘</span>Visão geral</a>
+    <a href="#pericia"><span class="toc-emoji">🩺</span>Comunicação de Perícia</a>
+    <a href="#calculos"><span class="toc-emoji">🧮</span>Solicitação de Cálculos</a>
+    <a href="#decisao"><span class="toc-emoji">📑</span>Reporte de Decisão</a>
+    <a href="#acordos"><span class="toc-emoji">💰</span>Reporte de Acordos</a>
+    <a href="#valores"><span class="toc-emoji">💲</span>Inserção de Valores</a>
+    <a href="#excluir"><span class="toc-emoji">🗑️</span>Excluir registros</a>
+  </nav>
+
+  <div class="content">
+
+    <div class="hero" id="intro">
+      <h1>📘 Manual do Sistema — Comunicações Bridgestone</h1>
+      <p>Este sistema centraliza as comunicações e registros do time do contencioso trabalhista da Bridgestone: perícias, solicitações de cálculo, reportes de decisão, acordos e inserção de valores. Cada aba gera um e-mail pronto no seu Outlook (o remetente é sempre quem preenche o formulário) e guarda um histórico consultável e exportável em Excel. Este manual explica campo a campo o que preencher e pra onde cada e-mail vai.</p>
+      <div class="downloads">
+        <a class="dl-btn pdf" href="manual.pdf">⬇ Baixar em PDF</a>
+        <a class="dl-btn ppt" href="manual.pptx">⬇ Baixar em PPTX</a>
+        <a class="dl-btn" href="index.html">🖥️ Abrir o sistema</a>
+      </div>
+    </div>
+
+    <!-- ============ PERÍCIA ============ -->
+    <section class="tab-section" id="pericia">
+      <div class="tab-head">
+        <span class="emoji">🩺</span>
+        <div>
+          <h2>Comunicação de Perícia</h2>
+          <div class="who">Quem usa: qualquer advogado/assistente que precise avisar sobre uma perícia agendada</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ Serve para avisar as partes envolvidas (perito, escritório de perícia, ou consultório médico) sobre uma perícia médica, técnica ou ergonômica marcada. Os destinatários do e-mail mudam sozinhos conforme o tipo de perícia escolhido.</div>
+
+        <div class="section-title">Campos do formulário</div>
+        <table class="field-table">
+          <tr><td class="campo">Número do Processo<span class="req-tag">*</span></td><td>Número CNJ do processo (obrigatório)</td></tr>
+          <tr><td class="campo">Nome do Reclamante<span class="req-tag">*</span></td><td>Nome completo (obrigatório)</td></tr>
+          <tr><td class="campo">Empregado próprio ou terceiro<span class="req-tag">*</span></td><td>Indica se é caso de empregado terceirizado ou próprio da Bridgestone</td></tr>
+          <tr><td class="campo">Tipo de perícia<span class="req-tag">*</span></td><td>Médica, Técnica ou Ergonômica — <b>define pra quem o e-mail vai</b> (veja abaixo)</td></tr>
+          <tr><td class="campo">Data e horário da perícia<span class="req-tag">*</span></td><td>Formato livre, ex: <code>15/08/2026 14:00hrs</code></td></tr>
+          <tr><td class="campo">Nome do perito<span class="req-tag">*</span></td><td>Perito nomeado para o ato</td></tr>
+          <tr><td class="campo">Endereço da perícia<span class="req-tag">*</span></td><td>Endereço completo onde ela ocorrerá</td></tr>
+          <tr><td class="campo">Link para a íntegra<span class="req-tag">*</span></td><td>Link de acesso/download dos autos</td></tr>
+          <tr><td class="campo">Texto do e-mail<span class="req-tag">*</span></td><td>Corpo principal — o que você quer comunicar</td></tr>
+          <tr><td class="campo">Observações adicionais</td><td>Opcional, complementa o texto principal</td></tr>
+          <tr><td class="campo">Advogado responsável<span class="req-tag">*</span></td><td>Selecionado da lista de profissionais do escritório</td></tr>
+        </table>
+
+        <div class="email-flow">
+          <div class="email-flow-title">✉️ Pra onde vai o e-mail</div>
+          <div class="email-step"><div class="num">1</div><div>Se <b>Tipo de perícia = Técnica</b>: vai só para <b>cirellipericias@hotmail.com</b>, cc <b>Grupo Bridgestone</b>.</div></div>
+          <div class="email-step"><div class="num">2</div><div>Se <b>Tipo de perícia = Médica ou Ergonômica</b>: vai para <b>cirellipericias@hotmail.com, consultorio@nko.med.br e nelson@nko.med.br</b>, cc <b>Grupo Bridgestone</b>.</div></div>
+        </div>
+
+        <div class="section-title">Passo a passo</div>
+        <ol class="steps">
+          <li>Preencha todos os campos obrigatórios (marcados com *).</li>
+          <li>Escolha o tipo de perícia — repare que a dica de destinatários aparece embaixo do campo.</li>
+          <li>Clique em <b>"Gerar e-mail e registrar comunicação"</b>.</li>
+          <li>O Outlook abre com o e-mail pronto — revise e clique em Enviar.</li>
+          <li>O registro fica salvo no histórico da aba, com busca por processo/reclamante e exportação em Excel.</li>
+        </ol>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ CÁLCULOS ============ -->
+    <section class="tab-section" id="calculos">
+      <div class="tab-head">
+        <span class="emoji">🧮</span>
+        <div>
+          <h2>Solicitação de Cálculos</h2>
+          <div class="who">Quem usa: advogados solicitando cálculos à consultoria contábil</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ Toda solicitação vai sempre para a mesma consultoria contábil externa, com cópia interna. Não muda por tipo de subsídio.</div>
+
+        <div class="section-title">Campos do formulário</div>
+        <table class="field-table">
+          <tr><td class="campo">Número do Processo<span class="req-tag">*</span></td><td>Número CNJ</td></tr>
+          <tr><td class="campo">Nome do Reclamante<span class="req-tag">*</span></td><td>Nome completo</td></tr>
+          <tr><td class="campo">Tipo de subsídio<span class="req-tag">*</span></td><td>Cálculo Inicial, Solicitação de Cálculo do Laudo Pericial, Cálculo de Provisão (Sentença/Acórdão/TST), Discriminação de Verbas para Acordo, Apresentação de Cálculos, Impugnações, Embargos à Execução, Agravo de Petição, Contraminuta, Manifestação, Quesitos</td></tr>
+          <tr><td class="campo">Link p/ íntegra e documentos<span class="req-tag">*</span></td><td>Link de acesso/download</td></tr>
+          <tr><td class="campo">Prazo para envio<span class="req-tag">*</span></td><td>Data limite pra consultoria devolver o cálculo</td></tr>
+          <tr><td class="campo">Outros (detalhamentos)</td><td>Opcional — qualquer instrução extra pra consultoria</td></tr>
+          <tr><td class="campo">Responsável (sigla)<span class="req-tag">*</span></td><td>Sigla de quem está solicitando, ex: <code>ACM</code></td></tr>
+        </table>
+
+        <div class="email-flow">
+          <div class="email-flow-title">✉️ Pra onde vai o e-mail</div>
+          <div class="email-step"><div class="num">1</div><div><b>Sempre</b> para <b>consulta@madiconsultoria.com.br</b>, cc <b>atendimento@madipericia.com, michele@madiconsultoria.com.br, Grupo Bridgestone</b> e <b>Grupo de Requantificação</b> — não muda conforme o tipo de subsídio.</div></div>
+        </div>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ DECISÃO ============ -->
+    <section class="tab-section" id="decisao">
+      <div class="tab-head">
+        <span class="emoji">📑</span>
+        <div>
+          <h2>Reporte de Decisão</h2>
+          <div class="who">Quem usa: advogado que acompanha o processo, reportando cada fase da decisão</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ É a aba mais completa do sistema. Registra tudo sobre periculosidade, insalubridade, perícia médica/ergonômica, sentença, acórdãos e execução — e gera até 8 modelos de e-mail diferentes pro cliente Bridgestone, um pra cada tipo de decisão.</div>
+
+        <div class="section-title">Identificação</div>
+        <table class="field-table">
+          <tr><td class="campo">Número do Processo<span class="req-tag">*</span></td><td>Obrigatório</td></tr>
+          <tr><td class="campo">Nome do Reclamante</td><td>Opcional</td></tr>
+          <tr><td class="campo">Responsável (sigla)</td><td>Quem preencheu o reporte</td></tr>
+          <tr><td class="campo">Advogado da Parte Contrária</td><td>Nome do(a) advogado(a) do reclamante</td></tr>
+        </table>
+
+        <div class="section-title">Periculosidade e Insalubridade — Perícia e Laudo</div>
+        <p style="margin-bottom:8px;">Duas seções paralelas (uma pra Periculosidade, outra pra Insalubridade), cada uma com:</p>
+        <table class="field-table">
+          <tr><td class="campo">Resultado do Laudo</td><td>Aguardando Realização de Perícia, Aguardando Resultado, Desfavorável, Favorável, Sem Laudo, Sem Pedido</td></tr>
+          <tr><td class="campo">Data Início/Final (Imprescrito)</td><td>Período imprescrito relevante ao tema — não é a data do laudo em si</td></tr>
+          <tr><td class="campo">Motivo (checkboxes)</td><td>Pode marcar <b>mais de um</b> motivo ao mesmo tempo — ex: Energia Elétrica + Produtos Inflamáveis. Inclui a opção "Galpão é uma única edificação"</td></tr>
+          <tr><td class="campo">Detalhamento</td><td>Texto livre pra explicar detalhes que os checkboxes não cobrem (ex: qual agente químico específico, se faltou creme, motivo da condenação)</td></tr>
+          <tr><td class="campo">Fundamentação Técnica</td><td>Preencha <b>se o laudo foi Favorável</b> — serve de base de conhecimento pra reaproveitar o argumento em outros casos parecidos</td></tr>
+        </table>
+        <p class="tip">A Insalubridade tem ainda um campo "Outros", de texto livre.</p>
+
+        <div class="section-title">Ergonômico / Perícia Médica</div>
+        <table class="field-table">
+          <tr><td class="campo">Laudo Pericial Ergonômico</td><td>Texto livre</td></tr>
+          <tr><td class="campo">Perito / Data da Perícia</td><td>Dados do perito nomeado</td></tr>
+          <tr><td class="campo">Doença (Padronizada)</td><td>Checkboxes com <b>46 doenças padronizadas</b> (pode marcar mais de uma) — os nomes já vêm agrupados/deduplicados (ex: as 5 variações de "Tendinopatia" viram uma única opção)</td></tr>
+          <tr><td class="campo">Área do Corpo (Padronizada)</td><td>Checkboxes com 22 áreas do corpo padronizadas (pode marcar mais de uma)</td></tr>
+          <tr><td class="campo">Motivos / Fonte de Informação</td><td>Fonte de Informação agora é lista: Petição Inicial ou Laudo Pericial</td></tr>
+          <tr><td class="campo">Resultado do Laudo / Fundamentação Técnica</td><td>Mesma lógica: fundamentação preenchida quando o laudo é favorável</td></tr>
+        </table>
+
+        <div class="section-title">Sentença</div>
+        <div class="info-callout">ℹ️ Os resultados de Periculosidade e Insalubridade "na sentença" ficam <b>dentro</b> da seção Sentença — assim dá pra comparar direto com o "Resultado do Laudo" (lá em cima) e ver se a sentença seguiu o laudo.</div>
+        <table class="field-table">
+          <tr><td class="campo">Resultado</td><td>Procedente, Improcedente, Parcialmente Procedente, Extinto com/sem Resolução do Mérito, Acordo, Pendente</td></tr>
+          <tr><td class="campo">Data / Juiz</td><td>Data da sentença e nome do juiz</td></tr>
+          <tr><td class="campo">Pedidos deferidos / indeferidos</td><td>Texto livre</td></tr>
+          <tr><td class="campo">Causa Raiz</td><td>Motivo de fundo por trás do resultado</td></tr>
+          <tr><td class="campo">Principal Pedido Favorável / Desfavorável</td><td>O pedido mais relevante em cada sentido</td></tr>
+          <tr><td class="campo">Obrigação de Fazer</td><td>Ex: reintegração imediata, retificação de CTPS, fornecimento de documentos</td></tr>
+          <tr><td class="campo">Sentença — Reintegração</td><td>Há Reintegração? (Sim/Não) + Resultado (Deferida/Indeferida/Parcial/Pendente) + nota livre</td></tr>
+          <tr><td class="campo">Sentença — Coisa Julgada</td><td>Há Coisa Julgada? + Resultado (Acolhida/Não Acolhida/Aguardando/Não Discutida) + Motivo (Acordo beneficia reclamante, Desistência, Devolução do valor, etc.)</td></tr>
+          <tr><td class="campo">Sentença — Periculosidade / Insalubridade</td><td>Um campo simples cada: "foi igual ao Laudo?" (Sim / Não / Parcialmente)</td></tr>
+        </table>
+
+        <div class="section-title">Acórdão TRT / TST</div>
+        <table class="field-table">
+          <tr><td class="campo">Resultado</td><td>Manteve, Reforma parcial (Reclamante/Reclamada/ambas as partes), Reforma total (Reclamante/Reclamada), Não conhecido</td></tr>
+          <tr><td class="campo">Turma</td><td>TRT: lista de 1ª a 18ª Turma de SP. TST: lista de 1ª a 8ª Turma</td></tr>
+          <tr><td class="campo">Relator / Ministro</td><td>Texto livre</td></tr>
+        </table>
+
+        <div class="section-title">Status</div>
+        <table class="field-table">
+          <tr><td class="campo">Execução</td><td>Sim/Não</td></tr>
+          <tr><td class="campo">Última Movimentação Processual</td><td>Texto livre</td></tr>
+        </table>
+
+        <div class="section-title">Envio de e-mails — a parte mais importante</div>
+        <table class="field-table">
+          <tr><td class="campo">Envio para o Cliente?</td><td>Sim/Não — só um registro, não trava nada sozinho</td></tr>
+          <tr><td class="campo">Inserir Gerência?</td><td>Só fica liberado se "Envio para o Cliente" = Sim</td></tr>
+        </table>
+        <div class="email-flow">
+          <div class="email-flow-title">✉️ Regra dos destinatários</div>
+          <div class="email-step"><div class="num">1</div><div><b>Envio para o Cliente = Sim</b> → vai para <b>Higor Viali e Maria Muller</b> (contatos Bridgestone), + <b>Shana Menezes</b> também se "Inserir Gerência" = Sim. Cc <b>Grupo Bridgestone</b> (interno).</div></div>
+          <div class="email-step"><div class="num">2</div><div><b>Envio para o Cliente = Não</b> (ou em branco) → fica só interno, vai só pro <b>Grupo Bridgestone</b>, sem sair pro cliente.</div></div>
+        </div>
+        <div class="section-title">Marque quais e-mails abrir</div>
+        <p style="margin-bottom:8px;">8 modelos disponíveis, cada um com texto próprio: <span class="badge badge-blue">Laudo Pericial Médico</span><span class="badge badge-blue">Laudo Pericial Ergonômico</span><span class="badge badge-blue">Laudo Pericial Técnico</span><span class="badge badge-blue">Sentença</span><span class="badge badge-blue">Embargos de Declaração</span><span class="badge badge-blue">Acórdão do TRT</span><span class="badge badge-blue">Acórdão do TST</span><span class="badge badge-blue">Execução</span></p>
+        <div class="warn-callout">⚠️ Se marcar mais de um e-mail, só o <b>primeiro</b> abre sozinho ao salvar (o navegador bloqueia abrir vários e-mails automáticos de uma vez). Os demais aparecem como <b>botões</b> no canto inferior direito da tela — clique em cada um pra abrir.</div>
+        <p>Além dos 8 modelos marcáveis, cada linha do histórico salvo tem um <b>seletor "✉️ Modelo de e-mail…"</b> pra gerar/reenviar qualquer um dos 8 modelos depois, a qualquer momento.</p>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ ACORDOS ============ -->
+    <section class="tab-section" id="acordos">
+      <div class="tab-head">
+        <span class="emoji">💰</span>
+        <div>
+          <h2>Reporte de Acordos</h2>
+          <div class="who">Quem usa: advogado fechando ou negociando um acordo</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ Esta aba só <b>salva</b> o registro — não gera e-mail automático. Serve como controle interno de negociação e valores.</div>
+
+        <div class="section-title">Identificação</div>
+        <table class="field-table">
+          <tr><td class="campo">Número do Processo<span class="req-tag">*</span></td><td>Obrigatório</td></tr>
+          <tr><td class="campo">Reclamante / Reclamada / Departamento / Comarca / Vara / Escritório</td><td>Dados do processo</td></tr>
+          <tr><td class="campo">Advogado Responsável</td><td>Selecionado da lista de profissionais</td></tr>
+        </table>
+
+        <div class="section-title">Negociação</div>
+        <table class="field-table">
+          <tr><td class="campo">Status Acordo</td><td>Settled, Settlement pending, Not settled, Not eligible, Negotiation to be started, Settlement reached in another lawsuit</td></tr>
+          <tr><td class="campo">Status Homologação</td><td>Aguardando / Homologado / Não Homologado</td></tr>
+          <tr><td class="campo">Tem contraproposta? / Proposta / Negociação em / PAUTÃO / Justificativa</td><td>Detalhes da negociação em andamento</td></tr>
+        </table>
+
+        <div class="section-title">Valores</div>
+        <table class="field-table">
+          <tr><td class="campo">Total Provável / Total Accrual / Valor Pago no Acordo</td><td>Digite os valores em R$</td></tr>
+          <tr><td class="campo">Economia e % Economia</td><td><b>Calculados sozinhos</b> (Accrual − Valor Pago) assim que você preenche os 3 campos acima</td></tr>
+          <tr><td class="campo">Classificação da Economia</td><td>Acima de 10%, Acima de 0 até 10%, Abaixo de 0% (custo adicional)</td></tr>
+        </table>
+
+        <div class="section-title">Datas e Aprovações</div>
+        <table class="field-table">
+          <tr><td class="campo">Data do Protocolo / Data Pagamento</td><td>Datas relevantes</td></tr>
+          <tr><td class="campo">Solicitamos autorização? / Aprovação para acordo</td><td>Sim/Não/Pendente</td></tr>
+          <tr><td class="campo">Informações adicionais</td><td>Texto livre</td></tr>
+        </table>
+        <p class="tip">⚠️ Os campos de valor (Proposta, Total Provável, Total Accrual, Valor Pago) usam o teclado numérico padrão do navegador — digite sem separador de milhar (ex: <code>360000</code>, não <code>360.000</code>) pra não errar o valor.</p>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ VALORES ============ -->
+    <section class="tab-section" id="valores">
+      <div class="tab-head">
+        <span class="emoji">💲</span>
+        <div>
+          <h2>Inserção de Valores</h2>
+          <div class="who">Quem usa: advogado solicita → assistente confirma a inserção no LM/Elaw</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ É um fluxo de duas pontas: a seção <b>Cálculo</b> é o pedido do advogado pra assistente; a seção <b>Inserção</b> é a assistente confirmando que já inseriu os valores no sistema.</div>
+
+        <div class="section-title">Identificação e Cálculo</div>
+        <table class="field-table">
+          <tr><td class="campo">Processo<span class="req-tag">*</span> / Reclamante<span class="req-tag">*</span> / Reclamada</td><td>Dados do caso</td></tr>
+          <tr><td class="campo">Vara/Turma/Câmara / Comarca / UF</td><td>Localização do processo</td></tr>
+          <tr><td class="campo">Advogado Solicitante / Assistente Responsável</td><td>Texto livre (nome completo)</td></tr>
+          <tr><td class="campo">Tipo de Decisão</td><td>Procedente, Procedente em Parte, Improcedente, Acordo, Execução, Cálculos Reclamante/Reclamada, Sentença de Liquidação, Garantia da Execução, Outro</td></tr>
+          <tr><td class="campo">Tipo de Cálculo</td><td>Inicial, Sentença, Acórdão TRT/TST, Embargos, Acordo, Ajuste de Provisão, Replicar Valores, Alteração de Fase, Outro</td></tr>
+          <tr><td class="campo">Revisado / Justificativa Revisão</td><td>Se o cálculo já foi revisado e por quê</td></tr>
+        </table>
+
+        <div class="section-title">Valores — Histórico, Provisão e Accrual</div>
+        <p style="margin-bottom:8px;">Três blocos idênticos, um pra cada tipo de valor. Em cada um você informa:</p>
+        <table class="field-table">
+          <tr><td class="campo">Valor Atual</td><td>O que está lançado hoje</td></tr>
+          <tr><td class="campo">Novo Valor</td><td>O valor que precisa ser inserido</td></tr>
+          <tr><td class="campo">Diferença (Novo − Atual)</td><td>Calculada sozinha, aparece em R$ assim que você digita</td></tr>
+        </table>
+        <div class="warn-callout">⚠️ Digite os valores no formato brasileiro: <b>ponto = milhar, vírgula = decimal</b> — ex: <code>360.000,50</code>. Se digitar <code>360000</code> sem pontuação também funciona. Não use o formato americano.</div>
+        <p>Se <b>qualquer uma</b> das 3 diferenças (em módulo) for igual ou maior que <b>R$ 400.000,00</b>, aparece um aviso vermelho na tela e, ao salvar, um botão extra pra abrir a nota de alerta pro <b>Nicolau</b>.</p>
+
+        <div class="section-title">Inserção (preenchido pela assistente)</div>
+        <table class="field-table">
+          <tr><td class="campo">Inserido no LM / Data</td><td>Sim/Não + data</td></tr>
+          <tr><td class="campo">Inserido no Elaw / Data</td><td>Sim/Não + data</td></tr>
+        </table>
+        <p>Quando qualquer um dos dois vira <b>Sim</b>, ao salvar aparece um botão extra pra abrir o e-mail de confirmação, endereçado ao <b>Grupo Bridgestone</b>, avisando que a inserção está OK (cita o nome do Advogado Solicitante no corpo).</p>
+
+        <div class="section-title">Envio ao Cliente</div>
+        <table class="field-table">
+          <tr><td class="campo">Já Enviado ao Cliente / Justificativa</td><td>Só registro — não dispara nada sozinho</td></tr>
+        </table>
+
+        <div class="email-flow">
+          <div class="email-flow-title">✉️ Resumo dos 3 e-mails possíveis</div>
+          <div class="email-step"><div class="num">1</div><div><b>Sempre abre</b>: pedido pra <b>Cícera Gabriela Ferreira Vicente</b>, cc Grupo Bridgestone.</div></div>
+          <div class="email-step"><div class="num">2</div><div><b>Botão condicional</b>: nota pro <b>Nicolau</b>, se alguma diferença ≥ R$ 400.000,00.</div></div>
+          <div class="email-step"><div class="num">3</div><div><b>Botão condicional</b>: confirmação pro <b>Grupo Bridgestone</b>, se "Inserido no LM" ou "Inserido no Elaw" = Sim.</div></div>
+        </div>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ EXCLUIR ============ -->
+    <section class="tab-section" id="excluir">
+      <div class="tab-head">
+        <span class="emoji">🗑️</span>
+        <div>
+          <h2>Excluir registros (todas as abas)</h2>
+          <div class="who">Pra limpar testes ou registros errados</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <p>Toda linha do histórico, em qualquer uma das 5 abas, tem um botão <b>🗑️ Excluir</b> na coluna Ações. Ao clicar, o sistema pede confirmação antes de apagar — a exclusão é <b>permanente</b> (some do banco de dados de todo mundo, não só da sua tela).</p>
+        <div class="warn-callout">⚠️ Não existe "lixeira" ou desfazer. Só exclua registros de teste ou duplicados, com certeza.</div>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <p style="text-align:center;color:var(--muted2);font-size:11.5px;margin-top:10px;">LAWgico — Comunicações Bridgestone · Peixoto &amp; Cury Advogados</p>
+  </div>
+</div>
+
+</body>
+</html>
