@@ -571,20 +571,70 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="section-title">Acórdão TRT</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado (Reclamada)</label>
-            <select id="d-acordao-trt-reclamada"><option value="">—</option><option>Manteve</option><option>Reformou</option><option>Parcial</option><option>Pendente</option></select>
+            <select id="d-acordao-trt-reclamada">
+              <option value="">—</option>
+              <option>Manteve</option>
+              <option>Reforma parcial em favor do Reclamante</option>
+              <option>Reforma parcial em favor da Reclamada</option>
+              <option>Reforma total em favor do Reclamante</option>
+              <option>Reforma total em favor da Reclamada</option>
+              <option>Não conhecido</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Data do Acórdão</label><input type="date" id="d-acordao-trt-data"></div>
-          <div class="mc-form-group"><label>Turma</label><input type="text" id="d-acordao-trt-turma"></div>
+          <div class="mc-form-group"><label>Turma</label>
+            <select id="d-acordao-trt-turma">
+              <option value="">—</option>
+              <option>1ª Turma de SP</option>
+              <option>2ª Turma de SP</option>
+              <option>3ª Turma de SP</option>
+              <option>4ª Turma de SP</option>
+              <option>5ª Turma de SP</option>
+              <option>6ª Turma de SP</option>
+              <option>7ª Turma de SP</option>
+              <option>8ª Turma de SP</option>
+              <option>9ª Turma de SP</option>
+              <option>10ª Turma de SP</option>
+              <option>11ª Turma de SP</option>
+              <option>12ª Turma de SP</option>
+              <option>13ª Turma de SP</option>
+              <option>14ª Turma de SP</option>
+              <option>15ª Turma de SP</option>
+              <option>16ª Turma de SP</option>
+              <option>17ª Turma de SP</option>
+              <option>18ª Turma de SP</option>
+            </select>
+          </div>
         </div>
         <div class="mc-form-group"><label>Relator</label><input type="text" id="d-acordao-trt-relator"></div>
 
         <div class="section-title">Acórdão TST</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado</label>
-            <select id="d-acordao-tst"><option value="">—</option><option>Manteve</option><option>Reformou</option><option>Parcial</option><option>Não conhecido</option><option>Pendente</option></select>
+            <select id="d-acordao-tst">
+              <option value="">—</option>
+              <option>Manteve</option>
+              <option>Reforma parcial em favor do Reclamante</option>
+              <option>Reforma parcial em favor da Reclamada</option>
+              <option>Reforma total em favor do Reclamante</option>
+              <option>Reforma total em favor da Reclamada</option>
+              <option>Não conhecido</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Data do Acórdão TST</label><input type="date" id="d-acordao-tst-data"></div>
-          <div class="mc-form-group"><label>Câmara</label><input type="text" id="d-acordao-tst-camara"></div>
+          <div class="mc-form-group"><label>Turma</label>
+            <select id="d-acordao-tst-camara">
+              <option value="">—</option>
+              <option>1ª Turma</option>
+              <option>2ª Turma</option>
+              <option>3ª Turma</option>
+              <option>4ª Turma</option>
+              <option>5ª Turma</option>
+              <option>6ª Turma</option>
+              <option>7ª Turma</option>
+              <option>8ª Turma</option>
+            </select>
+          </div>
         </div>
         <div class="mc-form-group"><label>Ministro</label><input type="text" id="d-acordao-tst-ministro"></div>
 
