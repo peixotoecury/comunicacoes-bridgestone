@@ -327,23 +327,62 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="section-title">Periculosidade — Laudo</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado do Laudo</label>
-            <select id="d-laudo-peri-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Pendente</option></select>
+            <select id="d-laudo-peri-resultado">
+              <option value="">—</option>
+              <option>Aguardando Realização de Perícia</option>
+              <option>Aguardando Resultado do Laudo</option>
+              <option>Desfavorável</option>
+              <option>Favorável</option>
+              <option>Sem Laudo</option>
+              <option>Sem Pedido</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Data Início (Laudo)</label><input type="date" id="d-laudo-peri-data-inicio"></div>
           <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-peri-data-final"></div>
         </div>
-        <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label><textarea id="d-laudo-peri-motivo" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label>
+          <select id="d-laudo-peri-motivo">
+            <option value="">—</option>
+            <option>Abastecimento de Empilhadeira</option>
+            <option>Adicional - Vigilante</option>
+            <option>Armazenamento de Inflamáveis</option>
+            <option>Energia Elétrica</option>
+            <option>Ingresso à sala de cimento</option>
+            <option>Produtos Inflamáveis</option>
+          </select>
+        </div>
 
         <div class="section-title">Insalubridade — Laudo</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado do Laudo</label>
-            <select id="d-laudo-insalu-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Pendente</option></select>
+            <select id="d-laudo-insalu-resultado">
+              <option value="">—</option>
+              <option>Aguardando Realização de Perícia</option>
+              <option>Aguardando Resultado do Laudo</option>
+              <option>Desfavorável</option>
+              <option>Favorável</option>
+              <option>Sem Laudo</option>
+              <option>Sem Pedido</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Data Início (Laudo)</label><input type="date" id="d-laudo-insalu-data-inicio"></div>
           <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-insalu-data-final"></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label><textarea id="d-laudo-insalu-motivo" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label>
+            <select id="d-laudo-insalu-motivo">
+              <option value="">—</option>
+              <option>Agentes Biológicos</option>
+              <option>Agentes Químicos</option>
+              <option>Calor</option>
+              <option>Calor e Hidrocarbonetos</option>
+              <option>Câmara Fria</option>
+              <option>Hidrocarbonetos</option>
+              <option>Óleo</option>
+              <option>Partículas Respiráveis</option>
+              <option>Radiação não Ionizante</option>
+            </select>
+          </div>
           <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
         </div>
 
@@ -395,36 +434,135 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-group"><label>Nota sobre a Reintegração</label><textarea id="d-sentenca-reintegracao-nota" rows="2"></textarea></div>
 
+        <div class="sub-title">Sentença — Coisa Julgada</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Há Coisa Julgada?</label>
+            <select id="d-coisa-julgada"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Resultado da Coisa Julgada</label>
+            <select id="d-coisa-julgada-resultado">
+              <option value="">—</option>
+              <option>Acolhida a Coisa Julgada</option>
+              <option>Aguardando Decisão</option>
+              <option>Não Acolhida a Coisa Julgada</option>
+              <option>Não Discutida a Coisa Julgada</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Motivo da Coisa Julgada</label>
+            <select id="d-coisa-julgada-motivo">
+              <option value="">—</option>
+              <option>Acordo beneficia o reclamante</option>
+              <option>Ausência de legitimidade do Sindicato</option>
+              <option>Desistência</option>
+              <option>Devolução do valor</option>
+              <option>Direito Individual de Ação</option>
+              <option>Extinção</option>
+              <option>Falta de prova de anuência do reclamante</option>
+              <option>Houve aceite/Recebimento do valor</option>
+              <option>Lista assinada</option>
+            </select>
+          </div>
+        </div>
+
         <div class="sub-title">Sentença — Periculosidade</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado das Decisões</label>
-            <select id="d-decisao-peri-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
+            <select id="d-decisao-peri-resultado">
+              <option value="">—</option>
+              <option>Aguardando Decisão</option>
+              <option>Encerrado antes do Julgamento</option>
+              <option>Improcedente</option>
+              <option>Parcialmente Procedente</option>
+              <option>Procedente</option>
+              <option>Sem Pedido</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-peri-data-inicio"></div>
           <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-peri-data-final"></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Motivo da Periculosidade</label><textarea id="d-decisao-peri-motivo" rows="2"></textarea></div>
-          <div class="mc-form-group"><label>Detalhamento dos Casos Após Dez/2016</label><textarea id="d-peri-pos2016" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Motivo da Periculosidade</label>
+            <select id="d-decisao-peri-motivo">
+              <option value="">—</option>
+              <option>Aguardando Decisão</option>
+              <option>Abastecimento de Empilhadeira</option>
+              <option>Adicional - Vigilante</option>
+              <option>Armazenamento de inflamáveis</option>
+              <option>Atividades próximas a área vermelha</option>
+              <option>Energia Elétrica</option>
+              <option>Ingresso à sala de cimento</option>
+              <option>Produtos Inflamáveis</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Detalhamento dos Casos Após Dez/2016</label>
+            <select id="d-peri-pos2016">
+              <option value="">—</option>
+              <option>Atividades próximas a área vermelha</option>
+              <option>Ingresso a sala de cimento</option>
+              <option>O perito constatou tambores de inflamáveis na área</option>
+            </select>
+          </div>
         </div>
 
         <div class="sub-title">Sentença — Insalubridade</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado das Decisões</label>
-            <select id="d-decisao-insalu-resultado"><option value="">—</option><option>Favorável</option><option>Desfavorável</option><option>Parcialmente Favorável</option><option>Pendente</option></select>
+            <select id="d-decisao-insalu-resultado">
+              <option value="">—</option>
+              <option>Aguardando Decisão</option>
+              <option>Encerrado antes do Julgamento</option>
+              <option>Improcedente</option>
+              <option>Parcialmente Procedente</option>
+              <option>Procedente</option>
+              <option>Sem Pedido</option>
+            </select>
           </div>
           <div class="mc-form-group"><label>Grau de Insalubridade</label>
             <select id="d-decisao-insalu-grau"><option value="">—</option><option>Mínimo (10%)</option><option>Médio (20%)</option><option>Máximo (40%)</option></select>
           </div>
-          <div class="mc-form-group"><label>Agentes Insalubres</label><input type="text" id="d-decisao-insalu-agentes"></div>
+          <div class="mc-form-group"><label>Agentes Insalubres</label>
+            <select id="d-decisao-insalu-agentes">
+              <option value="">—</option>
+              <option>Agentes Biológicos</option>
+              <option>Agentes Químicos</option>
+              <option>Calor</option>
+              <option>Hidrocarbonetos</option>
+              <option>Óleo</option>
+              <option>Poeira</option>
+              <option>Radiação não Ionizante</option>
+              <option>Ruído</option>
+            </select>
+          </div>
         </div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-insalu-data-inicio"></div>
           <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-insalu-data-final"></div>
-          <div class="mc-form-group"><label>Motivo da Insalubridade</label><input type="text" id="d-decisao-insalu-motivo"></div>
+          <div class="mc-form-group"><label>Motivo da Insalubridade</label>
+            <select id="d-decisao-insalu-motivo">
+              <option value="">—</option>
+              <option>Ausência de CA'S</option>
+              <option>Ausência de EPI'S - ficha azul</option>
+              <option>Ausência de EPI'S - Falta de ficha azul</option>
+              <option>Ausência de EPI'S - Falta de ficha eletrônica</option>
+              <option>EPI'S não elimina o agente insalubre</option>
+            </select>
+          </div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Outras observações sobre EPI</label><textarea id="d-insalu-obs-epi" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Outras observações sobre EPI</label>
+            <select id="d-insalu-obs-epi">
+              <option value="">—</option>
+              <option>Ausência de CA'S</option>
+              <option>Ausência de EPI'S - ficha azul</option>
+              <option>Creme de proteção com entrega coletiva, sem comprovante individual</option>
+              <option>Fornecimento de EPI com a periodicidade superior a previsão legal</option>
+              <option>Não entregue máscara com filtro</option>
+              <option>Não foi entregue luva impermeável</option>
+              <option>Não foi identificado o C.A. específico para o EPI entregue</option>
+              <option>O EPI não neutraliza o agente insalubre</option>
+              <option>Protetores aurículares insuficientes</option>
+            </select>
+          </div>
           <div class="mc-form-group"><label>Análise complementar</label><textarea id="d-insalu-analise-complementar" rows="2"></textarea></div>
         </div>
 
@@ -1026,6 +1164,9 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     sentenca_reintegracao: g('d-sentenca-reintegracao'),
     sentenca_reintegracao_resultado: g('d-sentenca-reintegracao-resultado'),
     sentenca_reintegracao_nota: g('d-sentenca-reintegracao-nota'),
+    coisa_julgada: g('d-coisa-julgada'),
+    coisa_julgada_resultado: g('d-coisa-julgada-resultado'),
+    coisa_julgada_motivo: g('d-coisa-julgada-motivo'),
     sentenca_pedidos_deferidos: g('d-sentenca-deferidos'),
     sentenca_pedidos_indeferidos: g('d-sentenca-indeferidos'),
     acordao_trt_reclamada: g('d-acordao-trt-reclamada'),

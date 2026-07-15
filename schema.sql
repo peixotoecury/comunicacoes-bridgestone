@@ -88,6 +88,9 @@ create table if not exists reportes_decisao (
   sentenca_reintegracao text,             -- 'Sim' | 'Não'
   sentenca_reintegracao_resultado text,   -- 'Deferida' | 'Indeferida' | 'Parcialmente Deferida' | 'Pendente'
   sentenca_reintegracao_nota text,
+  coisa_julgada text,                     -- 'Sim' | 'Não'
+  coisa_julgada_resultado text,
+  coisa_julgada_motivo text,
   sentenca_pedidos_deferidos text,
   sentenca_pedidos_indeferidos text,
 
