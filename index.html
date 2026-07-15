@@ -122,6 +122,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;}
 .check-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--azul-pc);cursor:pointer;flex-shrink:0;}
 .check-row label{font-size:12.5px;color:var(--preto-pc);cursor:pointer;}
+.chk-multi{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;border:1px solid #BFD6E4;border-radius:var(--radius);padding:8px 14px;background:#fff;}
+.chk-multi .check-row{padding:4px 0;}
+@media (max-width: 900px){ .chk-multi{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -344,15 +347,14 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Data Final (Laudo)</label><input type="date" id="d-laudo-peri-data-final"></div>
         </div>
         <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label>
-          <select id="d-laudo-peri-motivo">
-            <option value="">—</option>
-            <option>Abastecimento de Empilhadeira</option>
-            <option>Adicional - Vigilante</option>
-            <option>Armazenamento de Inflamáveis</option>
-            <option>Energia Elétrica</option>
-            <option>Ingresso à sala de cimento</option>
-            <option>Produtos Inflamáveis</option>
-          </select>
+          <div class="chk-multi">
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Abastecimento de Empilhadeira" id="d-lpm-1"><label for="d-lpm-1">Abastecimento de Empilhadeira</label></div>
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Adicional - Vigilante" id="d-lpm-2"><label for="d-lpm-2">Adicional - Vigilante</label></div>
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Armazenamento de Inflamáveis" id="d-lpm-3"><label for="d-lpm-3">Armazenamento de Inflamáveis</label></div>
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Energia Elétrica" id="d-lpm-4"><label for="d-lpm-4">Energia Elétrica</label></div>
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Ingresso à sala de cimento" id="d-lpm-5"><label for="d-lpm-5">Ingresso à sala de cimento</label></div>
+            <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Produtos Inflamáveis" id="d-lpm-6"><label for="d-lpm-6">Produtos Inflamáveis</label></div>
+          </div>
         </div>
 
         <div class="section-title">Insalubridade — Laudo</div>
@@ -373,18 +375,17 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label>
-            <select id="d-laudo-insalu-motivo">
-              <option value="">—</option>
-              <option>Agentes Biológicos</option>
-              <option>Agentes Químicos</option>
-              <option>Calor</option>
-              <option>Calor e Hidrocarbonetos</option>
-              <option>Câmara Fria</option>
-              <option>Hidrocarbonetos</option>
-              <option>Óleo</option>
-              <option>Partículas Respiráveis</option>
-              <option>Radiação não Ionizante</option>
-            </select>
+            <div class="chk-multi">
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Agentes Biológicos" id="d-lim-1"><label for="d-lim-1">Agentes Biológicos</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Agentes Químicos" id="d-lim-2"><label for="d-lim-2">Agentes Químicos</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Calor" id="d-lim-3"><label for="d-lim-3">Calor</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Calor e Hidrocarbonetos" id="d-lim-4"><label for="d-lim-4">Calor e Hidrocarbonetos</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Câmara Fria" id="d-lim-5"><label for="d-lim-5">Câmara Fria</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Hidrocarbonetos" id="d-lim-6"><label for="d-lim-6">Hidrocarbonetos</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Óleo" id="d-lim-7"><label for="d-lim-7">Óleo</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Partículas Respiráveis" id="d-lim-8"><label for="d-lim-8">Partículas Respiráveis</label></div>
+              <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Radiação não Ionizante" id="d-lim-9"><label for="d-lim-9">Radiação não Ionizante</label></div>
+            </div>
           </div>
           <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
         </div>
@@ -1210,6 +1211,10 @@ function renderHistoricoCalculos(){
 document.getElementById('form-decisao').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
+  const marcados = classe => {
+    const v = Array.from(document.querySelectorAll('.' + classe + ':checked')).map(cb => cb.value);
+    return v.length ? v.join(', ') : null;
+  };
   const registro = {
     numero_processo: g('d-processo'),
     nome_reclamante: g('d-reclamante'),
@@ -1221,7 +1226,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_periculosidade_resultado: g('d-laudo-peri-resultado'),
     laudo_periculosidade_data_inicio: g('d-laudo-peri-data-inicio'),
     laudo_periculosidade_data_final: g('d-laudo-peri-data-final'),
-    laudo_periculosidade_motivo: g('d-laudo-peri-motivo'),
+    laudo_periculosidade_motivo: marcados('d-laudo-peri-motivo-chk'),
     decisao_periculosidade_resultado: g('d-decisao-peri-resultado'),
     decisao_periculosidade_data_inicio: g('d-decisao-peri-data-inicio'),
     decisao_periculosidade_data_final: g('d-decisao-peri-data-final'),
@@ -1230,7 +1235,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_insalubridade_resultado: g('d-laudo-insalu-resultado'),
     laudo_insalubridade_data_inicio: g('d-laudo-insalu-data-inicio'),
     laudo_insalubridade_data_final: g('d-laudo-insalu-data-final'),
-    laudo_insalubridade_motivo: g('d-laudo-insalu-motivo'),
+    laudo_insalubridade_motivo: marcados('d-laudo-insalu-motivo-chk'),
     laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
     decisao_insalubridade_resultado: g('d-decisao-insalu-resultado'),
     decisao_insalubridade_grau: g('d-decisao-insalu-grau'),
