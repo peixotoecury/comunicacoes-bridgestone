@@ -53,11 +53,7 @@ create table if not exists reportes_decisao (
   laudo_periculosidade_motivo text,          -- checkboxes: pode ter varios, separados por ", "
   laudo_periculosidade_detalhamento text,    -- detalhe livre sobre a periculosidade (area/atividade especifica, etc.)
   laudo_periculosidade_fundamentacao text,   -- por que o laudo foi favoravel, se aplicavel
-  decisao_periculosidade_resultado text,
-  decisao_periculosidade_data_inicio date,
-  decisao_periculosidade_data_final date,
-  decisao_periculosidade_motivo text,
-  periculosidade_detalhamento_pos2016 text,
+  decisao_periculosidade_igual_laudo text,   -- 'Sim' | 'Não' | 'Parcialmente' (comparado ao laudo)
 
   -- Insalubridade
   laudo_insalubridade_resultado text,
@@ -67,14 +63,7 @@ create table if not exists reportes_decisao (
   laudo_insalubridade_detalhamento text,     -- detalhe livre (ex: qual agente quimico, falta de creme, motivo da condenacao)
   laudo_insalubridade_outros text,
   laudo_insalubridade_fundamentacao text,    -- por que o laudo foi favoravel, se aplicavel
-  decisao_insalubridade_resultado text,
-  decisao_insalubridade_grau text,
-  decisao_insalubridade_data_inicio date,
-  decisao_insalubridade_data_final date,
-  decisao_insalubridade_motivo text,
-  decisao_insalubridade_agentes text,
-  insalubridade_obs_epi text,
-  insalubridade_analise_complementar text,
+  decisao_insalubridade_igual_laudo text,    -- 'Sim' | 'Não' | 'Parcialmente' (comparado ao laudo)
 
   -- Ergonômico / Perícia Médica
   laudo_ergonomico text,

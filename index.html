@@ -558,105 +558,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
 
         <div class="sub-title">Sentença — Periculosidade</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado das Decisões</label>
-            <select id="d-decisao-peri-resultado">
-              <option value="">—</option>
-              <option>Aguardando Decisão</option>
-              <option>Encerrado antes do Julgamento</option>
-              <option>Improcedente</option>
-              <option>Parcialmente Procedente</option>
-              <option>Procedente</option>
-              <option>Sem Pedido</option>
-            </select>
-          </div>
-          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-peri-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-peri-data-final"></div>
-        </div>
-        <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Motivo da Periculosidade</label>
-            <select id="d-decisao-peri-motivo">
-              <option value="">—</option>
-              <option>Aguardando Decisão</option>
-              <option>Abastecimento de Empilhadeira</option>
-              <option>Adicional - Vigilante</option>
-              <option>Armazenamento de inflamáveis</option>
-              <option>Atividades próximas a área vermelha</option>
-              <option>Energia Elétrica</option>
-              <option>Ingresso à sala de cimento</option>
-              <option>Produtos Inflamáveis</option>
-            </select>
-          </div>
-          <div class="mc-form-group"><label>Detalhamento dos Casos Após Dez/2016</label>
-            <select id="d-peri-pos2016">
-              <option value="">—</option>
-              <option>Atividades próximas a área vermelha</option>
-              <option>Ingresso a sala de cimento</option>
-              <option>O perito constatou tambores de inflamáveis na área</option>
-            </select>
-          </div>
+        <div class="mc-form-group"><label>Periculosidade na Sentença foi igual ao Laudo?</label>
+          <select id="d-decisao-peri-igual-laudo"><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
         </div>
 
         <div class="sub-title">Sentença — Insalubridade</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado das Decisões</label>
-            <select id="d-decisao-insalu-resultado">
-              <option value="">—</option>
-              <option>Aguardando Decisão</option>
-              <option>Encerrado antes do Julgamento</option>
-              <option>Improcedente</option>
-              <option>Parcialmente Procedente</option>
-              <option>Procedente</option>
-              <option>Sem Pedido</option>
-            </select>
-          </div>
-          <div class="mc-form-group"><label>Grau de Insalubridade</label>
-            <select id="d-decisao-insalu-grau"><option value="">—</option><option>Mínimo (10%)</option><option>Médio (20%)</option><option>Máximo (40%)</option></select>
-          </div>
-          <div class="mc-form-group"><label>Agentes Insalubres</label>
-            <select id="d-decisao-insalu-agentes">
-              <option value="">—</option>
-              <option>Agentes Biológicos</option>
-              <option>Agentes Químicos</option>
-              <option>Calor</option>
-              <option>Hidrocarbonetos</option>
-              <option>Óleo</option>
-              <option>Poeira</option>
-              <option>Radiação não Ionizante</option>
-              <option>Ruído</option>
-            </select>
-          </div>
-        </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Data Início</label><input type="date" id="d-decisao-insalu-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final</label><input type="date" id="d-decisao-insalu-data-final"></div>
-          <div class="mc-form-group"><label>Motivo da Insalubridade</label>
-            <select id="d-decisao-insalu-motivo">
-              <option value="">—</option>
-              <option>Ausência de CA'S</option>
-              <option>Ausência de EPI'S - ficha azul</option>
-              <option>Ausência de EPI'S - Falta de ficha azul</option>
-              <option>Ausência de EPI'S - Falta de ficha eletrônica</option>
-              <option>EPI'S não elimina o agente insalubre</option>
-            </select>
-          </div>
-        </div>
-        <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Outras observações sobre EPI</label>
-            <select id="d-insalu-obs-epi">
-              <option value="">—</option>
-              <option>Ausência de CA'S</option>
-              <option>Ausência de EPI'S - ficha azul</option>
-              <option>Creme de proteção com entrega coletiva, sem comprovante individual</option>
-              <option>Fornecimento de EPI com a periodicidade superior a previsão legal</option>
-              <option>Não entregue máscara com filtro</option>
-              <option>Não foi entregue luva impermeável</option>
-              <option>Não foi identificado o C.A. específico para o EPI entregue</option>
-              <option>O EPI não neutraliza o agente insalubre</option>
-              <option>Protetores aurículares insuficientes</option>
-            </select>
-          </div>
-          <div class="mc-form-group"><label>Análise complementar</label><textarea id="d-insalu-analise-complementar" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Insalubridade na Sentença foi igual ao Laudo?</label>
+          <select id="d-decisao-insalu-igual-laudo"><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
         </div>
 
         <div class="section-title">Acórdão TRT</div>
@@ -1325,11 +1233,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_periculosidade_motivo: marcados('d-laudo-peri-motivo-chk'),
     laudo_periculosidade_detalhamento: g('d-laudo-peri-detalhamento'),
     laudo_periculosidade_fundamentacao: g('d-laudo-peri-fundamentacao'),
-    decisao_periculosidade_resultado: g('d-decisao-peri-resultado'),
-    decisao_periculosidade_data_inicio: g('d-decisao-peri-data-inicio'),
-    decisao_periculosidade_data_final: g('d-decisao-peri-data-final'),
-    decisao_periculosidade_motivo: g('d-decisao-peri-motivo'),
-    periculosidade_detalhamento_pos2016: g('d-peri-pos2016'),
+    decisao_periculosidade_igual_laudo: g('d-decisao-peri-igual-laudo'),
     laudo_insalubridade_resultado: g('d-laudo-insalu-resultado'),
     laudo_insalubridade_data_inicio: g('d-laudo-insalu-data-inicio'),
     laudo_insalubridade_data_final: g('d-laudo-insalu-data-final'),
@@ -1337,14 +1241,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_insalubridade_fundamentacao: g('d-laudo-insalu-fundamentacao'),
     laudo_insalubridade_detalhamento: g('d-laudo-insalu-detalhamento'),
     laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
-    decisao_insalubridade_resultado: g('d-decisao-insalu-resultado'),
-    decisao_insalubridade_grau: g('d-decisao-insalu-grau'),
-    decisao_insalubridade_data_inicio: g('d-decisao-insalu-data-inicio'),
-    decisao_insalubridade_data_final: g('d-decisao-insalu-data-final'),
-    decisao_insalubridade_motivo: g('d-decisao-insalu-motivo'),
-    decisao_insalubridade_agentes: g('d-decisao-insalu-agentes'),
-    insalubridade_obs_epi: g('d-insalu-obs-epi'),
-    insalubridade_analise_complementar: g('d-insalu-analise-complementar'),
+    decisao_insalubridade_igual_laudo: g('d-decisao-insalu-igual-laudo'),
     laudo_ergonomico: g('d-laudo-ergonomico'),
     perito_medica: g('d-perito-medica'),
     data_pericia_medica: g('d-data-pericia-medica'),
@@ -1471,7 +1368,7 @@ const EMAIL_MODELOS = {
   }),
   tecnico: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Técnico`,
-    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial técnico referente ao processo.\n\nConclusão da perícia:\n- Insalubridade: ${nn(r.laudo_insalubridade_resultado || r.decisao_insalubridade_resultado)}\n- Grau: ${nn(r.decisao_insalubridade_grau)}\n- Periculosidade: ${nn(r.laudo_periculosidade_resultado || r.decisao_periculosidade_resultado)}\n\nPrincipais fundamentos do perito:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA nossa equipe analisará o laudo para definição da estratégia processual e eventual apresentação de impugnação ou esclarecimentos.\n\nSeguiremos acompanhando o andamento do processo e manteremos vocês informados.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial técnico referente ao processo.\n\nConclusão da perícia:\n- Insalubridade: ${nn(r.laudo_insalubridade_resultado)}\n- Periculosidade: ${nn(r.laudo_periculosidade_resultado)}\n\nPrincipais fundamentos do perito:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA nossa equipe analisará o laudo para definição da estratégia processual e eventual apresentação de impugnação ou esclarecimentos.\n\nSeguiremos acompanhando o andamento do processo e manteremos vocês informados.\n\nAtenciosamente,`,
   }),
   sentenca: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação da Sentença`,
