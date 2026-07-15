@@ -179,10 +179,17 @@ create table if not exists solicitacoes_insercao_valores (
   data_insercao_lm date,
   inserido_sistema text,                  -- 'Sim' | 'Não'
   data_insercao_sistema date,
-  provisao_accrual_atual numeric,
-  novo_valor numeric not null,
+  valor_atual_historico numeric,
+  valor_novo_historico numeric,
+  diff_historico numeric,
+  valor_atual_provisao numeric,
+  valor_novo_provisao numeric,
+  diff_provisao numeric,
+  valor_atual_accrual numeric,
+  valor_novo_accrual numeric,
+  diff_accrual numeric,
   link_calculo text,
-  acima_400k boolean not null default false,  -- calculado a partir de novo_valor; dispara nota pro Nicolau
+  acima_400k boolean not null default false,  -- true se |diff_historico|, |diff_provisao| ou |diff_accrual| >= 400000; dispara nota pro Nicolau
   enviado_cliente text,                   -- 'Sim' | 'Não'
   justificativa_envio text,
   criado_em timestamptz not null default now()

@@ -785,16 +785,36 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
           <div class="mc-form-group"><label>Data do Cálculo</label><input type="date" id="v-data-calculo"></div>
         </div>
-        <div class="mc-form-grid cols-3">
+        <div class="mc-form-grid">
           <div class="mc-form-group"><label>Revisado</label>
             <select id="v-revisado"><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Provisão/Accrual Atual (R$)</label><input type="number" step="0.01" id="v-provisao-atual"></div>
-          <div class="mc-form-group"><label>Novo Valor (R$) <span class="req">*</span></label><input type="number" step="0.01" id="v-novo-valor" required oninput="atualizarAlertaValor()"></div>
+          <div class="mc-form-group"><label>Justificativa Revisão</label><textarea id="v-justificativa-revisao" rows="2"></textarea></div>
         </div>
-        <div class="mc-form-group"><label>Justificativa Revisão</label><textarea id="v-justificativa-revisao" rows="2"></textarea></div>
+
+        <div class="sub-title">Valores — Histórico</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="number" step="0.01" id="v-atual-historico" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor do Histórico (R$)</label><input type="number" step="0.01" id="v-novo-historico" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-historico" readonly></div>
+        </div>
+
+        <div class="sub-title">Valores — Provisão</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Valor Atual da Provisão (R$)</label><input type="number" step="0.01" id="v-atual-provisao" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor da Provisão (R$)</label><input type="number" step="0.01" id="v-novo-provisao" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-provisao" readonly></div>
+        </div>
+
+        <div class="sub-title">Valores — Accrual</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Valor Atual do Accrual (R$)</label><input type="number" step="0.01" id="v-atual-accrual" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor do Accrual (R$)</label><input type="number" step="0.01" id="v-novo-accrual" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-accrual" readonly></div>
+        </div>
+
         <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
-        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Novo Valor acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
+        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
 
         <div class="section-title">Inserção</div>
         <div class="mc-form-grid cols-3">
@@ -826,8 +846,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Novo Valor</th><th>Acima 400k</th><th>Inserido Elaw</th><th>Enviado em</th></tr></thead>
-        <tbody id="v-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Dif. Histórico</th><th>Dif. Provisão</th><th>Dif. Accrual</th><th>Acima 400k</th><th>Inserido Elaw</th><th>Enviado em</th></tr></thead>
+        <tbody id="v-tbody"><tr><td colspan="9" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1397,17 +1417,38 @@ function renderHistoricoAcordos(){
 const LIMIAR_ALERTA_VALOR = 400000;
 const NICOLAU_EMAIL = 'nicolau.coelho@peixotoecury.com.br';
 
-function atualizarAlertaValor(){
-  const v = parseFloat(document.getElementById('v-novo-valor').value) || 0;
-  document.getElementById('v-alerta-400k').style.display = (v >= LIMIAR_ALERTA_VALOR) ? 'flex' : 'none';
+function diferencaValor(idAtual, idNovo){
+  const atual = parseFloat(document.getElementById(idAtual).value) || 0;
+  const novo = parseFloat(document.getElementById(idNovo).value) || 0;
+  return novo - atual;
+}
+
+function recalcularDiferencasValores(){
+  const diffHist = diferencaValor('v-atual-historico', 'v-novo-historico');
+  const diffProv = diferencaValor('v-atual-provisao', 'v-novo-provisao');
+  const diffAcc = diferencaValor('v-atual-accrual', 'v-novo-accrual');
+  document.getElementById('v-diff-historico').value = fmtMoeda(diffHist);
+  document.getElementById('v-diff-provisao').value = fmtMoeda(diffProv);
+  document.getElementById('v-diff-accrual').value = fmtMoeda(diffAcc);
+  const maiorDiff = Math.max(Math.abs(diffHist), Math.abs(diffProv), Math.abs(diffAcc));
+  document.getElementById('v-alerta-400k').style.display = (maiorDiff >= LIMIAR_ALERTA_VALOR) ? 'flex' : 'none';
 }
 
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
   const num = id => { const v = document.getElementById(id).value; return v===''?null:parseFloat(v); };
-  const novoValor = num('v-novo-valor') || 0;
-  const acima400k = novoValor >= LIMIAR_ALERTA_VALOR;
+  const atualHistorico = num('v-atual-historico');
+  const novoHistorico = num('v-novo-historico');
+  const atualProvisao = num('v-atual-provisao');
+  const novoProvisao = num('v-novo-provisao');
+  const atualAccrual = num('v-atual-accrual');
+  const novoAccrual = num('v-novo-accrual');
+  const diffHistorico = (novoHistorico || 0) - (atualHistorico || 0);
+  const diffProvisao = (novoProvisao || 0) - (atualProvisao || 0);
+  const diffAccrual = (novoAccrual || 0) - (atualAccrual || 0);
+  const maiorDiff = Math.max(Math.abs(diffHistorico), Math.abs(diffProvisao), Math.abs(diffAccrual));
+  const acima400k = maiorDiff >= LIMIAR_ALERTA_VALOR;
   const registro = {
     numero_processo: g('v-processo'),
     nome_reclamante: g('v-reclamante'),
@@ -1426,8 +1467,15 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     data_insercao_lm: g('v-data-insercao-lm'),
     inserido_sistema: g('v-inserido-sistema'),
     data_insercao_sistema: g('v-data-insercao-sistema'),
-    provisao_accrual_atual: num('v-provisao-atual'),
-    novo_valor: novoValor,
+    valor_atual_historico: atualHistorico,
+    valor_novo_historico: novoHistorico,
+    diff_historico: diffHistorico,
+    valor_atual_provisao: atualProvisao,
+    valor_novo_provisao: novoProvisao,
+    diff_provisao: diffProvisao,
+    valor_atual_accrual: atualAccrual,
+    valor_novo_accrual: novoAccrual,
+    diff_accrual: diffAccrual,
     link_calculo: g('v-link-calculo'),
     acima_400k: acima400k,
     enviado_cliente: g('v-enviado-cliente'),
@@ -1435,10 +1483,9 @@ document.getElementById('form-valores').addEventListener('submit', async functio
   };
   const destinatarios = 'cicera.vicente@peixotoecury.com.br';
   const cc = 'grupobridgestone@peixotoecury.com.br';
-  const valorFmt = fmtMoeda(registro.novo_valor);
-  const provisaoFmt = fmtMoeda(registro.provisao_accrual_atual);
+  const resumoValores = `Histórico — Atual: ${fmtMoeda(registro.valor_atual_historico)} | Novo: ${fmtMoeda(registro.valor_novo_historico)} | Diferença: ${fmtMoeda(registro.diff_historico)}\nProvisão — Atual: ${fmtMoeda(registro.valor_atual_provisao)} | Novo: ${fmtMoeda(registro.valor_novo_provisao)} | Diferença: ${fmtMoeda(registro.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(registro.valor_atual_accrual)} | Novo: ${fmtMoeda(registro.valor_novo_accrual)} | Diferença: ${fmtMoeda(registro.diff_accrual)}`;
   const assunto = `Solicitação de Inserção de Valores — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
-  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção do valor abaixo referente ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\nProvisão/Accrual Atual: ${provisaoFmt}\nNovo Valor: ${valorFmt}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
 
   const { error } = await sb.from('solicitacoes_insercao_valores').insert(registro);
   if(error){
@@ -1451,12 +1498,15 @@ document.getElementById('form-valores').addEventListener('submit', async functio
   abrirEmail(destinatarios, cc, assunto, corpo);
   if(acima400k){
     setTimeout(() => {
-      const assuntoNicolau = `⚠️ Inserção de Valor Acima de R$ 400.000,00 — Processo ${registro.numero_processo}`;
-      const corpoNicolau = `Nicolau,\n\nNota de atenção: o valor abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nNovo Valor: ${valorFmt}\nProvisão/Accrual Atual: ${provisaoFmt}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+      const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 400.000,00 — Processo ${registro.numero_processo}`;
+      const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
       abrirEmail(NICOLAU_EMAIL, cc, assuntoNicolau, corpoNicolau);
     }, 700);
   }
   this.reset();
+  document.getElementById('v-diff-historico').value = '';
+  document.getElementById('v-diff-provisao').value = '';
+  document.getElementById('v-diff-accrual').value = '';
   document.getElementById('v-alerta-400k').style.display = 'none';
 });
 
@@ -1478,12 +1528,14 @@ function renderHistoricoValores(){
   const rows = HIST_VALORES.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
   HIST_VALORES_FILTRADO = rows;
   const tbody = document.getElementById('v-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
     <td><span class="badge badge-blue">${esc(r.tipo_calculo)}</span></td>
-    <td class="mono">${fmtMoeda(r.novo_valor)}</td>
+    <td class="mono">${fmtMoeda(r.diff_historico)}</td>
+    <td class="mono">${fmtMoeda(r.diff_provisao)}</td>
+    <td class="mono">${fmtMoeda(r.diff_accrual)}</td>
     <td>${r.acima_400k ? '<span class="badge badge-orange">Sim</span>' : '<span class="badge badge-green">Não</span>'}</td>
     <td>${esc(r.inserido_sistema)}</td>
     <td class="mono">${fmtDataHora(r.criado_em)}</td>
