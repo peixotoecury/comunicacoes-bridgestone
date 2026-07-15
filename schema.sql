@@ -64,6 +64,13 @@ create table if not exists reportes_decisao (
   laudo_insalubridade_outros text,
   laudo_insalubridade_fundamentacao text,    -- por que o laudo foi favoravel, se aplicavel
   decisao_insalubridade_igual_laudo text,    -- 'Sim' | 'Não' | 'Parcialmente' (comparado ao laudo)
+  sentenca_embargos text,                    -- 'Sim' | 'Não'
+  ro_gdj_valor numeric,
+  ro_gdj_vencimento date,
+  ro_gru_valor numeric,
+  ro_gru_vencimento date,
+  ro_custas_valor numeric,
+  ro_custas_vencimento date,
 
   -- Ergonômico / Perícia Médica
   laudo_ergonomico text,
@@ -100,12 +107,27 @@ create table if not exists reportes_decisao (
   acordao_trt_data date,
   acordao_trt_turma text,
   acordao_trt_relator text,
+  trt_embargos text,                         -- 'Sim' | 'Não'
+  recurso_revista_resultado text,            -- 'Admitido' | 'Denegado Seguimento' | 'Pendente'
+  rr_gdj_valor numeric,
+  rr_gdj_vencimento date,
+  rr_gru_valor numeric,
+  rr_gru_vencimento date,
+  rr_custas_valor numeric,
+  rr_custas_vencimento date,
+  ai_gdj_valor numeric,
+  ai_gdj_vencimento date,
+  ai_gru_valor numeric,
+  ai_gru_vencimento date,
+  ai_custas_valor numeric,
+  ai_custas_vencimento date,
 
   -- Acórdão TST
   acordao_tst text,
   acordao_tst_data date,
   acordao_tst_camara text,
   acordao_tst_ministro text,
+  tst_embargos text,                         -- 'Sim' | 'Não'
 
   -- Execução / status
   execucao text,                          -- 'Sim' | 'Não'

@@ -576,6 +576,22 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <select id="d-decisao-insalu-igual-laudo"><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
         </div>
 
+        <div class="sub-title">Sentença — Embargos e Recurso Ordinário</div>
+        <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
+          <select id="d-sentenca-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        </div>
+        <div class="info-box">ℹ️ Se <b>Não</b> a Embargos, preencher as guias do Recurso Ordinário abaixo.</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>GDJ — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ro-gdj-valor"></div>
+          <div class="mc-form-group"><label>GDJ — Vencimento</label><input type="date" id="d-ro-gdj-vencimento"></div>
+          <div class="mc-form-group"><label>GRU — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ro-gru-valor"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>GRU — Vencimento</label><input type="date" id="d-ro-gru-vencimento"></div>
+          <div class="mc-form-group"><label>Custas — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ro-custas-valor"></div>
+          <div class="mc-form-group"><label>Custas — Vencimento</label><input type="date" id="d-ro-custas-vencimento"></div>
+        </div>
+
         <div class="section-title">Acórdão TRT</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado (Reclamada)</label>
@@ -617,6 +633,37 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-group"><label>Relator</label><input type="text" id="d-acordao-trt-relator"></div>
 
+        <div class="sub-title">Acórdão TRT — Embargos e Recurso de Revista</div>
+        <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
+          <select id="d-trt-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        </div>
+        <div class="info-box">ℹ️ Se <b>Não</b> a Embargos, preencher o Recurso de Revista abaixo.</div>
+        <div class="mc-form-group"><label>Resultado do Recurso de Revista</label>
+          <select id="d-recurso-revista-resultado"><option value="">—</option><option>Admitido</option><option>Denegado Seguimento</option><option>Pendente</option></select>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>GDJ — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-rr-gdj-valor"></div>
+          <div class="mc-form-group"><label>GDJ — Vencimento</label><input type="date" id="d-rr-gdj-vencimento"></div>
+          <div class="mc-form-group"><label>GRU — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-rr-gru-valor"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>GRU — Vencimento</label><input type="date" id="d-rr-gru-vencimento"></div>
+          <div class="mc-form-group"><label>Custas — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-rr-custas-valor"></div>
+          <div class="mc-form-group"><label>Custas — Vencimento</label><input type="date" id="d-rr-custas-vencimento"></div>
+        </div>
+
+        <div class="info-box">ℹ️ Se o Recurso de Revista for <b>Denegado Seguimento</b>, preencher o Agravo de Instrumento abaixo (mesma solicitação de guias).</div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Agravo — GDJ Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ai-gdj-valor"></div>
+          <div class="mc-form-group"><label>Agravo — GDJ Vencimento</label><input type="date" id="d-ai-gdj-vencimento"></div>
+          <div class="mc-form-group"><label>Agravo — GRU Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ai-gru-valor"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Agravo — GRU Vencimento</label><input type="date" id="d-ai-gru-vencimento"></div>
+          <div class="mc-form-group"><label>Agravo — Custas Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ai-custas-valor"></div>
+          <div class="mc-form-group"><label>Agravo — Custas Vencimento</label><input type="date" id="d-ai-custas-vencimento"></div>
+        </div>
+
         <div class="section-title">Acórdão TST</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado</label>
@@ -647,6 +694,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
         <div class="mc-form-group"><label>Ministro</label><input type="text" id="d-acordao-tst-ministro"></div>
+
+        <div class="sub-title">Acórdão TST — Embargos de Declaração</div>
+        <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
+          <select id="d-tst-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        </div>
 
         <div class="section-title">Status</div>
         <div class="mc-form-grid">
@@ -1272,6 +1324,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     const v = Array.from(document.querySelectorAll('.' + classe + ':checked')).map(cb => cb.value);
     return v.length ? v.join(', ') : null;
   };
+  const numBR = id => parseMoedaBR(document.getElementById(id).value);
   const registro = {
     numero_processo: g('d-processo'),
     nome_reclamante: g('d-reclamante'),
@@ -1295,6 +1348,13 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_insalubridade_detalhamento: g('d-laudo-insalu-detalhamento'),
     laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
     decisao_insalubridade_igual_laudo: g('d-decisao-insalu-igual-laudo'),
+    sentenca_embargos: g('d-sentenca-embargos'),
+    ro_gdj_valor: numBR('d-ro-gdj-valor'),
+    ro_gdj_vencimento: g('d-ro-gdj-vencimento'),
+    ro_gru_valor: numBR('d-ro-gru-valor'),
+    ro_gru_vencimento: g('d-ro-gru-vencimento'),
+    ro_custas_valor: numBR('d-ro-custas-valor'),
+    ro_custas_vencimento: g('d-ro-custas-vencimento'),
     laudo_ergonomico: g('d-laudo-ergonomico'),
     perito_medica: g('d-perito-medica'),
     data_pericia_medica: g('d-data-pericia-medica'),
@@ -1325,10 +1385,25 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     acordao_trt_data: g('d-acordao-trt-data'),
     acordao_trt_turma: g('d-acordao-trt-turma'),
     acordao_trt_relator: g('d-acordao-trt-relator'),
+    trt_embargos: g('d-trt-embargos'),
+    recurso_revista_resultado: g('d-recurso-revista-resultado'),
+    rr_gdj_valor: numBR('d-rr-gdj-valor'),
+    rr_gdj_vencimento: g('d-rr-gdj-vencimento'),
+    rr_gru_valor: numBR('d-rr-gru-valor'),
+    rr_gru_vencimento: g('d-rr-gru-vencimento'),
+    rr_custas_valor: numBR('d-rr-custas-valor'),
+    rr_custas_vencimento: g('d-rr-custas-vencimento'),
+    ai_gdj_valor: numBR('d-ai-gdj-valor'),
+    ai_gdj_vencimento: g('d-ai-gdj-vencimento'),
+    ai_gru_valor: numBR('d-ai-gru-valor'),
+    ai_gru_vencimento: g('d-ai-gru-vencimento'),
+    ai_custas_valor: numBR('d-ai-custas-valor'),
+    ai_custas_vencimento: g('d-ai-custas-vencimento'),
     acordao_tst: g('d-acordao-tst'),
     acordao_tst_data: g('d-acordao-tst-data'),
     acordao_tst_camara: g('d-acordao-tst-camara'),
     acordao_tst_ministro: g('d-acordao-tst-ministro'),
+    tst_embargos: g('d-tst-embargos'),
     execucao: g('d-execucao'),
     ultima_movimentacao: g('d-ultima-movimentacao'),
     atualizado_em: new Date().toISOString(),
