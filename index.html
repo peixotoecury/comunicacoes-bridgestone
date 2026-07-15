@@ -812,22 +812,22 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
         <div class="sub-title">Valores — Histórico</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="number" step="0.01" id="v-atual-historico" oninput="recalcularDiferencasValores()"></div>
-          <div class="mc-form-group"><label>Novo Valor do Histórico (R$)</label><input type="number" step="0.01" id="v-novo-historico" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-historico" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-historico" readonly></div>
         </div>
 
         <div class="sub-title">Valores — Provisão</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual da Provisão (R$)</label><input type="number" step="0.01" id="v-atual-provisao" oninput="recalcularDiferencasValores()"></div>
-          <div class="mc-form-group"><label>Novo Valor da Provisão (R$)</label><input type="number" step="0.01" id="v-novo-provisao" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Valor Atual da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-provisao" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-provisao" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-provisao" readonly></div>
         </div>
 
         <div class="sub-title">Valores — Accrual</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual do Accrual (R$)</label><input type="number" step="0.01" id="v-atual-accrual" oninput="recalcularDiferencasValores()"></div>
-          <div class="mc-form-group"><label>Novo Valor do Accrual (R$)</label><input type="number" step="0.01" id="v-novo-accrual" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Valor Atual do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-accrual" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-accrual" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-accrual" readonly></div>
         </div>
 
@@ -1442,9 +1442,17 @@ function renderHistoricoAcordos(){
 const LIMIAR_ALERTA_VALOR = 400000;
 const NICOLAU_EMAIL = 'nicolau.coelho@peixotoecury.com.br';
 
+/* Aceita formato brasileiro: ponto = milhar, vírgula = decimal. "360.000" vira 360000, não 360. */
+function parseMoedaBR(str){
+  if(str == null || str === '') return null;
+  const limpo = String(str).trim().replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(limpo);
+  return isNaN(n) ? null : n;
+}
+
 function diferencaValor(idAtual, idNovo){
-  const atual = parseFloat(document.getElementById(idAtual).value) || 0;
-  const novo = parseFloat(document.getElementById(idNovo).value) || 0;
+  const atual = parseMoedaBR(document.getElementById(idAtual).value) || 0;
+  const novo = parseMoedaBR(document.getElementById(idNovo).value) || 0;
   return novo - atual;
 }
 
@@ -1462,7 +1470,7 @@ function recalcularDiferencasValores(){
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
-  const num = id => { const v = document.getElementById(id).value; return v===''?null:parseFloat(v); };
+  const num = id => parseMoedaBR(document.getElementById(id).value);
   const atualHistorico = num('v-atual-historico');
   const novoHistorico = num('v-novo-historico');
   const atualProvisao = num('v-atual-provisao');
