@@ -213,6 +213,27 @@ create table if not exists solicitacoes_insercao_valores (
   diff_accrual numeric,
   fase_atual text,                        -- mudança de fase mesmo sem alteração de valores (ex: muda o % de provisão)
   nova_fase text,
+
+  -- Execução: cada item é independente e opcional (valor + data), preenchido só
+  -- quando aplicável ao caso.
+  exec_calculo_reclamante_valor numeric,
+  exec_calculo_reclamante_data date,
+  exec_calculo_reclamada_valor numeric,
+  exec_calculo_reclamada_data date,
+  exec_pagamento_valor numeric,
+  exec_pagamento_data date,
+  exec_inss_valor numeric,
+  exec_inss_data date,
+  exec_garantia_valor numeric,
+  exec_garantia_data date,
+  exec_custas_valor numeric,
+  exec_custas_data date,
+  exec_gru_valor numeric,
+  exec_gru_data date,
+  exec_homologacao_calculos text,         -- 'Sim' | 'Não' -- Sentença de Liquidação / Homologação dos Cálculos
+  exec_solicitacao_pagamento text,        -- 'Sim' | 'Não'
+  exec_solicitacao_pagamento_data date,
+
   link_calculo text,
   acima_400k boolean not null default false,  -- true se |diff_historico|, |diff_provisao| ou |diff_accrual| >= 400000; dispara nota pro Nicolau
   enviado_cliente text,                   -- 'Sim' | 'Não'
@@ -339,3 +360,25 @@ alter publication supabase_realtime add table forecast_atual;
 -- =====================================================================
 alter table solicitacoes_insercao_valores add column if not exists fase_atual text;
 alter table solicitacoes_insercao_valores add column if not exists nova_fase text;
+
+-- =====================================================================
+-- Migração: campos "Execução" na aba Inserção de Valores (rodar só se a
+-- tabela solicitacoes_insercao_valores já existir sem essas colunas).
+-- =====================================================================
+alter table solicitacoes_insercao_valores add column if not exists exec_calculo_reclamante_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_calculo_reclamante_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_calculo_reclamada_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_calculo_reclamada_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_pagamento_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_pagamento_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_inss_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_inss_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_garantia_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_garantia_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_custas_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_custas_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_gru_valor numeric;
+alter table solicitacoes_insercao_valores add column if not exists exec_gru_data date;
+alter table solicitacoes_insercao_valores add column if not exists exec_homologacao_calculos text;
+alter table solicitacoes_insercao_valores add column if not exists exec_solicitacao_pagamento text;
+alter table solicitacoes_insercao_valores add column if not exists exec_solicitacao_pagamento_data date;

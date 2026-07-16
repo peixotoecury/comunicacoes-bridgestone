@@ -985,6 +985,46 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
 
+        <div class="section-title">Execução</div>
+        <div class="info-box">ℹ️ Preencha quando a decisão for de Execução — cada valor abaixo é independente e opcional, preencha só os que se aplicarem ao caso. Os que estiverem preenchidos entram no resumo do e-mail pra Cícera.</div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Cálculo do Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-calc-reclamante-valor"></div>
+          <div class="mc-form-group"><label>Cálculo do Reclamante — Data</label><input type="date" id="v-exec-calc-reclamante-data"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Cálculo da Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-calc-reclamada-valor"></div>
+          <div class="mc-form-group"><label>Cálculo da Reclamada — Data</label><input type="date" id="v-exec-calc-reclamada-data"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Pagamento do Processo (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-pagamento-valor"></div>
+          <div class="mc-form-group"><label>Pagamento do Processo — Data</label><input type="date" id="v-exec-pagamento-data"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>INSS (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-inss-valor"></div>
+          <div class="mc-form-group"><label>INSS — Data</label><input type="date" id="v-exec-inss-data"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Garantia da Execução (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-garantia-valor"></div>
+          <div class="mc-form-group"><label>Garantia da Execução — Data</label><input type="date" id="v-exec-garantia-data"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Custas (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-custas-valor"></div>
+          <div class="mc-form-group"><label>Custas — Data</label><input type="date" id="v-exec-custas-data"></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>GRU (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-exec-gru-valor"></div>
+          <div class="mc-form-group"><label>GRU — Data</label><input type="date" id="v-exec-gru-data"></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Sentença de Liquidação / Homologação dos Cálculos</label>
+            <select id="v-exec-homologacao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Solicitação de Pagamento Inserida</label>
+            <select id="v-exec-solicitacao-pagamento"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Data da Solicitação de Pagamento</label><input type="date" id="v-exec-solicitacao-pagamento-data"></div>
+        </div>
+
         <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
         <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
 
@@ -1918,6 +1958,33 @@ function vRecalcularAccrualPorFase(){
   recalcularDiferencasValores();
 }
 
+/* Seção Execução: cada item é independente e opcional — só entra no resumo do
+   e-mail (e conta pra temExecucao) se valor, data ou status tiver sido preenchido. */
+function temExecucao(r){
+  return !!(r.exec_calculo_reclamante_valor || r.exec_calculo_reclamante_data ||
+            r.exec_calculo_reclamada_valor || r.exec_calculo_reclamada_data ||
+            r.exec_pagamento_valor || r.exec_pagamento_data ||
+            r.exec_inss_valor || r.exec_inss_data ||
+            r.exec_garantia_valor || r.exec_garantia_data ||
+            r.exec_custas_valor || r.exec_custas_data ||
+            r.exec_gru_valor || r.exec_gru_data ||
+            r.exec_homologacao_calculos || r.exec_solicitacao_pagamento);
+}
+function resumoExecucao(r){
+  const linhas = [];
+  const item = (label, valor, data) => { if(valor != null || data) linhas.push(`${label}: ${valor != null ? fmtMoeda(valor) : '—'}${data ? ' (data: ' + dataBR(data) + ')' : ''}`); };
+  item('Cálculo do Reclamante', r.exec_calculo_reclamante_valor, r.exec_calculo_reclamante_data);
+  item('Cálculo da Reclamada', r.exec_calculo_reclamada_valor, r.exec_calculo_reclamada_data);
+  item('Pagamento do Processo', r.exec_pagamento_valor, r.exec_pagamento_data);
+  item('INSS', r.exec_inss_valor, r.exec_inss_data);
+  item('Garantia da Execução', r.exec_garantia_valor, r.exec_garantia_data);
+  item('Custas', r.exec_custas_valor, r.exec_custas_data);
+  item('GRU', r.exec_gru_valor, r.exec_gru_data);
+  if(r.exec_homologacao_calculos) linhas.push(`Sentença de Liquidação / Homologação dos Cálculos: ${r.exec_homologacao_calculos}`);
+  if(r.exec_solicitacao_pagamento) linhas.push(`Solicitação de Pagamento Inserida: ${r.exec_solicitacao_pagamento}${r.exec_solicitacao_pagamento_data ? ' (data: ' + dataBR(r.exec_solicitacao_pagamento_data) + ')' : ''}`);
+  return '\n--- Execução ---\n' + linhas.join('\n');
+}
+
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
@@ -1963,6 +2030,23 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     diff_accrual: diffAccrual,
     fase_atual: g('v-fase-atual'),
     nova_fase: rotuloSelecionado('v-nova-fase'),
+    exec_calculo_reclamante_valor: num('v-exec-calc-reclamante-valor'),
+    exec_calculo_reclamante_data: g('v-exec-calc-reclamante-data'),
+    exec_calculo_reclamada_valor: num('v-exec-calc-reclamada-valor'),
+    exec_calculo_reclamada_data: g('v-exec-calc-reclamada-data'),
+    exec_pagamento_valor: num('v-exec-pagamento-valor'),
+    exec_pagamento_data: g('v-exec-pagamento-data'),
+    exec_inss_valor: num('v-exec-inss-valor'),
+    exec_inss_data: g('v-exec-inss-data'),
+    exec_garantia_valor: num('v-exec-garantia-valor'),
+    exec_garantia_data: g('v-exec-garantia-data'),
+    exec_custas_valor: num('v-exec-custas-valor'),
+    exec_custas_data: g('v-exec-custas-data'),
+    exec_gru_valor: num('v-exec-gru-valor'),
+    exec_gru_data: g('v-exec-gru-data'),
+    exec_homologacao_calculos: g('v-exec-homologacao'),
+    exec_solicitacao_pagamento: g('v-exec-solicitacao-pagamento'),
+    exec_solicitacao_pagamento_data: g('v-exec-solicitacao-pagamento-data'),
     link_calculo: g('v-link-calculo'),
     acima_400k: acima400k,
     enviado_cliente: g('v-enviado-cliente'),
@@ -1972,7 +2056,7 @@ document.getElementById('form-valores').addEventListener('submit', async functio
   const cc = 'grupobridgestone@peixotoecury.com.br';
   const resumoValores = `Histórico — Atual: ${fmtMoeda(registro.valor_atual_historico)} | Novo: ${fmtMoeda(registro.valor_novo_historico)} | Diferença: ${fmtMoeda(registro.diff_historico)}\nProvisão — Atual: ${fmtMoeda(registro.valor_atual_provisao)} | Novo: ${fmtMoeda(registro.valor_novo_provisao)} | Diferença: ${fmtMoeda(registro.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(registro.valor_atual_accrual)} | Novo: ${fmtMoeda(registro.valor_novo_accrual)} | Diferença: ${fmtMoeda(registro.diff_accrual)}`;
   const assunto = `Solicitação de Inserção de Valores — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
-  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${(registro.fase_atual || registro.nova_fase) ? '\nMudança de Fase: ' + nn(registro.fase_atual) + ' → ' + nn(registro.nova_fase) : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${(registro.fase_atual || registro.nova_fase) ? '\nMudança de Fase: ' + nn(registro.fase_atual) + ' → ' + nn(registro.nova_fase) : ''}\n${temExecucao(registro) ? resumoExecucao(registro) : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
 
   const inseridoConfirmado = (registro.inserido_lm === 'Sim') || (registro.inserido_sistema === 'Sim');
 
