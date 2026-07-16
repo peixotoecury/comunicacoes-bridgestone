@@ -2157,7 +2157,11 @@ function iaReconstruirTabelaResumo(paginasItens){
     const linhas = iaAgruparLinhas(itensPagina);
     const idxHeader = linhas.findIndex(l => {
       const t = l.itens.map(i => i.str).join(' ').toLowerCase();
-      return t.includes('corrigido') && t.includes('juros') && t.includes('total');
+      // Exclui cabeçalhos de sub-tabelas de "Saldo Devedor" (ex.: Custas Judiciais —
+      // "Saldo Custas Corrigido / Saldo Juros Corrigido / Total de Juros / Total"),
+      // que também batem em corrigido+juros+total mas não são a tabela de verbas do
+      // cálculo (formato PJe-Calc Cidadão traz várias dessas, uma por data de evento).
+      return t.includes('corrigido') && t.includes('juros') && t.includes('total') && !t.includes('saldo');
     });
     if(idxHeader < 0) continue;
     const header = linhas[idxHeader];
@@ -2190,6 +2194,43 @@ function iaReconstruirTabelaResumo(paginasItens){
         total: valores.total || (valores.valorCorrigido + valores.juros),
         probabilidade: 'Possível', obs: 'Lido diretamente da tabela do cálculo (posição real da página)'
       });
+    }
+    if(verbas.length) return verbas;
+  }
+  return null;
+}
+
+// Reconstrói a tabela "Resumo da Atualização do Cálculo" do formato PJe-Calc Cidadão
+// (Descrição do Saldo Devedor por Credor | Valor) — só 1 coluna de valor, diferente do
+// formato "Resumo do Cálculo" (Descrição | Valor Corrigido | Juros | Total) que a
+// iaReconstruirTabelaResumo acima já cobre. Pega cada linha com valor != 0, parando
+// antes da linha de soma "Total Devido Pelo Reclamado".
+function iaReconstruirResumoSaldoDevedor(paginasItens){
+  if(!paginasItens) return null;
+  for(const itensPagina of paginasItens){
+    const linhas = iaAgruparLinhas(itensPagina);
+    const idxHeader = linhas.findIndex(l => {
+      const t = l.itens.map(i => i.str).join(' ').toLowerCase();
+      return t.includes('saldo devedor') && t.includes('credor') && t.includes('valor');
+    });
+    if(idxHeader < 0) continue;
+    const header = linhas[idxHeader];
+    const colValor = header.itens.find(i => i.str.trim().toLowerCase() === 'valor');
+    if(!colValor) continue;
+    const xValor = colValor.x;
+
+    const verbas = [];
+    for(let i = idxHeader+1; i < linhas.length; i++){
+      const linha = linhas[i];
+      const numeroItem = linha.itens.find(it => Math.abs(it.x - xValor) < 30 && /\d,\d{2}$/.test(it.str.replace(/\s/g,'')));
+      const descItens = linha.itens.filter(it => it !== numeroItem && it.x < xValor - 20);
+      const descricao = descItens.map(it => it.str).join(' ').replace(/\s+/g,' ').trim();
+      if(!descricao) break; // linha sem descrição = acabou a tabela
+      if(/total devido pelo reclamado/i.test(descricao)) break;
+      if(!numeroItem) continue;
+      const valor = iaNum(numeroItem.str);
+      if(!valor) continue; // ignora linhas zeradas (ex.: Líquido Devido ao Reclamante = 0,00)
+      verbas.push({pedido: descricao, dtOrigem:'', indice:'auto', principal:valor, correcao:0, juros:0, total:valor, probabilidade:'Possível', obs:'Lido diretamente do Resumo da Atualização do Cálculo (posição real da página)'});
     }
     if(verbas.length) return verbas;
   }
@@ -2245,7 +2286,7 @@ function iaProcessarTexto(){
   let usouPosicao = false;
   IA_DEBITOS = [];
 
-  const verbasResumo = iaReconstruirTabelaResumo(IA_PAGINAS_ITENS);
+  const verbasResumo = iaReconstruirTabelaResumo(IA_PAGINAS_ITENS) || iaReconstruirResumoSaldoDevedor(IA_PAGINAS_ITENS);
   if(verbasResumo){
     usouPosicao = true;
     verbas = verbasResumo;
