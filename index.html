@@ -1070,14 +1070,34 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="ia-verbas-wrap" style="min-width:1180px;"></div>
       </div>
 
-      <div style="display:flex;justify-content:flex-end;gap:24px;padding:12px 4px;font-weight:700;color:var(--escuro-pc);border-top:1px solid var(--border2);margin-top:10px;">
-        <span>Total</span><span id="ia-total">R$ 0,00</span>
+      <div style="display:flex;justify-content:flex-end;gap:28px;padding:12px 4px;border-top:1px solid var(--border2);margin-top:10px;flex-wrap:wrap;">
+        <div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Total Principal (→ Histórico)</div>
+          <div style="font-weight:700;color:var(--escuro-pc);" id="ia-total-principal">R$ 0,00</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Total Corrigido (→ Provisão)</div>
+          <div style="font-weight:700;color:var(--escuro-pc);" id="ia-total">R$ 0,00</div>
+        </div>
       </div>
 
       <div id="ia-debitos-wrap"></div>
 
+      <div style="background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius-lg);padding:12px 14px;margin-top:14px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--escuro-pc);margin-bottom:8px;">📊 Fase do processo (só pra calcular o Accrual)</div>
+        <div class="mc-form-group" style="margin-bottom:0;">
+          <select id="ia-fase-processo">
+            <option value="">— Não calcular Accrual —</option>
+            <option value="1">Fase 1 — Conhecimento e Instrução (40,5% do provável)</option>
+            <option value="2">Fase 2 — Recursal (TRT/TST) (54% do provável)</option>
+            <option value="3">Fase 3 — Execução (100% do provável)</option>
+          </select>
+        </div>
+        <div class="hint" style="margin-top:6px;">Accrual = % da fase × soma do <b>Principal</b> das verbas marcadas como <b>Provável</b> na grade acima.</div>
+      </div>
+
       <div style="margin-top:14px;">
-        <button type="button" class="btn-cyan" style="width:auto;padding:11px 20px;background:var(--green);" onclick="iaLevarParaValores()">→ Levar total para Inserção de Valores</button>
+        <button type="button" class="btn-cyan" style="width:auto;padding:11px 20px;background:var(--green);" onclick="iaLevarParaValores()">→ Levar Histórico/Provisão/Accrual para Inserção de Valores</button>
       </div>
     </div>
   </div>
@@ -2334,6 +2354,7 @@ function iaDrawVerbas(){
   if(!IA_VERBAS.length){
     wrap.innerHTML = '<div class="hint" style="padding:12px 0;">Nenhuma verba ainda — suba um documento ou adicione manualmente.</div>';
     document.querySelector('#ia-total').textContent = 'R$ 0,00';
+    document.querySelector('#ia-total-principal').textContent = 'R$ 0,00';
     return;
   }
   const optsIndice = '<option value="auto">Auto (Tema 1191)</option><option value="ipca">IPCA-E</option><option value="tr_ipca">TR+IPCA-E</option><option value="selic">SELIC</option><option value="nenhum">Sem correção</option>';
@@ -2357,12 +2378,23 @@ function iaDrawVerbas(){
     </div>`).join('');
   wrap.innerHTML = head + rows;
   const total = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
+  const totalPrincipal = IA_VERBAS.reduce((s,v) => s + iaNum(v.principal), 0);
   document.querySelector('#ia-total').textContent = iaMoney(total);
+  document.querySelector('#ia-total-principal').textContent = iaMoney(totalPrincipal);
 }
 
+// Percentual de Accrual por fase do processo — sobre a soma do Principal das
+// verbas marcadas como "Provável" (não sobre o Total corrigido, nem sobre as
+// verbas "Possível"/"Remoto").
+const IA_ACCRUAL_PCT_POR_FASE = {'1': 0.405, '2': 0.54, '3': 1.0};
+
 function iaLevarParaValores(){
-  const total = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
-  if(!total){ alert('Ainda não há total calculado — extraia ou preencha as verbas primeiro.'); return; }
+  // Histórico = valor na data da distribuição, sem correção/juros (Principal).
+  // Provisão = valor corrigido + juros (o Total de cada verba) — melhor estimativa
+  // atual do passivo. Nenhum dos dois soma os débitos com terceiros (IA_DEBITOS).
+  const totalPrincipal = IA_VERBAS.reduce((s,v) => s + iaNum(v.principal), 0);
+  const totalCorrigido = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
+  if(!totalPrincipal && !totalCorrigido){ alert('Ainda não há total calculado — extraia ou preencha as verbas primeiro.'); return; }
   mudarAba('valores');
   const processo = document.getElementById('ia-processo').value.trim();
   if(processo && !document.getElementById('v-processo').value.trim()){
@@ -2372,10 +2404,23 @@ function iaLevarParaValores(){
   if(reclamante && !document.getElementById('v-reclamante').value.trim()){
     document.getElementById('v-reclamante').value = reclamante;
   }
-  document.getElementById('v-novo-historico').value = total.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('v-novo-historico').value = totalPrincipal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('v-novo-provisao').value = totalCorrigido.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  const fase = document.getElementById('ia-fase-processo').value;
+  let msgAccrual = '';
+  if(fase && IA_ACCRUAL_PCT_POR_FASE[fase] != null){
+    const totalPrincipalProvavel = IA_VERBAS.filter(v => v.probabilidade === 'Provável').reduce((s,v) => s + iaNum(v.principal), 0);
+    const accrual = totalPrincipalProvavel * IA_ACCRUAL_PCT_POR_FASE[fase];
+    document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% do provável)`;
+  } else {
+    msgAccrual = ' — selecione a Fase do processo na aba IA pra calcular o Accrual automaticamente';
+  }
+
   recalcularDiferencasValores();
   document.getElementById('v-novo-historico').scrollIntoView({behavior:'smooth', block:'center'});
-  toast('Total levado para "Novo Valor do Histórico" — confira e complete os demais campos.');
+  toast(`Histórico (Principal) e Provisão (corrigido) levados${msgAccrual} — confira antes de salvar.`);
 }
 
 // ══════════════════════════════════════════════════════
