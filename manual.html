@@ -465,10 +465,11 @@ table.field-table tr:last-child td{border-bottom:none;}
         </div>
       </div>
       <div class="tab-body">
-        <div class="info-callout">ℹ️ Suba aqui o arquivo de Forecast (.xlsx) mais recente enviado ao cliente. O sistema encontra sozinho a aba com os dados por processo (procura por uma coluna "Process" — não depende do nome da aba, que muda todo mês) e lê Processo, Reclamante, Reclamada, Fase Atual e os valores "Probable" de Histórico, Provisão (Total) e Accrual do mês mais recente do arquivo.</div>
+        <div class="info-callout">ℹ️ Suba aqui o arquivo de Forecast (.xlsx) mais recente enviado ao cliente. O sistema encontra sozinho a aba com os dados por processo (procura por uma coluna "Process" — não depende do nome da aba, que muda todo mês) e guarda <b>todas as ~85 colunas</b> do arquivo por processo (dados do caso, valores do mês atual e do mês anterior, diferenças, depósitos judiciais, observações etc.) — não só os valores usados no autopreenchimento.</div>
         <div class="warn-callout">⚠️ <b>Cada upload confirmado apaga o Forecast anterior por completo</b> e insere os dados do arquivo novo — só existe o forecast mais recente, nunca um histórico de meses. Depois de subir o arquivo, o sistema mostra uma prévia (quantos processos foram lidos) — só confirma a substituição depois que você clicar no botão vermelho.</div>
         <h3>Pra que serve</h3>
-        <p>Alimenta o botão <b>"🔍 Atual"</b> ao lado do campo Processo na aba Inserção de Valores: ao digitar/sair do campo Processo, o sistema busca esse número no Forecast Atual e preenche sozinho os três campos "Valor Atual" (Histórico, Provisão e Accrual) — só quando estiverem vazios, pra nunca sobrescrever algo já digitado à mão.</p>
+        <p>Alimenta o botão <b>"Atual"</b> (ícone de lupa) ao lado do campo Processo na aba Inserção de Valores: ao digitar/sair do campo Processo, o sistema busca esse número no Forecast Atual e preenche sozinho os três campos "Valor Atual" (Histórico, Provisão e Accrual) — só quando estiverem vazios, pra nunca sobrescrever algo já digitado à mão.</p>
+        <p>A tela mostra um resumo (Processo, Reclamante, Reclamada, Fase, Histórico/Provisão/Accrual Atual) pra conferência rápida do dia a dia — mas o botão <b>"⬇ Exportar Excel"</b> baixa as 85 colunas completas de cada processo, direto do que foi guardado no upload.</p>
         <a class="back-top" href="#intro">↑ Voltar ao topo</a>
       </div>
     </section>
