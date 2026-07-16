@@ -1074,6 +1074,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <span>Total</span><span id="ia-total">R$ 0,00</span>
       </div>
 
+      <div id="ia-debitos-wrap"></div>
+
       <div style="margin-top:14px;">
         <button type="button" class="btn-cyan" style="width:auto;padding:11px 20px;background:var(--green);" onclick="iaLevarParaValores()">→ Levar total para Inserção de Valores</button>
       </div>
@@ -1912,6 +1914,7 @@ function assinarRealtime(tabela, recarregar){
    é extração client-side por regex + leitura de posição real do PDF (pdf.js) + calculadora
    de correção monetária (Tema 1191 STF, IPCA-E/SELIC). Nada aqui é salvo no Supabase. */
 let IA_VERBAS = [];
+let IA_DEBITOS = []; // honorários/contribuições pagos a terceiros (perito, patrono, INSS) — NÃO soma no Histórico do reclamante
 let IA_PAGINAS_ITENS = null; // posição (x,y) de cada texto do último PDF lido, por página
 
 const IA_PADROES = [
@@ -2057,7 +2060,9 @@ function iaAgruparLinhas(itens){
     linha.itens.push(it);
   });
   linhas.forEach(l => l.itens.sort((a,b) => a.x - b.x));
-  linhas.sort((a,b) => b.y - a.y); // no pdf.js, Y maior = mais acima na página
+  // x,y já vêm passados pela matriz do viewport (ver iaHandleFile) — nesse espaço
+  // (igual a canvas/tela) Y menor = mais acima na página, por isso ordem ascendente.
+  linhas.sort((a,b) => a.y - b.y);
   return linhas;
 }
 
@@ -2156,11 +2161,18 @@ function iaProcessarTexto(){
   const valorCausa = iaExtrairValorCausa(text);
   let verbas = [];
   let usouPosicao = false;
+  IA_DEBITOS = [];
 
   const verbasResumo = iaReconstruirTabelaResumo(IA_PAGINAS_ITENS);
   if(verbasResumo){
     usouPosicao = true;
-    verbas = verbasResumo.concat(iaReconstruirTabelaDebitos(IA_PAGINAS_ITENS) || []);
+    verbas = verbasResumo;
+    // "Descrição de Débitos do Reclamado por Credor" traz o que o reclamado paga a
+    // OUTROS credores (perito, patrono do reclamante, INSS/contribuição social) —
+    // não é devido ao reclamante, então não pode entrar no total do Histórico (senão
+    // infla o valor e, em casos com FGTS, ainda duplica um valor que a Resumo já conta).
+    // Mostramos como referência separada, só pra leitura, sem somar em nada.
+    IA_DEBITOS = iaReconstruirTabelaDebitos(IA_PAGINAS_ITENS) || [];
   } else {
     // Fallback: sem posição disponível (colou texto, XLSX, ou PDF sem essa estrutura) —
     // caça por palavra-chave, como antes.
@@ -2179,15 +2191,17 @@ function iaProcessarTexto(){
   }
   IA_VERBAS = iaMergeVerbas(iaRemoverDuplicatasPorValor(verbas));
   iaDrawVerbas();
+  iaDrawDebitos();
   const info = document.querySelector('#ia-file-info');
   const isCalculoTabular = usouPosicao || /PJe[\s\-]?Calc|PJC|Planilha\s+de\s+Liquid|C[ÁA]LCULO\s+TRABALHISTA|Valor\s+Corrigido/i.test(text);
   const avisoDuplicacao = isCalculoTabular
     ? ' ⚠️ Este texto parece vir de um cálculo/planilha já pronta (com colunas de Juros/Total/Valor Corrigido) — o "Principal" extraído pode já estar corrigido. NÃO preencha a Data de Origem dessas verbas antes de conferir, senão o recálculo soma a correção em dobro.'
     : '';
+  const debitosMsg = IA_DEBITOS.length ? ` 📎 Também identificamos ${IA_DEBITOS.length} débito(s) com terceiros (honorários, contribuição social) — listados à parte, não somam no Histórico.` : '';
   const origemMsg = usouPosicao
     ? `✅ ${IA_VERBAS.length} verba(s) lida(s) diretamente da tabela do PDF (por posição na página — mais confiável que busca por palavra-chave).`
     : `✅ ${IA_VERBAS.length} verba(s) identificada(s) por reconhecimento de texto. Confira e ajuste os valores antes de usar.`;
-  info.textContent = IA_VERBAS.length ? `${origemMsg}${avisoDuplicacao}` : '⚠️ Nenhum valor identificado automaticamente — preencha manualmente com "+ Verba manual".';
+  info.textContent = IA_VERBAS.length ? `${origemMsg}${avisoDuplicacao}${debitosMsg}` : '⚠️ Nenhum valor identificado automaticamente — preencha manualmente com "+ Verba manual".';
 }
 
 function iaParseXLSXRows(rows){
@@ -2245,7 +2259,18 @@ async function iaHandleFile(file){
       // Guarda a posição (x,y) real de cada texto na página — permite reconstruir a
       // tabela por coluna de verdade, em vez de adivinhar pela ordem em que o pdf.js
       // devolve o texto (que não segue necessariamente a ordem visual das colunas).
-      paginasItens.push(tc.items.filter(i => i.str && i.str.trim()).map(i => ({str: i.str, x: i.transform[4], y: i.transform[5]})));
+      // item.transform[4]/[5] vêm no espaço de coordenadas ORIGINAL do PDF (sem
+      // considerar /Rotate) — em página com rotação (ex.: 90°, comum nos cálculos
+      // PJe-Calc da MADI, que chegam em paisagem), usar isso direto lê a página no
+      // eixo errado (linhas viram colunas) e a reconstrução da tabela falha por
+      // completo, caindo no fallback por palavra-chave (bem menos confiável).
+      // getViewport({scale:1}) já aplica a rotação da página — aplicando essa
+      // matriz em cada item, a posição fica na orientação visual real.
+      const viewport = page.getViewport({scale: 1});
+      paginasItens.push(tc.items.filter(i => i.str && i.str.trim()).map(i => {
+        const [x, y] = pdfjsLib.Util.applyTransform([i.transform[4], i.transform[5]], viewport.transform);
+        return {str: i.str, x, y};
+      }));
     }
     IA_PAGINAS_ITENS = paginasItens;
     document.querySelector('#ia-texto').value = text;
@@ -2282,11 +2307,27 @@ function iaAtualizarVerba(i, campo, valor){
 }
 function iaLimpar(){
   IA_VERBAS = [];
+  IA_DEBITOS = [];
   IA_PAGINAS_ITENS = null;
   ['ia-processo','ia-reclamante','ia-texto','ia-dt-ajuiz','ia-dt-base','ia-dt-origem-todas'].forEach(id => { const el = document.querySelector('#'+id); if(el) el.value = ''; });
   document.querySelector('#ia-file-info').textContent = '';
   document.querySelector('#ia-file').value = '';
   iaDrawVerbas();
+  iaDrawDebitos();
+}
+// Só leitura — honorários/débitos com terceiros identificados no cálculo, exibidos
+// à parte pra não sumir da conferência, mas sem entrar na soma do Histórico.
+function iaDrawDebitos(){
+  const wrap = document.querySelector('#ia-debitos-wrap');
+  if(!wrap) return;
+  if(!IA_DEBITOS.length){ wrap.innerHTML = ''; return; }
+  const linhas = IA_DEBITOS.map(v => `<div style="display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--border2);"><span>${esc(v.pedido)}</span><span class="mono" style="font-family:var(--mono);white-space:nowrap;">${iaMoney(v.total)}</span></div>`).join('');
+  wrap.innerHTML = `
+    <div style="margin-top:14px;background:var(--orange-lt);border:1px solid rgba(230,126,34,.3);border-radius:var(--radius-lg);padding:12px 14px;">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--orange);margin-bottom:6px;">📎 Débitos com terceiros identificados no cálculo (não somam no Histórico)</div>
+      <div class="hint" style="margin-bottom:8px;">Honorários periciais/advocatícios e contribuições sociais são devidos a terceiros (perito, patrono, INSS), não ao reclamante — por isso ficam de fora da soma de "Histórico". Ficam aqui só pra referência/conferência.</div>
+      ${linhas}
+    </div>`;
 }
 function iaDrawVerbas(){
   const wrap = document.querySelector('#ia-verbas-wrap');
