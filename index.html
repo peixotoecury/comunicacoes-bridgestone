@@ -952,7 +952,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
         <div class="sub-title">Valores — Histórico</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores(); vRecalcularAccrualPorFase();"></div>
           <div class="mc-form-group"><label>Novo Valor do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-historico" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-historico" readonly></div>
         </div>
@@ -972,10 +972,17 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
 
         <div class="sub-title">Mudança de Fase</div>
-        <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo — mesmo que Histórico/Provisão/Accrual não mudem, a mudança de fase pode alterar o percentual de provisionamento.</div>
+        <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo. Mesmo que o Histórico não mude, a mudança de fase recalcula o "Novo Valor do Accrual" automaticamente (Valor Atual do Histórico × % da nova fase) — confira antes de salvar.</div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Fase Atual</label><input type="text" id="v-fase-atual" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
-          <div class="mc-form-group"><label>Nova Fase</label><input type="text" id="v-nova-fase" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
+          <div class="mc-form-group"><label>Nova Fase</label>
+            <select id="v-nova-fase" onchange="vRecalcularAccrualPorFase()">
+              <option value="">— Não recalcular Accrual —</option>
+              <option value="1">Fase 1 — Conhecimento e Instrução (40,5% do provável)</option>
+              <option value="2">Fase 2 — Recursal (TRT/TST) (54% do provável)</option>
+              <option value="3">Fase 3 — Execução (100% do provável)</option>
+            </select>
+          </div>
         </div>
 
         <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
@@ -1899,10 +1906,23 @@ function recalcularDiferencasValores(){
   document.getElementById('v-alerta-400k').style.display = (maiorDiff >= LIMIAR_ALERTA_VALOR) ? 'flex' : 'none';
 }
 
+/* Ao escolher a Nova Fase (mesma tabela de % da aba Lançamento IA — IA_ACCRUAL_PCT_POR_FASE,
+   definida mais abaixo), recalcula o Novo Valor do Accrual = Valor Atual do Histórico × % da
+   fase. Não sobrescreve nada se nenhuma fase estiver selecionada. */
+function vRecalcularAccrualPorFase(){
+  const fase = document.getElementById('v-nova-fase').value;
+  if(!fase || IA_ACCRUAL_PCT_POR_FASE[fase] == null) return;
+  const atualHistorico = parseMoedaBR(document.getElementById('v-atual-historico').value) || 0;
+  const accrual = atualHistorico * IA_ACCRUAL_PCT_POR_FASE[fase];
+  document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  recalcularDiferencasValores();
+}
+
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
   const num = id => parseMoedaBR(document.getElementById(id).value);
+  const rotuloSelecionado = id => { const opt = document.getElementById(id).selectedOptions[0]; return opt && opt.value ? opt.textContent.trim() : null; };
   const atualHistorico = num('v-atual-historico');
   const novoHistorico = num('v-novo-historico');
   const atualProvisao = num('v-atual-provisao');
@@ -1942,7 +1962,7 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     valor_novo_accrual: novoAccrual,
     diff_accrual: diffAccrual,
     fase_atual: g('v-fase-atual'),
-    nova_fase: g('v-nova-fase'),
+    nova_fase: rotuloSelecionado('v-nova-fase'),
     link_calculo: g('v-link-calculo'),
     acima_400k: acima400k,
     enviado_cliente: g('v-enviado-cliente'),
