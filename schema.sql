@@ -220,9 +220,28 @@ create table if not exists solicitacoes_insercao_valores (
 alter table solicitacoes_insercao_valores enable row level security;
 create policy "anon all" on solicitacoes_insercao_valores for all to anon using (true) with check (true);
 
+-- Forecast Atual: snapshot mensal por processo (Histórico/Provisão/Accrual "Atual"),
+-- extraído do arquivo "Forecast - Mês.aaaa - Vfinal.xlsx" enviado ao cliente. Cada
+-- upload da aba Forecast Atual APAGA tudo e insere de novo — só existe o mês mais
+-- recente, nunca histórico de meses anteriores. Alimenta o autopreenchimento de
+-- "Valor Atual" (Histórico/Provisão/Accrual) na aba Inserção de Valores, por Processo.
+create table if not exists forecast_atual (
+  processo text primary key,
+  reclamante text,
+  reclamada text,
+  fase_atual text,
+  historico_atual numeric,
+  provisao_atual numeric,
+  accrual_atual numeric,
+  atualizado_em timestamptz not null default now()
+);
+alter table forecast_atual enable row level security;
+create policy "anon all" on forecast_atual for all to anon using (true) with check (true);
+
 -- Realtime: cada aba assina mudanças na sua tabela pra atualizar sozinha sem F5.
 alter publication supabase_realtime add table comunicacoes_pericia;
 alter publication supabase_realtime add table comunicacoes_calculos;
 alter publication supabase_realtime add table reportes_decisao;
 alter publication supabase_realtime add table reportes_acordos;
 alter publication supabase_realtime add table solicitacoes_insercao_valores;
+alter publication supabase_realtime add table forecast_atual;

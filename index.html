@@ -83,6 +83,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 .info-box{display:flex;align-items:flex-start;gap:9px;background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius);padding:10px 12px;margin-bottom:16px;font-size:11.5px;color:var(--escuro-pc);line-height:1.5;}
 
+.kpi-row{display:flex;gap:12px;flex-wrap:wrap;}
+.kpi-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px 18px;flex:1;min-width:170px;}
+.kpi-icon{font-size:20px;flex-shrink:0;}
+.kpi-val{font-size:24px;font-weight:700;color:var(--escuro-pc);line-height:1.2;font-variant-numeric:tabular-nums;font-family:var(--mono);}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;font-weight:600;}
+
 .btn-cyan{background:var(--escuro-pc);color:#fff;border:none;border-radius:var(--radius);padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font);width:100%;letter-spacing:.2px;}
 .btn-cyan:hover{background:#00557B;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,59,92,.25);}
 .btn-cyan:disabled{opacity:.5;cursor:not-allowed;transform:none;}
@@ -162,6 +168,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <button class="tab-btn" id="tab-btn-acordos" onclick="mudarAba('acordos')">💰 Reporte de Acordos</button>
   <button class="tab-btn" id="tab-btn-valores" onclick="mudarAba('valores')">💲 Inserção de Valores</button>
   <button class="tab-btn" id="tab-btn-ia" onclick="mudarAba('ia')">🤖 Lançamento IA</button>
+  <button class="tab-btn" id="tab-btn-forecast" onclick="mudarAba('forecast')">📊 Forecast Atual</button>
 </div>
 
 <div class="main">
@@ -876,7 +883,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <form id="form-valores">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Processo <span class="req">*</span></label><input type="text" id="v-processo" required placeholder="0000000-00.0000.0.00.0000"></div>
+          <div class="mc-form-group"><label>Processo <span class="req">*</span></label>
+            <div style="display:flex;gap:6px;">
+              <input type="text" id="v-processo" required placeholder="0000000-00.0000.0.00.0000" style="flex:1;" onblur="vBuscarForecastAtual()">
+              <button type="button" class="action-btn" style="white-space:nowrap;" onclick="vBuscarForecastAtual()" title="Preenche Histórico/Provisão/Accrual Atual a partir do Forecast">🔍 Atual</button>
+            </div>
+            <div class="hint" id="v-forecast-hint"></div>
+          </div>
           <div class="mc-form-group"><label>Reclamante <span class="req">*</span></label><input type="text" id="v-reclamante" required placeholder="Nome completo"></div>
           <div class="mc-form-group"><label>Reclamada</label><input type="text" id="v-reclamada"></div>
         </div>
@@ -1099,6 +1112,51 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <div style="margin-top:14px;">
         <button type="button" class="btn-cyan" style="width:auto;padding:11px 20px;background:var(--green);" onclick="iaLevarParaValores()">→ Levar Histórico/Provisão/Accrual para Inserção de Valores</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA 7: FORECAST ATUAL ================= -->
+<div class="view" id="view-forecast">
+  <div class="dash-card">
+    <div class="dash-card-head">📊 Forecast Atual</div>
+    <div class="dash-card-body">
+      <div class="info-box">ℹ️ Suba aqui o Forecast (.xlsx) mais recente enviado ao cliente. O sistema lê o processo, a fase, e os valores Histórico/Provisão/Accrual (coluna "Probable" do mês atual do arquivo) de cada caso. <b>Cada upload substitui completamente</b> o forecast anterior — só existe o mais recente. Esses valores alimentam o botão "🔍 Atual" na aba Inserção de Valores.</div>
+
+      <div id="forecast-dropzone" style="border:2px dashed var(--azul-pc);border-radius:var(--radius-lg);padding:22px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:14px;" onclick="document.getElementById('forecast-file').click()" ondragover="event.preventDefault();this.style.background='var(--cyan-lt)'" ondragleave="this.style.background='var(--surface2)'" ondrop="forecastDropFile(event)">
+        <input id="forecast-file" type="file" accept=".xlsx,.xls" style="display:none" onchange="forecastUploadFile(event.target.files[0])">
+        <div style="font-size:22px;">📤</div>
+        <div style="margin-top:6px;font-weight:600;color:var(--escuro-pc);">Clique ou arraste o Forecast (.xlsx) aqui</div>
+        <div class="hint">Precisa ter uma aba com as colunas Process, Plaintiff, Current Phase, Historical Amount - Probable, Total Amount - Probable e Accrual</div>
+      </div>
+      <div id="forecast-file-info" class="hint" style="margin-bottom:10px;"></div>
+
+      <div id="forecast-preview" style="display:none;background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;">
+        <div id="forecast-preview-texto" style="font-weight:600;color:var(--escuro-pc);margin-bottom:10px;"></div>
+        <button type="button" class="btn-cyan" style="width:auto;padding:9px 18px;background:var(--red);" onclick="forecastConfirmarSubstituicao()">⚠️ Substituir Forecast Atual (apaga o anterior)</button>
+        <button type="button" class="row-btn" style="margin-left:8px;" onclick="document.getElementById('forecast-preview').style.display='none';">Cancelar</button>
+      </div>
+
+      <div class="kpi-row" style="margin-bottom:14px;">
+        <div class="kpi-card kpi-blue"><div class="kpi-icon">📁</div><div><div class="kpi-val" id="forecast-total">0</div><div class="kpi-label">Processos no Forecast</div></div></div>
+        <div class="kpi-card kpi-blue"><div class="kpi-icon">🕒</div><div><div class="kpi-val" id="forecast-atualizado" style="font-size:16px;">—</div><div class="kpi-label">Última substituição</div></div></div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input class="filter-input" type="search" id="forecast-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderForecast()">
+      <button class="export-btn" id="btn-exportar-forecast">⬇ Exportar Excel</button>
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead>
+          <tr>
+            <th>Processo</th><th>Reclamante</th><th>Reclamada</th><th>Fase Atual</th>
+            <th>Histórico Atual</th><th>Provisão Atual</th><th>Accrual Atual</th>
+          </tr>
+        </thead>
+        <tbody id="forecast-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -2663,6 +2721,185 @@ function iaRecalcularTudo(){
 
 iaDrawVerbas();
 
+/* ===================== ABA 7: FORECAST ATUAL =====================
+   Snapshot mensal por processo (Histórico/Provisão/Accrual "Atual"), extraído do
+   arquivo de Forecast enviado ao cliente. Cada upload confirmado APAGA a tabela
+   forecast_atual inteira e insere de novo — só existe o forecast mais recente.
+   Alimenta o botão "🔍 Atual" na aba Inserção de Valores (busca por Processo). */
+let HIST_FORECAST = [];
+let HIST_FORECAST_FILTRADO = [];
+let FORECAST_PENDENTE = null; // registros já parseados, aguardando confirmação de substituição
+
+function forecastDropFile(ev){
+  ev.preventDefault();
+  ev.currentTarget.style.background = 'var(--surface2)';
+  forecastUploadFile(ev.dataTransfer.files[0]);
+}
+
+// Acha, em qualquer aba da planilha, a linha de cabeçalho que tem uma coluna
+// "Process" — o nome da aba de dados muda todo mês (ex.: "Jun.2026"), então não
+// dá pra confiar no nome da aba, só no conteúdo do cabeçalho.
+function forecastAcharCabecalho(wb){
+  let melhor = null;
+  wb.SheetNames.forEach(nome => {
+    const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nome], {header:1, defval:''});
+    const idx = linhas.findIndex(l => l.some(c => String(c).trim() === 'Process'));
+    if(idx >= 0 && (!melhor || linhas.length > melhor.linhas.length)){
+      melhor = {nome, linhas, idx};
+    }
+  });
+  return melhor;
+}
+
+async function forecastUploadFile(file){
+  if(!file) return;
+  const info = document.querySelector('#forecast-file-info');
+  info.textContent = 'Lendo: ' + file.name;
+  document.querySelector('#forecast-preview').style.display = 'none';
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const achado = forecastAcharCabecalho(wb);
+  if(!achado){
+    info.textContent = '⚠️ Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.';
+    return;
+  }
+  const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
+  // Alguns cabeçalhos (Historical Amount - Probable, Total Amount - Probable, Accrual,
+  // Plaintiff) se repetem — uma vez pro bloco do mês atual, outra pro mês anterior de
+  // comparação. O bloco do mês ATUAL sempre vem primeiro (mais à esquerda) no arquivo,
+  // então a primeira ocorrência de cada nome é sempre a correta.
+  const idxDe = nome => header.findIndex(h => h === nome);
+  const col = {
+    processo: idxDe('Process'),
+    reclamante: idxDe('Plaintiff'),
+    reclamada: idxDe('Defendant'),
+    fase: idxDe('Current Phase'),
+    historico: idxDe('Historical Amount - Probable'),
+    provisao: idxDe('Total Amount - Probable'),
+    accrual: idxDe('Accrual'),
+  };
+  const faltando = Object.entries(col).filter(([,i]) => i < 0).map(([nome]) => nome);
+  if(faltando.length){
+    info.textContent = `⚠️ Não encontrei a(s) coluna(s) ${faltando.join(', ')} na aba "${achado.nome}".`;
+    return;
+  }
+  const registros = [];
+  for(let i = achado.idx + 1; i < achado.linhas.length; i++){
+    const l = achado.linhas[i];
+    const processo = String(l[col.processo] || '').trim();
+    if(!processo) continue; // fim dos dados da tabela
+    registros.push({
+      processo,
+      reclamante: String(l[col.reclamante] || '').trim() || null,
+      reclamada: String(l[col.reclamada] || '').trim() || null,
+      fase_atual: String(l[col.fase] || '').trim() || null,
+      historico_atual: Number(l[col.historico]) || 0,
+      provisao_atual: Number(l[col.provisao]) || 0,
+      accrual_atual: Number(l[col.accrual]) || 0,
+    });
+  }
+  if(!registros.length){
+    info.textContent = `⚠️ A aba "${achado.nome}" tem as colunas certas, mas nenhuma linha com Processo preenchido.`;
+    return;
+  }
+  FORECAST_PENDENTE = registros;
+  info.textContent = `✓ Arquivo lido: ${file.name} (aba "${achado.nome}")`;
+  document.querySelector('#forecast-preview-texto').textContent =
+    `${registros.length} processo(s) identificado(s). Confirme para substituir o Forecast Atual (${HIST_FORECAST.length} processo(s) hoje) por estes dados.`;
+  document.querySelector('#forecast-preview').style.display = 'block';
+}
+
+async function forecastConfirmarSubstituicao(){
+  if(!FORECAST_PENDENTE || !FORECAST_PENDENTE.length) return;
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Substituindo…';
+  try{
+    const { error: errDel } = await sb.from('forecast_atual').delete().neq('processo', '');
+    if(errDel) throw errDel;
+    // Insere em lotes — 1300+ linhas de uma vez pode passar do limite de payload.
+    const LOTE = 500;
+    for(let i = 0; i < FORECAST_PENDENTE.length; i += LOTE){
+      const pedaco = FORECAST_PENDENTE.slice(i, i + LOTE);
+      const { error: errIns } = await sb.from('forecast_atual').insert(pedaco);
+      if(errIns) throw errIns;
+    }
+    document.querySelector('#forecast-preview').style.display = 'none';
+    document.querySelector('#forecast-file-info').textContent = `✅ Forecast Atual substituído: ${FORECAST_PENDENTE.length} processo(s).`;
+    FORECAST_PENDENTE = null;
+    toast('Forecast Atual substituído com sucesso.');
+    carregarForecast();
+  }catch(e){
+    alert('Erro ao substituir o Forecast: ' + (e.message || e));
+  }finally{
+    btn.disabled = false; btn.textContent = '⚠️ Substituir Forecast Atual (apaga o anterior)';
+  }
+}
+
+async function carregarForecast(){
+  const { data, error } = await sb.from('forecast_atual').select('*').order('processo');
+  if(error){ console.error(error); return; }
+  HIST_FORECAST = data || [];
+  document.querySelector('#forecast-total').textContent = HIST_FORECAST.length;
+  const maisRecente = HIST_FORECAST.reduce((max, r) => r.atualizado_em > max ? r.atualizado_em : max, '');
+  document.querySelector('#forecast-atualizado').textContent = maisRecente
+    ? new Date(maisRecente).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+    : '—';
+  renderForecast();
+}
+
+function renderForecast(){
+  const termo = document.querySelector('#forecast-busca').value.toLowerCase();
+  const rows = HIST_FORECAST.filter(r => !termo
+    || (r.processo||'').toLowerCase().includes(termo)
+    || (r.reclamante||'').toLowerCase().includes(termo));
+  HIST_FORECAST_FILTRADO = rows;
+  const tbody = document.querySelector('#forecast-tbody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${HIST_FORECAST.length ? 'Nenhum processo encontrado.' : 'Nenhum forecast carregado ainda — suba um arquivo acima.'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td class="mono">${esc(r.processo)}</td>
+      <td>${esc(r.reclamante||'')}</td>
+      <td>${esc(r.reclamada||'')}</td>
+      <td>${esc(r.fase_atual||'')}</td>
+      <td>${fmtMoeda(r.historico_atual)}</td>
+      <td>${fmtMoeda(r.provisao_atual)}</td>
+      <td>${fmtMoeda(r.accrual_atual)}</td>
+    </tr>`).join('');
+}
+
+document.querySelector('#btn-exportar-forecast').addEventListener('click', () => {
+  exportarExcel(HIST_FORECAST_FILTRADO.map(r => ({
+    Processo: r.processo, Reclamante: r.reclamante, Reclamada: r.reclamada, 'Fase Atual': r.fase_atual,
+    'Histórico Atual': r.historico_atual, 'Provisão Atual': r.provisao_atual, 'Accrual Atual': r.accrual_atual,
+  })), 'Forecast_Atual');
+});
+
+// Busca o processo digitado em "Inserção de Valores" no Forecast Atual e preenche
+// os 3 campos "Valor Atual" (só se ainda estiverem vazios, pra não sobrescrever
+// algo que a pessoa já digitou na mão).
+function vBuscarForecastAtual(){
+  const processo = document.querySelector('#v-processo').value.trim();
+  const hint = document.querySelector('#v-forecast-hint');
+  if(!processo){ hint.textContent = ''; return; }
+  const achado = HIST_FORECAST.find(r => r.processo === processo);
+  if(!achado){
+    hint.textContent = HIST_FORECAST.length
+      ? '⚠️ Processo não encontrado no Forecast Atual — preencha os valores manualmente.'
+      : '⚠️ Nenhum Forecast carregado ainda (aba Forecast Atual) — preencha os valores manualmente.';
+    return;
+  }
+  const fmt = n => Number(n||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const preencher = (id, val) => { const el = document.querySelector('#'+id); if(!el.value.trim()) el.value = fmt(val); };
+  preencher('v-atual-historico', achado.historico_atual);
+  preencher('v-atual-provisao', achado.provisao_atual);
+  preencher('v-atual-accrual', achado.accrual_atual);
+  recalcularDiferencasValores();
+  hint.textContent = `✅ Valores Atuais preenchidos a partir do Forecast (Fase: ${achado.fase_atual || 'N/A'}).`;
+}
+
 /* ===================== INIT ===================== */
 if(!sb){
   document.getElementById('erro-conexao').innerHTML = `<div class="error-banner"><strong>Erro:</strong> não foi possível conectar ao Supabase.</div>`;
@@ -2672,12 +2909,14 @@ if(!sb){
   carregarHistoricoDecisao();
   carregarHistoricoAcordos();
   carregarHistoricoValores();
+  carregarForecast();
 
   assinarRealtime('comunicacoes_pericia', carregarHistoricoPericia);
   assinarRealtime('comunicacoes_calculos', carregarHistoricoCalculos);
   assinarRealtime('reportes_decisao', carregarHistoricoDecisao);
   assinarRealtime('reportes_acordos', carregarHistoricoAcordos);
   assinarRealtime('solicitacoes_insercao_valores', carregarHistoricoValores);
+  assinarRealtime('forecast_atual', carregarForecast);
 }
 </script>
 </body>

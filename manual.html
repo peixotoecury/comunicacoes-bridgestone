@@ -136,6 +136,7 @@ table.field-table tr:last-child td{border-bottom:none;}
     <a href="#acordos"><span class="toc-emoji">💰</span>Reporte de Acordos</a>
     <a href="#valores"><span class="toc-emoji">💲</span>Inserção de Valores</a>
     <a href="#ia"><span class="toc-emoji">🤖</span>Lançamento IA</a>
+    <a href="#forecast"><span class="toc-emoji">📊</span>Forecast Atual</a>
     <a href="#excluir"><span class="toc-emoji">🗑️</span>Excluir registros</a>
   </nav>
 
@@ -143,7 +144,7 @@ table.field-table tr:last-child td{border-bottom:none;}
 
     <div class="hero" id="intro">
       <h1>📘 Manual do Sistema — Comunicações Bridgestone</h1>
-      <p>Este sistema centraliza as comunicações e registros do time do contencioso trabalhista da Bridgestone: perícias, solicitações de cálculo, reportes de decisão, acordos e inserção de valores. Cada aba gera um e-mail pronto no seu Outlook (o remetente é sempre quem preenche o formulário) e guarda um histórico consultável e exportável em Excel. Uma sexta aba, Lançamento IA, extrai valores automaticamente de cálculos em PDF/XLSX pra apoiar a Inserção de Valores. Este manual explica campo a campo o que preencher e pra onde cada e-mail vai.</p>
+      <p>Este sistema centraliza as comunicações e registros do time do contencioso trabalhista da Bridgestone: perícias, solicitações de cálculo, reportes de decisão, acordos e inserção de valores. Cada aba gera um e-mail pronto no seu Outlook (o remetente é sempre quem preenche o formulário) e guarda um histórico consultável e exportável em Excel. Uma sexta aba, Lançamento IA, extrai valores automaticamente de cálculos em PDF/XLSX pra apoiar a Inserção de Valores. Uma sétima aba, Forecast Atual, guarda o Histórico/Provisão/Accrual mais recente de cada processo e alimenta o preenchimento automático de "Valor Atual". Este manual explica campo a campo o que preencher e pra onde cada e-mail vai.</p>
       <div class="downloads">
         <a class="dl-btn pdf" href="manual.pdf">⬇ Baixar em PDF</a>
         <a class="dl-btn ppt" href="manual.pptx">⬇ Baixar em PPTX</a>
@@ -450,6 +451,24 @@ table.field-table tr:last-child td{border-bottom:none;}
           </li>
         </ul>
         <div class="warn-callout">⚠️ Se nenhuma Fase for selecionada, o Accrual não é calculado — preencha esse campo manualmente na aba Inserção de Valores.</div>
+        <a class="back-top" href="#intro">↑ Voltar ao topo</a>
+      </div>
+    </section>
+
+    <!-- ============ FORECAST ATUAL ============ -->
+    <section class="tab-section" id="forecast">
+      <div class="tab-head">
+        <span class="emoji">📊</span>
+        <div>
+          <h2>Forecast Atual</h2>
+          <div class="who">Guarda o Histórico/Provisão/Accrual "Atual" de cada processo, extraído do Forecast mais recente enviado ao cliente</div>
+        </div>
+      </div>
+      <div class="tab-body">
+        <div class="info-callout">ℹ️ Suba aqui o arquivo de Forecast (.xlsx) mais recente enviado ao cliente. O sistema encontra sozinho a aba com os dados por processo (procura por uma coluna "Process" — não depende do nome da aba, que muda todo mês) e lê Processo, Reclamante, Reclamada, Fase Atual e os valores "Probable" de Histórico, Provisão (Total) e Accrual do mês mais recente do arquivo.</div>
+        <div class="warn-callout">⚠️ <b>Cada upload confirmado apaga o Forecast anterior por completo</b> e insere os dados do arquivo novo — só existe o forecast mais recente, nunca um histórico de meses. Depois de subir o arquivo, o sistema mostra uma prévia (quantos processos foram lidos) — só confirma a substituição depois que você clicar no botão vermelho.</div>
+        <h3>Pra que serve</h3>
+        <p>Alimenta o botão <b>"🔍 Atual"</b> ao lado do campo Processo na aba Inserção de Valores: ao digitar/sair do campo Processo, o sistema busca esse número no Forecast Atual e preenche sozinho os três campos "Valor Atual" (Histórico, Provisão e Accrual) — só quando estiverem vazios, pra nunca sobrescrever algo já digitado à mão.</p>
         <a class="back-top" href="#intro">↑ Voltar ao topo</a>
       </div>
     </section>
