@@ -739,7 +739,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="d-inserir-gerencia" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
-        <div class="info-box">⚠️ <b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> "Envio para o Cliente" só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho).</div>
+        <div class="info-box">⚠️ <b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> "Envio para o Cliente" só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se houver GDJ, GRU ou Custas preenchidos (Recurso Ordinário, Recurso de Revista ou Agravo), <b>Giovanna Gatto e Cícera Gabriela</b> entram automaticamente em cópia, com um resumo da decisão e das guias no corpo do e-mail.</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
@@ -969,6 +969,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Valor Atual do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-accrual" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Novo Valor do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-accrual" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-accrual" readonly></div>
+        </div>
+
+        <div class="sub-title">Mudança de Fase</div>
+        <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo — mesmo que Histórico/Provisão/Accrual não mudem, a mudança de fase pode alterar o percentual de provisionamento.</div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Fase Atual</label><input type="text" id="v-fase-atual" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
+          <div class="mc-form-group"><label>Nova Fase</label><input type="text" id="v-nova-fase" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
         </div>
 
         <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
@@ -1655,15 +1662,49 @@ function renderHistoricoDecisao(){
 const DECISAO_TO_BASE = 'VialiHigor@la-bridgestone.com,mullermaria@la-bridgestone.com';
 const DECISAO_SHANA = 'MenezesShana@la-bridgestone.com';
 const DECISAO_CC = 'grupobridgestone@peixotoecury.com.br';
+/* Toda decisão com GDJ, GRU ou Custas preenchidos (Recurso Ordinário, Recurso de Revista
+   ou Agravo) vai em cópia pra Giovanna Gatto e Cícera Gabriela, com um resumo da decisão
+   e das guias anexado ao corpo do e-mail — ver temGuias()/resumoGuias() abaixo. */
+const GUIAS_CC = 'giovanna.gatto@peixotoecury.com.br,cicera.vicente@peixotoecury.com.br';
+function temGuias(r){
+  return !!(r.ro_gdj_valor || r.ro_gru_valor || r.ro_custas_valor ||
+            r.rr_gdj_valor || r.rr_gru_valor || r.rr_custas_valor ||
+            r.ai_gdj_valor || r.ai_gru_valor || r.ai_custas_valor);
+}
+function dataBR(v){ return v ? String(v).split('-').reverse().join('/') : null; }
+function resumoGuias(r){
+  const linhas = ['', '--- Resumo da decisão (GDJ / GRU / Custas) ---'];
+  const guia = (rotulo, valor, vencimento) => valor ? `  ${rotulo}: ${fmtMoeda(valor)}${vencimento ? ' (venc. ' + dataBR(vencimento) + ')' : ''}` : null;
+  if(r.ro_gdj_valor || r.ro_gru_valor || r.ro_custas_valor){
+    linhas.push(`Recurso Ordinário — Resultado da Sentença: ${nn(r.sentenca_resultado)}`);
+    [guia('GDJ', r.ro_gdj_valor, r.ro_gdj_vencimento), guia('GRU', r.ro_gru_valor, r.ro_gru_vencimento), guia('Custas', r.ro_custas_valor, r.ro_custas_vencimento)].filter(Boolean).forEach(l => linhas.push(l));
+  }
+  if(r.rr_gdj_valor || r.rr_gru_valor || r.rr_custas_valor){
+    linhas.push(`Recurso de Revista — Resultado do Acórdão TRT: ${nn(r.acordao_trt_reclamada)}`);
+    [guia('GDJ', r.rr_gdj_valor, r.rr_gdj_vencimento), guia('GRU', r.rr_gru_valor, r.rr_gru_vencimento), guia('Custas', r.rr_custas_valor, r.rr_custas_vencimento)].filter(Boolean).forEach(l => linhas.push(l));
+  }
+  if(r.ai_gdj_valor || r.ai_gru_valor || r.ai_custas_valor){
+    linhas.push(`Agravo de Instrumento — Resultado do Recurso de Revista: ${nn(r.recurso_revista_resultado)}`);
+    [guia('GDJ', r.ai_gdj_valor, r.ai_gdj_vencimento), guia('GRU', r.ai_gru_valor, r.ai_gru_vencimento), guia('Custas', r.ai_custas_valor, r.ai_custas_vencimento)].filter(Boolean).forEach(l => linhas.push(l));
+  }
+  return linhas.join('\n');
+}
 /* Envio para o Cliente = Sim -> vai pros contatos externos da Bridgestone (Higor/Maria,
    + Shana se Inserir Gerência = Sim), cc Grupo Bridgestone (interno).
-   Envio para o Cliente = Não (ou vazio) -> fica só interno, vai só pro Grupo Bridgestone. */
-function decisaoEnderecos(envioCliente, inserirGerencia){
-  if(envioCliente === 'Sim'){
-    const to = (inserirGerencia === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
-    return { to, cc: DECISAO_CC };
+   Envio para o Cliente = Não (ou vazio) -> fica só interno, vai só pro Grupo Bridgestone.
+   Em qualquer um dos dois casos, se houver guia (GDJ/GRU/Custas), soma Giovanna Gatto e
+   Cícera Gabriela na cópia. */
+function decisaoEnderecos(r){
+  let to, cc;
+  if(r.envio_cliente === 'Sim'){
+    to = (r.inserir_gerencia === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
+    cc = DECISAO_CC;
+  } else {
+    to = DECISAO_CC;
+    cc = '';
   }
-  return { to: DECISAO_CC, cc: '' };
+  if(temGuias(r)) cc = cc ? (cc + ',' + GUIAS_CC) : GUIAS_CC;
+  return { to, cc };
 }
 const PH = '[Preencher]';
 function nn(v){ return v || PH; }
@@ -1707,8 +1748,9 @@ function gerarEmailDecisao(id, modelo){
   const r = HIST_DECISAO.find(x => x.id === id);
   if(!r || !EMAIL_MODELOS[modelo]) return;
   const { assunto, corpo } = EMAIL_MODELOS[modelo](r);
-  const { to, cc } = decisaoEnderecos(r.envio_cliente, r.inserir_gerencia);
-  abrirEmail(to, cc, assunto, corpo);
+  const { to, cc } = decisaoEnderecos(r);
+  const corpoFinal = temGuias(r) ? corpo + '\n' + resumoGuias(r) : corpo;
+  abrirEmail(to, cc, assunto, corpoFinal);
 }
 
 /* Abre um e-mail por tipo marcado, um de cada vez (mailto sequencial precisa de intervalo
@@ -1722,12 +1764,13 @@ const DECISAO_TIPO_LABEL = {
 /* Só o 1º e-mail abre sozinho (é o clique de Salvar). Os demais viram botões —
    o navegador não deixa abrir vários mailto: seguidos sem um clique novo pra cada um. */
 function enviarEmailsDecisao(registro, tipos){
-  const { to, cc } = decisaoEnderecos(registro.envio_cliente, registro.inserir_gerencia);
+  const { to, cc } = decisaoEnderecos(registro);
+  const guias = temGuias(registro) ? resumoGuias(registro) : '';
   const emails = tipos.map(tipo => {
     const modelo = EMAIL_MODELOS[tipo];
     if(!modelo) return null;
     const { assunto, corpo } = modelo(registro);
-    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo };
+    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo: guias ? corpo + '\n' + guias : corpo };
   }).filter(Boolean);
   if(!emails.length) return;
   abrirEmail(emails[0].to, emails[0].cc, emails[0].assunto, emails[0].corpo);
@@ -1898,6 +1941,8 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     valor_atual_accrual: atualAccrual,
     valor_novo_accrual: novoAccrual,
     diff_accrual: diffAccrual,
+    fase_atual: g('v-fase-atual'),
+    nova_fase: g('v-nova-fase'),
     link_calculo: g('v-link-calculo'),
     acima_400k: acima400k,
     enviado_cliente: g('v-enviado-cliente'),
@@ -1907,7 +1952,7 @@ document.getElementById('form-valores').addEventListener('submit', async functio
   const cc = 'grupobridgestone@peixotoecury.com.br';
   const resumoValores = `Histórico — Atual: ${fmtMoeda(registro.valor_atual_historico)} | Novo: ${fmtMoeda(registro.valor_novo_historico)} | Diferença: ${fmtMoeda(registro.diff_historico)}\nProvisão — Atual: ${fmtMoeda(registro.valor_atual_provisao)} | Novo: ${fmtMoeda(registro.valor_novo_provisao)} | Diferença: ${fmtMoeda(registro.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(registro.valor_atual_accrual)} | Novo: ${fmtMoeda(registro.valor_novo_accrual)} | Diferença: ${fmtMoeda(registro.diff_accrual)}`;
   const assunto = `Solicitação de Inserção de Valores — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
-  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+  const corpo = `Prezada Cícera,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${(registro.fase_atual || registro.nova_fase) ? '\nMudança de Fase: ' + nn(registro.fase_atual) + ' → ' + nn(registro.nova_fase) : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
 
   const inseridoConfirmado = (registro.inserido_lm === 'Sim') || (registro.inserido_sistema === 'Sim');
 
@@ -3086,6 +3131,8 @@ function vBuscarForecastAtual(){
   preencher('v-atual-historico', achado.historico_atual);
   preencher('v-atual-provisao', achado.provisao_atual);
   preencher('v-atual-accrual', achado.accrual_atual);
+  const elFaseAtual = document.querySelector('#v-fase-atual');
+  if(elFaseAtual && !elFaseAtual.value.trim()) elFaseAtual.value = achado.fase_atual || '';
   recalcularDiferencasValores();
   hint.textContent = `✅ Valores Atuais preenchidos a partir do Forecast (Fase: ${achado.fase_atual || 'N/A'}).`;
 }

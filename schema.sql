@@ -211,6 +211,8 @@ create table if not exists solicitacoes_insercao_valores (
   valor_atual_accrual numeric,
   valor_novo_accrual numeric,
   diff_accrual numeric,
+  fase_atual text,                        -- mudança de fase mesmo sem alteração de valores (ex: muda o % de provisão)
+  nova_fase text,
   link_calculo text,
   acima_400k boolean not null default false,  -- true se |diff_historico|, |diff_provisao| ou |diff_accrual| >= 400000; dispara nota pro Nicolau
   enviado_cliente text,                   -- 'Sim' | 'Não'
@@ -330,3 +332,10 @@ alter publication supabase_realtime add table reportes_decisao;
 alter publication supabase_realtime add table reportes_acordos;
 alter publication supabase_realtime add table solicitacoes_insercao_valores;
 alter publication supabase_realtime add table forecast_atual;
+
+-- =====================================================================
+-- Migração: campos "Mudança de Fase" na aba Inserção de Valores (rodar só
+-- se a tabela solicitacoes_insercao_valores já existir sem essas colunas).
+-- =====================================================================
+alter table solicitacoes_insercao_valores add column if not exists fase_atual text;
+alter table solicitacoes_insercao_valores add column if not exists nova_fase text;
