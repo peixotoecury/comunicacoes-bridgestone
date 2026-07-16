@@ -2751,61 +2751,91 @@ function forecastAcharCabecalho(wb){
   return melhor;
 }
 
+// As ~85 colunas do arquivo, na ordem em que aparecem, como OFFSET relativo à coluna
+// "Process" (ex.: offset -16 = 16 colunas antes de "Process"; offset 5 = 5 colunas
+// depois). Várias colunas do arquivo repetem o MESMO nome de cabeçalho (Plaintiff,
+// Defendant, Deposit at the Court's disposal?...), então não dá pra achar por nome —
+// a estrutura é um relatório padrão da MADI e a posição de cada coluna é estável mês a
+// mês (só o nome da aba muda). "num" = número, "txt" = texto (datas ficam como texto,
+// porque o arquivo às vezes traz "***" no lugar de uma data).
+const FORECAST_COLS = [
+  [-16,'escritorio','txt'], [-15,'assessed_status','txt'], [-14,'status_processo','txt'],
+  [-13,'data_distribuicao','txt'], [-12,'data_ajuizamento','txt'], [-11,'data_encerramento','txt'],
+  [-10,'rl','txt'], [-9,'centro_custo','txt'], [-8,'data_admissao','txt'], [-7,'data_demissao','txt'],
+  [-6,'cargo','txt'], [-5,'tipo_salario','txt'], [-4,'departamento_1','txt'], [-3,'departamento_2','txt'],
+  [-2,'business','txt'], [-1,'tipo_caso','txt'],
+  [1,'revised','txt'], [2,'forecast_grupo','txt'], [3,'cidade','txt'], [4,'uf','txt'],
+  [5,'reclamante','txt'], [6,'cpf_reclamante','txt'], [7,'advogado_reclamante','txt'],
+  [8,'reclamada','txt'], [9,'terceirizacao','txt'], [10,'empresa','txt'], [11,'empresa_status','txt'],
+  [12,'fase_atual','txt'], [13,'fase_atual_divisao','txt'],
+  [14,'historico_percentual_atual','num'], [15,'historico_atual','num'], [16,'correcao_atual','num'],
+  [17,'correcao_percentual_atual','num'], [18,'juros_atual','num'], [19,'juros_percentual_atual','num'],
+  [20,'provisao_atual','num'], [21,'correcao_juros_percentual_atual','num'], [22,'total_possivel_atual','num'],
+  [23,'total_remoto_atual','num'], [24,'accrual_atual','num'],
+  [25,'fase_anterior','txt'], [26,'fase_anterior_divisao','txt'],
+  [27,'historico_percentual_anterior','num'], [28,'historico_anterior','num'], [29,'correcao_anterior','num'],
+  [30,'correcao_percentual_anterior','num'], [31,'juros_anterior','num'], [32,'juros_percentual_anterior','num'],
+  [33,'provisao_anterior','num'], [34,'correcao_juros_percentual_anterior','num'], [35,'total_possivel_anterior','num'],
+  [36,'total_remoto_anterior','num'], [37,'accrual_anterior','num'],
+  [38,'diferenca_accrual','num'], [39,'diferenca_juros_correcao','num'], [40,'diferenca_historico','num'],
+  [41,'mudanca_fase','txt'], [42,'mudanca_fase_detalhe','txt'], [43,'ajuste','txt'],
+  [44,'pagamentos_liberacao_depositos','num'], [45,'pagamento_historico_inss_honorarios_ir','num'],
+  [46,'baixa_recursal_pagamento','num'],
+  [47,'deposito_garantia_valor','num'], [48,'deposito_garantia_data','txt'],
+  [49,'deposito_garantia_disposicao_1','txt'], [50,'deposito_garantia_disposicao_2','txt'],
+  [51,'deposito_garantia_comparativo','txt'], [52,'deposito_garantia_reclamante','num'], [53,'deposito_garantia_reclamada','num'],
+  [54,'deposito_pagamento_valor','num'], [55,'deposito_pagamento_data','txt'],
+  [56,'deposito_pagamento_disposicao_1','txt'], [57,'deposito_pagamento_disposicao_2','txt'],
+  [58,'deposito_pagamento_comparativo','txt'], [59,'deposito_pagamento_reclamante','num'], [60,'deposito_pagamento_reclamada','num'],
+  [61,'deposito_recursal_valor','num'], [62,'deposito_recursal_disposicao_1','txt'], [63,'deposito_recursal_disposicao_2','txt'],
+  [64,'deposito_recursal_comparativo','txt'], [65,'deposito_recursal_reclamante','num'], [66,'deposito_recursal_reclamada','num'],
+  [67,'apontamentos_depositos','txt'], [68,'observacoes','txt'],
+];
+
+function forecastValorTexto(v){
+  if(v == null || v === '') return null;
+  if(v instanceof Date) return v.toISOString().slice(0,10);
+  return String(v).trim() || null;
+}
+
 async function forecastUploadFile(file){
   if(!file) return;
   const info = document.querySelector('#forecast-file-info');
   info.textContent = 'Lendo: ' + file.name;
   document.querySelector('#forecast-preview').style.display = 'none';
   const buf = await file.arrayBuffer();
-  const wb = XLSX.read(buf, {type:'array'});
+  const wb = XLSX.read(buf, {type:'array', cellDates:true});
   const achado = forecastAcharCabecalho(wb);
   if(!achado){
     info.textContent = '⚠️ Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.';
     return;
   }
   const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
-  // Alguns cabeçalhos (Historical Amount - Probable, Total Amount - Probable, Accrual,
-  // Plaintiff) se repetem — uma vez pro bloco do mês atual, outra pro mês anterior de
-  // comparação. O bloco do mês ATUAL sempre vem primeiro (mais à esquerda) no arquivo,
-  // então a primeira ocorrência de cada nome é sempre a correta.
-  const idxDe = nome => header.findIndex(h => h === nome);
-  const col = {
-    processo: idxDe('Process'),
-    reclamante: idxDe('Plaintiff'),
-    reclamada: idxDe('Defendant'),
-    fase: idxDe('Current Phase'),
-    historico: idxDe('Historical Amount - Probable'),
-    provisao: idxDe('Total Amount - Probable'),
-    accrual: idxDe('Accrual'),
-  };
-  const faltando = Object.entries(col).filter(([,i]) => i < 0).map(([nome]) => nome);
-  if(faltando.length){
-    info.textContent = `⚠️ Não encontrei a(s) coluna(s) ${faltando.join(', ')} na aba "${achado.nome}".`;
+  const colProcesso = header.findIndex(h => h === 'Process');
+  if(colProcesso < 0){
+    info.textContent = `⚠️ Não encontrei a coluna "Process" na aba "${achado.nome}".`;
     return;
   }
   const registros = [];
   for(let i = achado.idx + 1; i < achado.linhas.length; i++){
     const l = achado.linhas[i];
-    const processo = String(l[col.processo] || '').trim();
+    const processo = String(l[colProcesso] || '').trim();
     if(!processo) continue; // fim dos dados da tabela
-    registros.push({
-      processo,
-      reclamante: String(l[col.reclamante] || '').trim() || null,
-      reclamada: String(l[col.reclamada] || '').trim() || null,
-      fase_atual: String(l[col.fase] || '').trim() || null,
-      historico_atual: Number(l[col.historico]) || 0,
-      provisao_atual: Number(l[col.provisao]) || 0,
-      accrual_atual: Number(l[col.accrual]) || 0,
+    const registro = { processo };
+    FORECAST_COLS.forEach(([offset, campo, tipo]) => {
+      const bruto = l[colProcesso + offset];
+      registro[campo] = tipo === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
     });
+    registros.push(registro);
   }
   if(!registros.length){
-    info.textContent = `⚠️ A aba "${achado.nome}" tem as colunas certas, mas nenhuma linha com Processo preenchido.`;
+    info.textContent = `⚠️ A aba "${achado.nome}" tem a coluna "Process", mas nenhuma linha com Processo preenchido.`;
     return;
   }
   FORECAST_PENDENTE = registros;
   info.textContent = `✓ Arquivo lido: ${file.name} (aba "${achado.nome}")`;
   document.querySelector('#forecast-preview-texto').textContent =
-    `${registros.length} processo(s) identificado(s). Confirme para substituir o Forecast Atual (${HIST_FORECAST.length} processo(s) hoje) por estes dados.`;
+    `${registros.length} processo(s) identificado(s), com todas as colunas do arquivo. Confirme para substituir o Forecast Atual (${HIST_FORECAST.length} processo(s) hoje) por estes dados.`;
   document.querySelector('#forecast-preview').style.display = 'block';
 }
 
@@ -2817,7 +2847,7 @@ async function forecastConfirmarSubstituicao(){
     const { error: errDel } = await sb.from('forecast_atual').delete().neq('processo', '');
     if(errDel) throw errDel;
     // Insere em lotes — 1300+ linhas de uma vez pode passar do limite de payload.
-    const LOTE = 500;
+    const LOTE = 200; // linhas agora têm ~85 colunas — lote menor pra não estourar o payload
     for(let i = 0; i < FORECAST_PENDENTE.length; i += LOTE){
       const pedaco = FORECAST_PENDENTE.slice(i, i + LOTE);
       const { error: errIns } = await sb.from('forecast_atual').insert(pedaco);
@@ -2836,9 +2866,21 @@ async function forecastConfirmarSubstituicao(){
 }
 
 async function carregarForecast(){
-  const { data, error } = await sb.from('forecast_atual').select('*').order('processo');
-  if(error){ console.error(error); return; }
-  HIST_FORECAST = data || [];
+  // O Supabase/PostgREST devolve no máximo 1000 linhas por página — com ~1361
+  // processos isso cortava a lista pela metade. Busca em páginas de 1000 até
+  // não vir mais nada.
+  let tudo = [];
+  let pagina = 0;
+  const TAMANHO_PAGINA = 1000;
+  while(true){
+    const { data, error } = await sb.from('forecast_atual').select('*').order('processo')
+      .range(pagina * TAMANHO_PAGINA, pagina * TAMANHO_PAGINA + TAMANHO_PAGINA - 1);
+    if(error){ console.error(error); break; }
+    tudo = tudo.concat(data || []);
+    if(!data || data.length < TAMANHO_PAGINA) break;
+    pagina++;
+  }
+  HIST_FORECAST = tudo;
   document.querySelector('#forecast-total').textContent = HIST_FORECAST.length;
   const maisRecente = HIST_FORECAST.reduce((max, r) => r.atualizado_em > max ? r.atualizado_em : max, '');
   document.querySelector('#forecast-atualizado').textContent = maisRecente
@@ -2870,11 +2912,11 @@ function renderForecast(){
     </tr>`).join('');
 }
 
+// Exporta todas as colunas guardadas (a tela mostra só o resumo, mas o Excel sai
+// completo — cada linha de HIST_FORECAST_FILTRADO já vem com as ~85 colunas do
+// arquivo original, lidas do Supabase).
 document.querySelector('#btn-exportar-forecast').addEventListener('click', () => {
-  exportarExcel(HIST_FORECAST_FILTRADO.map(r => ({
-    Processo: r.processo, Reclamante: r.reclamante, Reclamada: r.reclamada, 'Fase Atual': r.fase_atual,
-    'Histórico Atual': r.historico_atual, 'Provisão Atual': r.provisao_atual, 'Accrual Atual': r.accrual_atual,
-  })), 'Forecast_Atual');
+  exportarExcel(HIST_FORECAST_FILTRADO, 'Forecast_Atual');
 });
 
 // Busca o processo digitado em "Inserção de Valores" no Forecast Atual e preenche
