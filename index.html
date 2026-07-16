@@ -1133,7 +1133,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
       <div id="forecast-preview" style="display:none;background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;">
         <div id="forecast-preview-texto" style="font-weight:600;color:var(--escuro-pc);margin-bottom:10px;"></div>
-        <button type="button" class="btn-cyan" style="width:auto;padding:9px 18px;background:var(--red);" onclick="forecastConfirmarSubstituicao()">⚠️ Substituir Forecast Atual (apaga o anterior)</button>
+        <button type="button" class="btn-cyan" style="width:auto;padding:9px 18px;background:var(--red);" onclick="forecastConfirmarSubstituicao(this)">⚠️ Substituir Forecast Atual (apaga o anterior)</button>
         <button type="button" class="row-btn" style="margin-left:8px;" onclick="document.getElementById('forecast-preview').style.display='none';">Cancelar</button>
       </div>
 
@@ -1148,14 +1148,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <button class="export-btn" id="btn-exportar-forecast">⬇ Exportar Excel</button>
     </div>
     <div class="table-wrap">
-      <table class="sol-table">
-        <thead>
-          <tr>
-            <th>Processo</th><th>Reclamante</th><th>Reclamada</th><th>Fase Atual</th>
-            <th>Histórico Atual</th><th>Provisão Atual</th><th>Accrual Atual</th>
-          </tr>
-        </thead>
-        <tbody id="forecast-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+      <table class="sol-table" style="min-width:5200px;">
+        <thead><tr id="forecast-thead-row"></tr></thead>
+        <tbody id="forecast-tbody"><tr><td class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -2839,10 +2834,22 @@ async function forecastUploadFile(file){
   document.querySelector('#forecast-preview').style.display = 'block';
 }
 
-async function forecastConfirmarSubstituicao(){
+// Recebe o próprio elemento clicado via onclick="forecastConfirmarSubstituicao(this)"
+// — mais confiável que ler o "event" global implícito, que em alguns navegadores/
+// contextos pode não apontar pro botão certo (ou nem existir).
+async function forecastConfirmarSubstituicao(btn){
   if(!FORECAST_PENDENTE || !FORECAST_PENDENTE.length) return;
-  const btn = event.target;
   btn.disabled = true; btn.textContent = 'Substituindo…';
+  // Trava de segurança: se o Supabase nunca responder (rede travada), o botão não
+  // pode ficar preso em "Substituindo..." pra sempre — depois de 60s, libera de novo
+  // e avisa, mesmo que a chamada em si continue pendurada em segundo plano.
+  let concluiu = false;
+  setTimeout(() => {
+    if(!concluiu){
+      btn.disabled = false; btn.textContent = '⚠️ Substituir Forecast Atual (apaga o anterior)';
+      alert('A substituição está demorando demais (mais de 60s) e foi liberada de novo. Confira sua conexão e tente de novo — se persistir, pode ser um problema no Supabase.');
+    }
+  }, 60000);
   try{
     const { error: errDel } = await sb.from('forecast_atual').delete().neq('processo', '');
     if(errDel) throw errDel;
@@ -2852,14 +2859,17 @@ async function forecastConfirmarSubstituicao(){
       const pedaco = FORECAST_PENDENTE.slice(i, i + LOTE);
       const { error: errIns } = await sb.from('forecast_atual').insert(pedaco);
       if(errIns) throw errIns;
+      btn.textContent = `Substituindo… (${Math.min(i + LOTE, FORECAST_PENDENTE.length)}/${FORECAST_PENDENTE.length})`;
     }
+    concluiu = true;
     document.querySelector('#forecast-preview').style.display = 'none';
     document.querySelector('#forecast-file-info').textContent = `✅ Forecast Atual substituído: ${FORECAST_PENDENTE.length} processo(s).`;
     FORECAST_PENDENTE = null;
     toast('Forecast Atual substituído com sucesso.');
-    carregarForecast();
+    await carregarForecast();
   }catch(e){
-    alert('Erro ao substituir o Forecast: ' + (e.message || e));
+    concluiu = true;
+    alert('Erro ao substituir o Forecast: ' + (e.message || JSON.stringify(e)));
   }finally{
     btn.disabled = false; btn.textContent = '⚠️ Substituir Forecast Atual (apaga o anterior)';
   }
@@ -2889,7 +2899,67 @@ async function carregarForecast(){
   renderForecast();
 }
 
+// Todas as ~85 colunas guardadas, na mesma ordem do arquivo original, pra exibir
+// a tabela completa na tela (com rolagem horizontal, igual a aba Solicitações).
+const FORECAST_DISPLAY_COLS = [
+  ['processo','Processo','txt'], ['escritorio','Escritório','txt'], ['assessed_status','Assessed/Unassessed','txt'],
+  ['status_processo','Status','txt'], ['data_distribuicao','Data Distribuição','txt'], ['data_ajuizamento','Data Ajuizamento','txt'],
+  ['data_encerramento','Data Encerramento','txt'], ['rl','RL','txt'], ['centro_custo','Centro de Custo','txt'],
+  ['data_admissao','Data Admissão','txt'], ['data_demissao','Data Demissão','txt'], ['cargo','Cargo','txt'],
+  ['tipo_salario','Tipo Salário','txt'], ['departamento_1','Departamento I','txt'], ['departamento_2','Departamento II','txt'],
+  ['business','Business','txt'], ['tipo_caso','Tipo de Caso','txt'], ['revised','Revised','txt'],
+  ['forecast_grupo','Forecast (Grupo)','txt'], ['cidade','Cidade','txt'], ['uf','UF','txt'],
+  ['reclamante','Reclamante','txt'], ['cpf_reclamante','CPF','txt'], ['advogado_reclamante','Advogado Reclamante','txt'],
+  ['reclamada','Reclamada','txt'], ['terceirizacao','Terceirização','txt'], ['empresa','Empresa','txt'],
+  ['empresa_status','Empresa Status','txt'], ['fase_atual','Fase Atual','txt'], ['fase_atual_divisao','Fase Atual - Divisão','txt'],
+  ['historico_percentual_atual','Histórico % Atual','num'], ['historico_atual','Histórico Atual','money'],
+  ['correcao_atual','Correção Atual','money'], ['correcao_percentual_atual','Correção % Atual','num'],
+  ['juros_atual','Juros Atual','money'], ['juros_percentual_atual','Juros % Atual','num'],
+  ['provisao_atual','Provisão Atual','money'], ['correcao_juros_percentual_atual','Correção+Juros % Atual','num'],
+  ['total_possivel_atual','Total Possível Atual','money'], ['total_remoto_atual','Total Remoto Atual','money'],
+  ['accrual_atual','Accrual Atual','money'],
+  ['fase_anterior','Fase Anterior','txt'], ['fase_anterior_divisao','Fase Anterior - Divisão','txt'],
+  ['historico_percentual_anterior','Histórico % Anterior','num'], ['historico_anterior','Histórico Anterior','money'],
+  ['correcao_anterior','Correção Anterior','money'], ['correcao_percentual_anterior','Correção % Anterior','num'],
+  ['juros_anterior','Juros Anterior','money'], ['juros_percentual_anterior','Juros % Anterior','num'],
+  ['provisao_anterior','Provisão Anterior','money'], ['correcao_juros_percentual_anterior','Correção+Juros % Anterior','num'],
+  ['total_possivel_anterior','Total Possível Anterior','money'], ['total_remoto_anterior','Total Remoto Anterior','money'],
+  ['accrual_anterior','Accrual Anterior','money'],
+  ['diferenca_accrual','Diferença Accrual','money'], ['diferenca_juros_correcao','Diferença Juros/Correção','money'],
+  ['diferenca_historico','Diferença Histórico','money'],
+  ['mudanca_fase','Mudança de Fase','txt'], ['mudanca_fase_detalhe','Mudança de Fase (De/Para)','txt'], ['ajuste','Ajuste','txt'],
+  ['pagamentos_liberacao_depositos','Pagamentos/Liberação Depósitos','money'],
+  ['pagamento_historico_inss_honorarios_ir','Pagto Histórico/INSS/Honorários/IR','money'],
+  ['baixa_recursal_pagamento','Baixa Recursal Pagamento','money'],
+  ['deposito_garantia_valor','Depósito Garantia (Valor)','money'], ['deposito_garantia_data','Depósito Garantia (Data)','txt'],
+  ['deposito_garantia_disposicao_1','Depósito Garantia à Disposição (1)','txt'],
+  ['deposito_garantia_disposicao_2','Depósito Garantia à Disposição (2)','txt'],
+  ['deposito_garantia_comparativo','Depósito Garantia (Comparativo)','txt'],
+  ['deposito_garantia_reclamante','Depósito Garantia (Reclamante)','money'], ['deposito_garantia_reclamada','Depósito Garantia (Reclamada)','money'],
+  ['deposito_pagamento_valor','Depósito Pagamento (Valor)','money'], ['deposito_pagamento_data','Depósito Pagamento (Data)','txt'],
+  ['deposito_pagamento_disposicao_1','Depósito Pagamento à Disposição (1)','txt'],
+  ['deposito_pagamento_disposicao_2','Depósito Pagamento à Disposição (2)','txt'],
+  ['deposito_pagamento_comparativo','Depósito Pagamento (Comparativo)','txt'],
+  ['deposito_pagamento_reclamante','Depósito Pagamento (Reclamante)','money'], ['deposito_pagamento_reclamada','Depósito Pagamento (Reclamada)','money'],
+  ['deposito_recursal_valor','Depósito Recursal (Valor)','money'],
+  ['deposito_recursal_disposicao_1','Depósito Recursal à Disposição (1)','txt'],
+  ['deposito_recursal_disposicao_2','Depósito Recursal à Disposição (2)','txt'],
+  ['deposito_recursal_comparativo','Depósito Recursal (Comparativo)','txt'],
+  ['deposito_recursal_reclamante','Depósito Recursal (Reclamante)','money'], ['deposito_recursal_reclamada','Depósito Recursal (Reclamada)','money'],
+  ['apontamentos_depositos','Apontamentos Depósitos','txt'], ['observacoes','Observações','txt'],
+];
+
+function forecastFormatarCelula(valor, tipo){
+  if(tipo === 'money') return fmtMoeda(valor);
+  if(tipo === 'num') return valor == null ? '' : Number(valor).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return esc(valor || '');
+}
+
 function renderForecast(){
+  const theadRow = document.querySelector('#forecast-thead-row');
+  if(!theadRow.children.length){
+    theadRow.innerHTML = FORECAST_DISPLAY_COLS.map(([,label]) => `<th>${esc(label)}</th>`).join('');
+  }
   const termo = document.querySelector('#forecast-busca').value.toLowerCase();
   const rows = HIST_FORECAST.filter(r => !termo
     || (r.processo||'').toLowerCase().includes(termo)
@@ -2897,18 +2967,12 @@ function renderForecast(){
   HIST_FORECAST_FILTRADO = rows;
   const tbody = document.querySelector('#forecast-tbody');
   if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${HIST_FORECAST.length ? 'Nenhum processo encontrado.' : 'Nenhum forecast carregado ainda — suba um arquivo acima.'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${FORECAST_DISPLAY_COLS.length}" class="empty-state">${HIST_FORECAST.length ? 'Nenhum processo encontrado.' : 'Nenhum forecast carregado ainda — suba um arquivo acima.'}</td></tr>`;
     return;
   }
   tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td class="mono">${esc(r.processo)}</td>
-      <td>${esc(r.reclamante||'')}</td>
-      <td>${esc(r.reclamada||'')}</td>
-      <td>${esc(r.fase_atual||'')}</td>
-      <td>${fmtMoeda(r.historico_atual)}</td>
-      <td>${fmtMoeda(r.provisao_atual)}</td>
-      <td>${fmtMoeda(r.accrual_atual)}</td>
+    <tr>${FORECAST_DISPLAY_COLS.map(([campo,,tipo], i) =>
+      `<td${i===0 ? ' class="mono"' : ''}>${forecastFormatarCelula(r[campo], tipo)}</td>`).join('')}
     </tr>`).join('');
 }
 
