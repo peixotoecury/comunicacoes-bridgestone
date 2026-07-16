@@ -143,7 +143,7 @@ table.field-table tr:last-child td{border-bottom:none;}
 
     <div class="hero" id="intro">
       <h1>📘 Manual do Sistema — Comunicações Bridgestone</h1>
-      <p>Este sistema centraliza as comunicações e registros do time do contencioso trabalhista da Bridgestone: perícias, solicitações de cálculo, reportes de decisão, acordos e inserção de valores. Cada aba gera um e-mail pronto no seu Outlook (o remetente é sempre quem preenche o formulário) e guarda um histórico consultável e exportável em Excel. Este manual explica campo a campo o que preencher e pra onde cada e-mail vai.</p>
+      <p>Este sistema centraliza as comunicações e registros do time do contencioso trabalhista da Bridgestone: perícias, solicitações de cálculo, reportes de decisão, acordos e inserção de valores. Cada aba gera um e-mail pronto no seu Outlook (o remetente é sempre quem preenche o formulário) e guarda um histórico consultável e exportável em Excel. Uma sexta aba, Lançamento IA, extrai valores automaticamente de cálculos em PDF/XLSX pra apoiar a Inserção de Valores. Este manual explica campo a campo o que preencher e pra onde cada e-mail vai.</p>
       <div class="downloads">
         <a class="dl-btn pdf" href="manual.pdf">⬇ Baixar em PDF</a>
         <a class="dl-btn ppt" href="manual.pptx">⬇ Baixar em PPTX</a>
@@ -431,10 +431,25 @@ table.field-table tr:last-child td{border-bottom:none;}
           <li><b>Busca por palavra-chave</b> (fallback): quando não há essa estrutura de tabela (texto colado, XLSX, ou PDF fora do padrão), o sistema procura por uma lista de pedidos comuns (13º salário, aviso prévio, dano moral, FGTS, horas extras, etc.) e pega os valores numéricos mais próximos de cada um.</li>
         </ul>
         <p>Depois de extrair, o sistema junta verbas duplicadas (mesmo nome ou mesmo conjunto de valores) e avisa quando o documento parece ser um cálculo já pronto — nesses casos, não preencha a Data de Origem sem antes conferir o Principal, pra não aplicar correção em dobro.</p>
+        <div class="info-callout">ℹ️ Os cálculos da MADI (PJe-Calc) chegam com a página rotacionada — o sistema já leva isso em conta ao ler a posição de cada texto, então a tabela é lida certinho mesmo nesses PDFs em paisagem.</div>
         <h3>Correção monetária (Tema 1191 STF)</h3>
         <p>Informando a Data de Ajuizamento, a Data-base e a Data de Origem de cada verba, o botão "🧮 Recalcular com índice/juros" aplica IPCA-E desde a origem e juros de 1% a.m. até 10/11/2021 (SELIC acumulada depois) — ou os índices manuais escolhidos nos seletores.</p>
+        <h3>Débitos com terceiros (não somam no Histórico)</h3>
+        <p>Quando o PDF tem a tabela "Descrição de Débitos do Reclamado por Credor" (honorários periciais, honorários do patrono do reclamante, contribuição social ao INSS), esses valores são lidos e mostrados numa caixa laranja separada, só de referência — <b>não entram em nenhuma das somas</b> (Histórico, Provisão ou Accrual), porque são devidos a terceiros (perito, advogado, INSS), não ao reclamante.</p>
         <h3>Levar para Inserção de Valores</h3>
-        <p>O botão "→ Levar total para Inserção de Valores" soma o total de todas as verbas, muda pra aba Inserção de Valores, preenche Processo e Reclamante (se estiverem vazios) e coloca o total em "Novo Valor do Histórico" — só falta conferir e completar os demais campos.</p>
+        <p>O botão "→ Levar Histórico/Provisão/Accrual para Inserção de Valores" muda pra aba Inserção de Valores, preenche Processo e Reclamante (se estiverem vazios) e calcula três valores a partir da grade de verbas:</p>
+        <ul>
+          <li><b>Novo Valor do Histórico</b> = soma do <b>Principal</b> de todas as verbas — o valor na data da distribuição, sem correção nem juros.</li>
+          <li><b>Novo Valor da Provisão</b> = soma do <b>Total</b> de todas as verbas — valor corrigido + juros, a melhor estimativa atual do passivo.</li>
+          <li><b>Novo Valor do Accrual</b> = percentual da <b>Fase do processo</b> (selecionada logo acima do botão) × soma do <b>Principal</b> apenas das verbas marcadas como <b>Provável</b> na grade:
+            <ul>
+              <li>Fase 1 — Conhecimento e Instrução: 40,5%</li>
+              <li>Fase 2 — Recursal (TRT/TST): 54%</li>
+              <li>Fase 3 — Execução: 100%</li>
+            </ul>
+          </li>
+        </ul>
+        <div class="warn-callout">⚠️ Se nenhuma Fase for selecionada, o Accrual não é calculado — preencha esse campo manualmente na aba Inserção de Valores.</div>
         <a class="back-top" href="#intro">↑ Voltar ao topo</a>
       </div>
     </section>
