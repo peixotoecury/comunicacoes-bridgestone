@@ -112,6 +112,12 @@ table.sol-table tbody td{padding:10px 12px;border-bottom:1px solid #E5EEF4;color
 table.sol-table tbody tr:hover td{background:#F8FCFF;}
 td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
 
+#forecast-thead-row th{padding:8px 10px;vertical-align:top;}
+#forecast-thead-row .th-label{margin-bottom:5px;}
+#forecast-thead-row .col-filter{width:100%;box-sizing:border-box;background:#fff;border:1px solid rgba(255,255,255,.4);border-radius:5px;padding:4px 6px;font-size:11px;font-weight:400;text-transform:none;letter-spacing:normal;color:var(--preto-pc);font-family:var(--font);outline:none;}
+#forecast-thead-row .col-filter::placeholder{color:var(--muted2);}
+#forecast-thead-row .col-filter:focus{border-color:var(--azul-pc);box-shadow:0 0 0 2px rgba(0,169,224,.35);}
+
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid transparent;}
 .badge-blue{background:rgba(0,169,224,.10);color:var(--escuro-pc);border-color:rgba(0,169,224,.3);}
 .badge-green{background:var(--green-lt);color:var(--green);border-color:rgba(17,122,101,.25);}
@@ -1145,6 +1151,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
     <div class="filters">
       <input class="filter-input" type="search" id="forecast-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderForecast()">
+      <button class="action-btn" onclick="limparFiltrosForecast()" title="Limpa a busca e todos os filtros de coluna">🧹 Limpar filtros</button>
       <button class="action-btn" onclick="document.getElementById('forecast-table-wrap').scrollBy({left:-600,behavior:'smooth'})" title="Rolar tabela pra esquerda">◀ Rolar</button>
       <button class="action-btn" onclick="document.getElementById('forecast-table-wrap').scrollBy({left:600,behavior:'smooth'})" title="Rolar tabela pra direita">Rolar ▶</button>
       <button class="export-btn" id="btn-exportar-forecast">⬇ Exportar Excel</button>
@@ -2969,15 +2976,37 @@ function forecastFormatarCelula(valor, tipo){
   return esc(valor || '');
 }
 
+function limparFiltrosForecast(){
+  document.querySelector('#forecast-busca').value = '';
+  document.querySelectorAll('#forecast-thead-row .col-filter').forEach(inp => inp.value = '');
+  renderForecast();
+}
+
 function renderForecast(){
   const theadRow = document.querySelector('#forecast-thead-row');
   if(!theadRow.children.length){
-    theadRow.innerHTML = FORECAST_DISPLAY_COLS.map(([,label]) => `<th>${esc(label)}</th>`).join('');
+    theadRow.innerHTML = FORECAST_DISPLAY_COLS.map(([campo,label]) => `
+      <th>
+        <div class="th-label">${esc(label)}</div>
+        <input class="col-filter" data-campo="${campo}" placeholder="Filtrar…" oninput="renderForecast()">
+      </th>`).join('');
   }
   const termo = document.querySelector('#forecast-busca').value.toLowerCase();
-  const rows = HIST_FORECAST.filter(r => !termo
-    || (r.processo||'').toLowerCase().includes(termo)
-    || (r.reclamante||'').toLowerCase().includes(termo));
+  const filtrosColuna = [];
+  theadRow.querySelectorAll('.col-filter').forEach(inp => {
+    const v = inp.value.trim().toLowerCase();
+    if(v) filtrosColuna.push([inp.dataset.campo, v]);
+  });
+  const tipoPorCampo = {};
+  FORECAST_DISPLAY_COLS.forEach(([campo,,tipo]) => { tipoPorCampo[campo] = tipo; });
+  const rows = HIST_FORECAST.filter(r => {
+    if(termo && !((r.processo||'').toLowerCase().includes(termo) || (r.reclamante||'').toLowerCase().includes(termo))) return false;
+    for(const [campo, valorFiltro] of filtrosColuna){
+      const texto = forecastFormatarCelula(r[campo], tipoPorCampo[campo]).toLowerCase();
+      if(!texto.includes(valorFiltro)) return false;
+    }
+    return true;
+  });
   HIST_FORECAST_FILTRADO = rows;
   const tbody = document.querySelector('#forecast-tbody');
   if(!rows.length){
