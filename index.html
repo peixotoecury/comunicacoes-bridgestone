@@ -1145,9 +1145,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
     <div class="filters">
       <input class="filter-input" type="search" id="forecast-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderForecast()">
+      <button class="action-btn" onclick="document.getElementById('forecast-table-wrap').scrollBy({left:-600,behavior:'smooth'})" title="Rolar tabela pra esquerda">◀ Rolar</button>
+      <button class="action-btn" onclick="document.getElementById('forecast-table-wrap').scrollBy({left:600,behavior:'smooth'})" title="Rolar tabela pra direita">Rolar ▶</button>
       <button class="export-btn" id="btn-exportar-forecast">⬇ Exportar Excel</button>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap" id="forecast-table-wrap">
       <table class="sol-table" style="min-width:5200px;">
         <thead><tr id="forecast-thead-row"></tr></thead>
         <tbody id="forecast-tbody"><tr><td class="empty-state">Carregando…</td></tr></tbody>
@@ -2875,10 +2877,21 @@ async function forecastConfirmarSubstituicao(btn){
   }
 }
 
+let FORECAST_REQ_ID = 0; // "a chamada mais recente vence" — ver nota abaixo
 async function carregarForecast(){
   // O Supabase/PostgREST devolve no máximo 1000 linhas por página — com ~1361
   // processos isso cortava a lista pela metade. Busca em páginas de 1000 até
   // não vir mais nada.
+  //
+  // A assinatura de tempo real (assinarRealtime) chama esta função de novo a cada
+  // linha alterada na tabela — durante a substituição do Forecast (1 delete +
+  // vários inserts de centenas de linhas cada) isso dispara MUITAS chamadas
+  // concorrentes. Sem controle, uma chamada antiga que ainda está buscando dados
+  // pode terminar DEPOIS de uma mais nova e sobrescrever a tela com um total
+  // desatualizado (o "sobe pra 1361 e depois volta pra 1000" que a usuária viu).
+  // Por isso: cada chamada recebe um número sequencial: se, quando ela terminar de
+  // buscar, já existir uma chamada mais nova em andamento, o resultado é descartado.
+  const meuId = ++FORECAST_REQ_ID;
   let tudo = [];
   let pagina = 0;
   const TAMANHO_PAGINA = 1000;
@@ -2890,6 +2903,7 @@ async function carregarForecast(){
     if(!data || data.length < TAMANHO_PAGINA) break;
     pagina++;
   }
+  if(meuId !== FORECAST_REQ_ID) return; // uma chamada mais nova já assumiu — descarta este resultado
   HIST_FORECAST = tudo;
   document.querySelector('#forecast-total').textContent = HIST_FORECAST.length;
   const maisRecente = HIST_FORECAST.reduce((max, r) => r.atualizado_em > max ? r.atualizado_em : max, '');
@@ -3022,7 +3036,16 @@ if(!sb){
   assinarRealtime('reportes_decisao', carregarHistoricoDecisao);
   assinarRealtime('reportes_acordos', carregarHistoricoAcordos);
   assinarRealtime('solicitacoes_insercao_valores', carregarHistoricoValores);
-  assinarRealtime('forecast_atual', carregarForecast);
+  // O Realtime do Supabase dispara um evento POR LINHA alterada — uma substituição
+  // de 1361 processos gera 1361+ eventos em sequência. Sem isso, cada evento
+  // chamaria carregarForecast() na hora (centenas de buscas concorrentes e
+  // desnecessárias). Com debounce, só recarrega 400ms depois do ÚLTIMO evento —
+  // uma vez só, com os dados já estáveis.
+  let forecastDebounce = null;
+  assinarRealtime('forecast_atual', () => {
+    clearTimeout(forecastDebounce);
+    forecastDebounce = setTimeout(carregarForecast, 400);
+  });
 }
 </script>
 </body>
