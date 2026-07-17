@@ -368,7 +368,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="d-reclamante"></div>
           <div class="mc-form-group"><label>Responsável (sigla)</label><input type="text" id="d-responsavel"></div>
         </div>
-        <div class="mc-form-group"><label>Advogado da Parte Contrária</label><input type="text" id="d-advogado-contraria" placeholder="Nome completo"></div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Advogado Responsável</label><select id="d-advogado-responsavel"><option value="">Selecione…</option></select></div>
+          <div class="mc-form-group"><label>Advogado da Parte Contrária</label><input type="text" id="d-advogado-contraria" placeholder="Nome completo"></div>
+        </div>
 
         <div class="section-title">Tipo de Reporte</div>
         <div class="info-box"><span>ℹ️</span><span>Marque o(s) tipo(s) que você está reportando agora — só os campos correspondentes aparecem, pra não precisar rolar o formulário todo. Pode marcar mais de um (ex: Sentença + Acórdão no mesmo reporte).</span></div>
@@ -855,11 +858,16 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     <div class="dash-card-head">📊 Reportes Salvos <button class="export-btn" onclick="exportarExcel(HIST_DECISAO_FILTRADO, 'Reportes_Decisao')">⬇ Exportar Excel</button></div>
     <div class="filters">
       <input class="filter-input" id="d-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoDecisao()">
+      <select class="filter-select" id="d-flt-status" onchange="renderHistoricoDecisao()">
+        <option value="">Status: todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Concluído">Concluído</option>
+      </select>
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Laudo Peric.</th><th>Laudo Insalu.</th><th>Sentença</th><th>Execução</th><th>Atualizado em</th><th>Ações</th></tr></thead>
-        <tbody id="d-tbody"><tr><td colspan="8" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Laudo Peric.</th><th>Laudo Insalu.</th><th>Sentença</th><th>Execução</th><th>Status</th><th>Atualizado em</th><th>Ações</th></tr></thead>
+        <tbody id="d-tbody"><tr><td colspan="9" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1034,11 +1042,16 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     <div class="dash-card-head">📊 Acordos Reportados <button class="export-btn" onclick="exportarExcel(HIST_ACORDOS_FILTRADO, 'Reportes_Acordos')">⬇ Exportar Excel</button></div>
     <div class="filters">
       <input class="filter-input" id="a-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoAcordos()">
+      <select class="filter-select" id="a-flt-status" onchange="renderHistoricoAcordos()">
+        <option value="">Conclusão: todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Concluído">Concluído</option>
+      </select>
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Status</th><th>Valor Pago</th><th>Economia</th><th>Data Pagamento</th><th>Atualizado em</th><th>Ações</th></tr></thead>
-        <tbody id="a-tbody"><tr><td colspan="8" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Status Acordo</th><th>Valor Pago</th><th>Economia</th><th>Data Pagamento</th><th>Conclusão</th><th>Atualizado em</th><th>Ações</th></tr></thead>
+        <tbody id="a-tbody"><tr><td colspan="9" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1391,6 +1404,22 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   </div>
 </div>
 
+<div class="vd-overlay" id="va-overlay" onclick="if(event.target===this) fecharConclusaoAcordo()">
+  <div class="vd-modal" style="max-width:460px;">
+    <div class="vd-modal-head">
+      <h3 id="va-titulo">Concluir Aprovação do Acordo</h3>
+      <button type="button" class="vd-close-btn" onclick="fecharConclusaoAcordo()" title="Fechar">✕</button>
+    </div>
+    <div class="vd-modal-body">
+      <input type="hidden" id="va-id">
+      <div class="mc-form-group"><label>Aprovação do Acordo</label>
+        <select id="va-aprovacao-acordo"><option value="">—</option><option>Sim</option><option>Não</option></select>
+      </div>
+      <button type="button" class="btn-cyan" onclick="salvarConclusaoAcordo()">✅ Concluir e enviar retorno pro advogado</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://sydamnqagkdmczmgkvso.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kA_IDYtEdATSygg7EajrdQ_cEi4d57N';
@@ -1579,6 +1608,7 @@ popularSelectProfissionais(document.getElementById('p-advogado'), 'Advogado');
 popularSelectProfissionais(document.getElementById('a-advogado'), 'Advogado');
 popularSelectProfissionais(document.getElementById('k-advogado'), 'Advogado');
 popularSelectProfissionais(document.getElementById('v-advogado-solicitante'), 'Advogado');
+popularSelectProfissionais(document.getElementById('d-advogado-responsavel'), 'Advogado');
 
 function abrirEmail(destinatarios, cc, assunto, corpo){
   const link = `mailto:${destinatarios}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
@@ -1772,6 +1802,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     numero_processo: g('d-processo'),
     nome_reclamante: g('d-reclamante'),
     responsavel_sigla: g('d-responsavel'),
+    advogado_responsavel: g('d-advogado-responsavel'),
     advogado_parte_contraria: g('d-advogado-contraria'),
     perito_peri: g('d-perito-peri'),
     data_pericia_peri: g('d-data-pericia-peri'),
@@ -1888,15 +1919,19 @@ async function carregarHistoricoDecisao(){
     renderHistoricoDecisao();
   }catch(err){
     console.error(err);
-    document.getElementById('d-tbody').innerHTML = `<tr><td colspan="8" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+    document.getElementById('d-tbody').innerHTML = `<tr><td colspan="9" class="empty-state">Erro ao carregar histórico.</td></tr>`;
   }
 }
 function renderHistoricoDecisao(){
   const termo = document.getElementById('d-busca').value.toLowerCase();
-  const rows = HIST_DECISAO.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  const status = document.getElementById('d-flt-status').value;
+  const rows = HIST_DECISAO.filter(r =>
+    (!termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo)) &&
+    (!status || (r.status||'Pendente') === status)
+  );
   HIST_DECISAO_FILTRADO = rows;
   const tbody = document.getElementById('d-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Nenhum reporte encontrado.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum reporte encontrado.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
@@ -1904,6 +1939,7 @@ function renderHistoricoDecisao(){
     <td>${esc(r.laudo_insalubridade_resultado)}</td>
     <td>${esc(r.sentenca_resultado)}</td>
     <td>${r.execucao ? `<span class="badge ${r.execucao==='Sim'?'badge-orange':'badge-green'}">${esc(r.execucao)}</span>` : ''}</td>
+    <td><span class="badge ${r.status==='Concluído'?'badge-green':'badge-orange'}">${esc(r.status||'Pendente')}</span></td>
     <td class="mono">${fmtDataHora(r.atualizado_em)}</td>
     <td>
       <select class="row-btn" onchange="if(this.value){ gerarEmailDecisao(${r.id}, this.value); this.value=''; }">
@@ -1917,15 +1953,34 @@ function renderHistoricoDecisao(){
         <option value="tst">7 — Acórdão do TST</option>
         <option value="execucao">8 — Execução</option>
       </select>
+      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="concluirDecisao(${r.id})" style="margin-top:5px;">✅ Concluir</button>` : ''}
       <button class="row-btn" onclick="verDetalhesDecisao(${r.id})" title="Ver todos os campos salvos" style="margin-top:5px;">👁️ Ver</button>
       <button class="row-btn" onclick="excluirRegistro('reportes_decisao', ${r.id})" title="Excluir" style="margin-top:5px;">🗑️ Excluir</button>
     </td>
   </tr>`).join('');
 }
+async function concluirDecisao(id){
+  const r = HIST_DECISAO.find(x => x.id === id);
+  if(!r) return;
+  const agora = new Date().toISOString();
+  const { error } = await sb.from('reportes_decisao').update({ status: 'Concluído', concluido_em: agora, atualizado_em: agora }).eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao concluir: ' + error.message, true);
+    return;
+  }
+  toast('Reporte marcado como concluído. Abrindo e-mail de retorno…');
+  const emailAdvogado = emailPorNome(r.advogado_responsavel);
+  const assunto = `Reporte de Decisão Concluído — Processo ${nn(r.numero_processo)}`;
+  const corpo = `Prezado(a) ${nn(r.advogado_responsavel)},\n\nConfirmamos que o reporte de decisão referente ao processo abaixo foi processado:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\n\nAtenciosamente,\nGrupo Bridgestone`;
+  if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
+  else toast('Advogado Responsável sem e-mail cadastrado — abra o retorno manualmente.', true);
+  carregarHistoricoDecisao();
+}
 function verDetalhesDecisao(id){
   const r = HIST_DECISAO.find(x => x.id === id);
   if(!r) return;
-  const cabecalho = `Processo: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}`;
+  const cabecalho = `Processo: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nStatus: ${r.status || 'Pendente'}`;
   abrirVerDetalhes(`Reporte de Decisão — ${r.numero_processo || ''}`, textoParaHtmlDetalhes(cabecalho + montarResumoCompleto(r)));
 }
 
@@ -1986,6 +2041,7 @@ function montarResumoCompleto(r){
   let partes = '';
   partes += secaoTexto('Identificação', [
     linha('Responsável (sigla)', r.responsavel_sigla),
+    linha('Advogado Responsável', r.advogado_responsavel),
     linha('Advogado da Parte Contrária', r.advogado_parte_contraria),
   ]);
   partes += secaoTexto('Periculosidade — Perícia', [
@@ -2434,16 +2490,20 @@ async function carregarHistoricoAcordos(){
     renderHistoricoAcordos();
   }catch(err){
     console.error(err);
-    document.getElementById('a-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+    document.getElementById('a-tbody').innerHTML = `<tr><td colspan="9" class="empty-state">Erro ao carregar histórico.</td></tr>`;
   }
 }
 function fmtMoeda(v){ return v==null ? '' : Number(v).toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
 function renderHistoricoAcordos(){
   const termo = document.getElementById('a-busca').value.toLowerCase();
-  const rows = HIST_ACORDOS.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  const status = document.getElementById('a-flt-status').value;
+  const rows = HIST_ACORDOS.filter(r =>
+    (!termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo)) &&
+    (!status || (r.status||'Pendente') === status)
+  );
   HIST_ACORDOS_FILTRADO = rows;
   const tbody = document.getElementById('a-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Nenhum acordo reportado encontrado.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum acordo reportado encontrado.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
@@ -2451,9 +2511,76 @@ function renderHistoricoAcordos(){
     <td class="mono">${fmtMoeda(r.valor_pago)}</td>
     <td class="mono">${fmtMoeda(r.economia)}</td>
     <td class="mono">${r.data_pagamento ? r.data_pagamento.split('-').reverse().join('/') : ''}</td>
+    <td><span class="badge ${r.status==='Concluído'?'badge-green':'badge-orange'}">${esc(r.status||'Pendente')}</span></td>
     <td class="mono">${fmtDataHora(r.atualizado_em)}</td>
-    <td><button class="row-btn" onclick="excluirRegistro('reportes_acordos', ${r.id})" title="Excluir">🗑️ Excluir</button></td>
+    <td>
+      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="abrirConclusaoAcordo(${r.id})">✅ Concluir</button>` : ''}
+      <button class="row-btn" onclick="verDetalhesAcordo(${r.id})" title="Ver todos os campos salvos">👁️ Ver</button>
+      <button class="row-btn" onclick="excluirRegistro('reportes_acordos', ${r.id})" title="Excluir">🗑️ Excluir</button>
+    </td>
   </tr>`).join('');
+}
+function verDetalhesAcordo(id){
+  const r = HIST_ACORDOS.find(x => x.id === id);
+  if(!r) return;
+  const linhas = [
+    ['Processo', r.numero_processo], ['Reclamante', r.nome_reclamante], ['Reclamada', r.reclamada],
+    ['Departamento', r.departamento], ['Comarca', r.comarca], ['Vara (VT)', r.vara],
+    ['Escritório', r.escritorio], ['Advogado Responsável', r.advogado_responsavel],
+    ['Status Acordo', r.status_acordo], ['Status Homologação', r.status_homologacao],
+    ['Tem contraproposta?', r.tem_contraproposta], ['Proposta', r.proposta != null ? fmtMoeda(r.proposta) : null],
+    ['Negociação em', r.negociacao_em], ['Justificativa', r.justificativa], ['PAUTÃO', r.pautao],
+    ['Total Provável', r.total_provavel != null ? fmtMoeda(r.total_provavel) : null],
+    ['Total Accrual', r.total_accrual != null ? fmtMoeda(r.total_accrual) : null],
+    ['Valor Pago', r.valor_pago != null ? fmtMoeda(r.valor_pago) : null],
+    ['Economia', r.economia != null ? fmtMoeda(r.economia) : null],
+    ['% Economia', r.percentual_economia != null ? r.percentual_economia + '%' : null],
+    ['Classificação da Economia', r.classificacao_economia],
+    ['Data do Protocolo do Acordo', r.data_protocolo_acordo ? dataBR(r.data_protocolo_acordo) : null],
+    ['Data Pagamento', r.data_pagamento ? dataBR(r.data_pagamento) : null],
+    ['Solicitamos autorização?', r.solicitamos_autorizacao], ['Aprovação para acordo', r.aprovacao_acordo],
+    ['Informações adicionais', r.informacoes_adicionais],
+    ['Conclusão', r.status || 'Pendente'], ['Concluído em', r.concluido_em ? fmtDataHora(r.concluido_em) : null],
+    ['Atualizado em', fmtDataHora(r.atualizado_em)],
+  ];
+  const html = linhas.filter(([, v]) => v != null && v !== '').map(([label, val]) => `<div class="vd-kv"><b>${esc(label)}:</b> ${esc(val)}</div>`).join('');
+  abrirVerDetalhes(`Reporte de Acordo — ${r.numero_processo || ''}`, html);
+}
+
+/* Concluir = a aprovação final do acordo saiu (Sim/Não) — marca Concluído e
+   avisa o advogado responsável por e-mail. */
+function abrirConclusaoAcordo(id){
+  const r = HIST_ACORDOS.find(x => x.id === id);
+  if(!r) return;
+  document.getElementById('va-id').value = id;
+  document.getElementById('va-aprovacao-acordo').value = (r.aprovacao_acordo === 'Sim' || r.aprovacao_acordo === 'Não') ? r.aprovacao_acordo : '';
+  document.getElementById('va-titulo').textContent = `Concluir Aprovação do Acordo — ${r.numero_processo || ''}`;
+  document.getElementById('va-overlay').classList.add('show');
+}
+function fecharConclusaoAcordo(){
+  document.getElementById('va-overlay').classList.remove('show');
+}
+async function salvarConclusaoAcordo(){
+  const id = Number(document.getElementById('va-id').value);
+  const r = HIST_ACORDOS.find(x => x.id === id);
+  if(!r) return;
+  const aprovacao = document.getElementById('va-aprovacao-acordo').value;
+  if(!aprovacao){ toast('Escolha Sim ou Não pra Aprovação do Acordo.', true); return; }
+  const agora = new Date().toISOString();
+  const { error } = await sb.from('reportes_acordos').update({ aprovacao_acordo: aprovacao, status: 'Concluído', concluido_em: agora, atualizado_em: agora }).eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao concluir: ' + error.message, true);
+    return;
+  }
+  fecharConclusaoAcordo();
+  toast('Acordo marcado como concluído. Abrindo e-mail de retorno…');
+  const emailAdvogado = emailPorNome(r.advogado_responsavel);
+  const assunto = `Aprovação do Acordo — ${aprovacao} — Processo ${nn(r.numero_processo)}`;
+  const corpo = `Prezado(a) ${nn(r.advogado_responsavel)},\n\nInformamos que a aprovação do acordo referente ao processo abaixo foi concluída:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nAprovação para Acordo: ${aprovacao}\nValor Pago: ${r.valor_pago != null ? fmtMoeda(r.valor_pago) : PH}\n\nAtenciosamente,\nGrupo Bridgestone`;
+  if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
+  else toast('Advogado Responsável sem e-mail cadastrado — abra o retorno manualmente.', true);
+  carregarHistoricoAcordos();
 }
 
 /* ===================== ABA 5: SOLICITAÇÃO DE INSERÇÃO DE VALORES ===================== */

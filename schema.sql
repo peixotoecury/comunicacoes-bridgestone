@@ -41,7 +41,13 @@ create table if not exists reportes_decisao (
   id bigint generated always as identity primary key,
   numero_processo text not null,
   nome_reclamante text,
+  advogado_responsavel text,               -- advogado que fez o reporte — usado pra achar o e-mail de retorno ao concluir
   advogado_parte_contraria text,
+
+  -- Status: 'Pendente' até a assistente confirmar o processamento do reporte
+  -- (botão "Concluir"), que dispara o e-mail de retorno pro advogado_responsavel.
+  status text not null default 'Pendente',    -- 'Pendente' | 'Concluído'
+  concluido_em timestamptz,
 
   -- Periculosidade
   perito_peri text,
@@ -218,6 +224,12 @@ create table if not exists reportes_acordos (
   solicitamos_autorizacao text,           -- 'Sim' | 'Não'
   aprovacao_acordo text,                  -- 'Sim' | 'Não' | 'Pendente'
   informacoes_adicionais text,
+
+  -- Status: 'Pendente' até a aprovação final do acordo ser confirmada (botão
+  -- "Concluir", que também preenche aprovacao_acordo com Sim/Não), disparando
+  -- o e-mail de retorno pro advogado_responsavel.
+  status text not null default 'Pendente',    -- 'Pendente' | 'Concluído'
+  concluido_em timestamptz,
 
   criado_em timestamptz not null default now(),
   atualizado_em timestamptz not null default now()
