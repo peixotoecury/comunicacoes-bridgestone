@@ -820,7 +820,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Data (vencimento/depósito)</label><input type="date" id="k-data"></div>
         </div>
         <div class="mc-form-group"><label>Resumo (vai pra Gabi)</label><textarea id="k-resumo" rows="3" placeholder="Resumo em poucas linhas do que está sendo solicitado — entra direto no corpo do e-mail."></textarea></div>
-        <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
+        <div style="display:flex;gap:10px;">
+          <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
+          <button type="button" class="row-btn" onclick="limparFormularioKits()" title="Use quando trocar de processo">🧹 Limpar tudo</button>
+        </div>
+        <div class="info-box" style="margin-top:10px;">💡 Depois de enviar, Processo/Reclamante/Advogado continuam preenchidos — é só trocar o Tipo/Valor/Data/Resumo e enviar de novo pra registrar outro pagamento do mesmo processo (ex: GDJ e depois GRU).</div>
       </form>
     </div>
   </div>
@@ -2004,8 +2008,19 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
   }
   abrirEmail(KITS_GABI, KITS_CC, assunto, corpo);
 
-  this.reset();
+  // Mantém Processo/Reclamante/Advogado preenchidos — às vezes um mesmo processo
+  // tem vários pagamentos (ex: GDJ e depois GRU), então só limpa os campos do
+  // pagamento em si pra já deixar pronto pra próxima solicitação.
+  document.getElementById('k-tipo').value = '';
+  document.getElementById('k-valor').value = '';
+  document.getElementById('k-data').value = '';
+  document.getElementById('k-resumo').value = '';
+  document.getElementById('k-tipo').focus();
 });
+
+function limparFormularioKits(){
+  document.getElementById('form-kits').reset();
+}
 
 let HIST_KITS = [];
 let HIST_KITS_FILTRADO = [];
