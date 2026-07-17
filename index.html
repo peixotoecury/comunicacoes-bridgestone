@@ -1783,6 +1783,108 @@ function resumoExecucaoValores(r){
   if(r.exec_solicitacao_pagamento) linhas.push(`Solicitação de Pagamento Inserida: ${r.exec_solicitacao_pagamento}${r.exec_solicitacao_pagamento_data ? ' (data: ' + dataBR(r.exec_solicitacao_pagamento_data) + ')' : ''}`);
   return '\n--- Execução — Valores ---\n' + linhas.join('\n');
 }
+
+/* Todo campo preenchido no Reporte de Decisão precisa sair no e-mail, não só os
+   poucos campos específicos do tipo de e-mail escolhido — o advogado pode
+   preencher periculosidade + insalubridade + sentença + reintegração etc. tudo
+   junto num único reporte, e tudo isso tem que chegar pra quem recebe o e-mail.
+   Por isso o corpo de cada modelo de e-mail termina com esse resumo completo,
+   separado por seção (só entram as seções que tiverem algum campo preenchido). */
+function linha(label, valor){ return (valor !== null && valor !== undefined && valor !== '') ? `${label}: ${valor}` : null; }
+function linhaData(label, valorISO){ return valorISO ? `${label}: ${dataBR(valorISO)}` : null; }
+function secaoTexto(titulo, linhas){
+  const validas = linhas.filter(Boolean);
+  if(!validas.length) return '';
+  return `\n\n--- ${titulo} ---\n` + validas.join('\n');
+}
+function montarResumoCompleto(r){
+  let partes = '';
+  partes += secaoTexto('Identificação', [
+    linha('Responsável (sigla)', r.responsavel_sigla),
+    linha('Advogado da Parte Contrária', r.advogado_parte_contraria),
+  ]);
+  partes += secaoTexto('Periculosidade — Perícia', [
+    linha('Perito', r.perito_peri),
+    linha('Data da Perícia', r.data_pericia_peri),
+    linha('Mais um dia de perícia', r.pericia_dia_adicional),
+  ]);
+  partes += secaoTexto('Periculosidade — Laudo', [
+    linha('Resultado do Laudo', r.laudo_periculosidade_resultado),
+    linhaData('Data Início (Imprescrito)', r.laudo_periculosidade_data_inicio),
+    linhaData('Data Final (Imprescrito)', r.laudo_periculosidade_data_final),
+    linha('Motivo', r.laudo_periculosidade_motivo),
+    linha('Detalhamento', r.laudo_periculosidade_detalhamento),
+    linha('Fundamentação Técnica', r.laudo_periculosidade_fundamentacao),
+  ]);
+  partes += secaoTexto('Insalubridade — Laudo', [
+    linha('Resultado do Laudo', r.laudo_insalubridade_resultado),
+    linhaData('Data Início (Imprescrito)', r.laudo_insalubridade_data_inicio),
+    linhaData('Data Final (Imprescrito)', r.laudo_insalubridade_data_final),
+    linha('Motivo', r.laudo_insalubridade_motivo),
+    linha('Detalhamento', r.laudo_insalubridade_detalhamento),
+    linha('Outros', r.laudo_insalubridade_outros),
+    linha('Fundamentação Técnica', r.laudo_insalubridade_fundamentacao),
+  ]);
+  partes += secaoTexto('Ergonômico / Perícia Médica', [
+    linha('Laudo Pericial Ergonômico', r.laudo_ergonomico),
+    linha('Perito', r.perito_medica),
+    linha('Data da Perícia', r.data_pericia_medica),
+    linha('Doença', r.medica_doenca),
+    linha('Área do Corpo', r.medica_area_corpo),
+    linha('Motivos', r.medica_motivos),
+    linha('Fonte de Informação', r.medica_fonte_informacao),
+    linha('Resultado do Laudo', r.medica_laudo_resultado),
+    linha('Fundamentação Técnica', r.medica_fundamentacao),
+  ]);
+  partes += secaoTexto('Sentença', [
+    linha('Resultado', r.sentenca_resultado),
+    linhaData('Data da Sentença', r.sentenca_data),
+    linha('Juiz da Sentença', r.sentenca_juiz),
+    linha('Pedidos Deferidos', r.sentenca_pedidos_deferidos),
+    linha('Pedidos Indeferidos', r.sentenca_pedidos_indeferidos),
+    linha('Causa Raiz', r.sentenca_causa_raiz),
+    linha('Principal Pedido Favorável', r.sentenca_principal_favoravel),
+    linha('Principal Pedido Desfavorável', r.sentenca_principal_desfavoravel),
+    linha('Obrigação de Fazer', r.sentenca_obrigacao_fazer),
+    linha('Embargos de Declaração', r.sentenca_embargos),
+    linha('Periculosidade na Sentença igual ao Laudo?', r.decisao_periculosidade_igual_laudo),
+    linha('Insalubridade na Sentença igual ao Laudo?', r.decisao_insalubridade_igual_laudo),
+  ]);
+  partes += secaoTexto('Sentença — Reintegração', [
+    linha('Há Reintegração?', r.sentenca_reintegracao),
+    linha('Resultado da Reintegração', r.sentenca_reintegracao_resultado),
+    linha('Nota sobre a Reintegração', r.sentenca_reintegracao_nota),
+  ]);
+  partes += secaoTexto('Sentença — Coisa Julgada', [
+    linha('Há Coisa Julgada?', r.coisa_julgada),
+    linha('Resultado da Coisa Julgada', r.coisa_julgada_resultado),
+    linha('Motivo da Coisa Julgada', r.coisa_julgada_motivo),
+  ]);
+  partes += secaoTexto('Acórdão TRT', [
+    linha('Resultado (Recurso da Reclamada)', r.acordao_trt_reclamada),
+    linhaData('Data do Acórdão', r.acordao_trt_data),
+    linha('Turma', r.acordao_trt_turma),
+    linha('Relator', r.acordao_trt_relator),
+    linha('Embargos de Declaração', r.trt_embargos),
+    linha('Resultado do Recurso de Revista', r.recurso_revista_resultado),
+    linha('Resumo', r.acordao_trt_resumo),
+  ]);
+  partes += secaoTexto('Acórdão TST', [
+    linha('Resultado', r.acordao_tst),
+    linhaData('Data do Acórdão', r.acordao_tst_data),
+    linha('Turma', r.acordao_tst_camara),
+    linha('Ministro', r.acordao_tst_ministro),
+    linha('Embargos de Declaração', r.tst_embargos),
+    linha('Resumo', r.acordao_tst_resumo),
+  ]);
+  partes += secaoTexto('Execução', [
+    linha('Execução', r.execucao),
+    linha('Última Movimentação Processual', r.ultima_movimentacao),
+    linha('Resumo', r.execucao_resumo),
+  ]);
+  if(temExecucaoValores(r)) partes += '\n' + resumoExecucaoValores(r);
+  return partes;
+}
 /* Envio para o Cliente = Sim -> vai pros contatos externos da Bridgestone (Higor/Maria,
    + Shana se Inserir Gerência = Sim), cc Grupo Bridgestone (interno).
    Envio para o Cliente = Não (ou vazio) -> fica só interno, vai só pro Grupo Bridgestone.
@@ -1806,35 +1908,35 @@ function nn(v){ return v || PH; }
 const EMAIL_MODELOS = {
   medico: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Médico`,
-    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial médico referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}\nData da Perícia: ${nn(r.data_pericia_medica)}\nDoença Alegada: ${nn(r.medica_doenca)}\nParte do Corpo: ${nn(r.medica_area_corpo)}\nPerito Médico do Juízo: ${nn(r.perito_medica)}\n\n\nConclusão da perícia:\n- ${PH} [Ex.: Não foi constatada incapacidade laborativa / nexo causal / incapacidade parcial e permanente]\n\nPrincipais fundamentos do perito:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA equipe analisará o conteúdo técnico para verificar eventual necessidade de apresentação de impugnação, esclarecimentos ou outras medidas processuais cabíveis.\n\nManteremos todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial médico referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nA equipe analisará o conteúdo técnico para verificar eventual necessidade de apresentação de impugnação, esclarecimentos ou outras medidas processuais cabíveis.\n\nManteremos todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   ergonomico: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Ergonômico`,
-    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial ergonômico referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}\nData da Perícia: ${nn(r.data_pericia_medica)}\nÁrea vistoriada: ${nn(r.medica_area_corpo)}\nTipo de Pedido: ${nn(r.medica_motivos)}\nPerito Técnico do Juízo: ${nn(r.perito_medica)}\n\n\nConclusão da perícia:\n- ${PH} [Ex.: Não foram identificadas inadequações ergonômicas / oportunidades de melhoria / risco ergonômico]\n\nPrincipais fundamentos:\n- ${PH}\n- ${PH}\n- ${PH}\n\nNossa equipe avaliará tecnicamente o conteúdo do laudo para definição das medidas processuais cabíveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial ergonômico referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nNossa equipe avaliará tecnicamente o conteúdo do laudo para definição das medidas processuais cabíveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   tecnico: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Resultado do Laudo Pericial Técnico`,
-    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial técnico referente ao processo.\n\nConclusão da perícia:\n- Insalubridade: ${nn(r.laudo_insalubridade_resultado)}\n- Periculosidade: ${nn(r.laudo_periculosidade_resultado)}\n\nPrincipais fundamentos do perito:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA nossa equipe analisará o laudo para definição da estratégia processual e eventual apresentação de impugnação ou esclarecimentos.\n\nSeguiremos acompanhando o andamento do processo e manteremos vocês informados.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi disponibilizado o laudo pericial técnico referente ao processo.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nA nossa equipe analisará o laudo para definição da estratégia processual e eventual apresentação de impugnação ou esclarecimentos.\n\nSeguiremos acompanhando o andamento do processo e manteremos vocês informados.\n\nAtenciosamente,`,
   }),
   sentenca: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação da Sentença`,
-    corpo: `Prezados,\n\nInformamos que foi publicada a sentença referente ao processo em epígrafe.\n\nResultado da decisão:\n- Pedidos julgados procedentes: ${nn(r.sentenca_pedidos_deferidos)}\n- Pedidos julgados improcedentes: ${nn(r.sentenca_pedidos_indeferidos)}\n- Pedidos parcialmente procedentes: ${PH}\n\nPrincipais fundamentos da sentença:\n- ${PH}\n- ${PH}\n- ${PH}\n\nPróximos passos:\nA equipe jurídica está analisando a decisão para definição da estratégia recursal e adoção das medidas cabíveis dentro do prazo legal.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicada a sentença referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nPróximos passos:\nA equipe jurídica está analisando a decisão para definição da estratégia recursal e adoção das medidas cabíveis dentro do prazo legal.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   embargos: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Julgamento dos Embargos de Declaração`,
-    corpo: `Prezados,\n\nInformamos que foram julgados os Embargos de Declaração opostos no processo em epígrafe.\n\nResultado:\n( ) Acolhidos\n( ) Parcialmente acolhidos\n( ) Rejeitados\n\nPrincipais fundamentos da decisão:\n- ${PH}\n- ${PH}\n\nCaso a decisão tenha alterado o conteúdo do julgamento anterior, as respectivas modificações serão consideradas na definição da estratégia processual.\n\nSeguiremos acompanhando o processo.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foram julgados os Embargos de Declaração opostos no processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nCaso a decisão tenha alterado o conteúdo do julgamento anterior, as respectivas modificações serão consideradas na definição da estratégia processual.\n\nSeguiremos acompanhando o processo.\n\nAtenciosamente,`,
   }),
   trt: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TRT`,
-    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nResultado do julgamento:\n- Recurso da Reclamada: ${nn(r.acordao_trt_reclamada)}\n- Recurso da Reclamante: ${PH}\n\nResumo do acórdão:\n${nn(r.acordao_trt_resumo)}\n\nA equipe jurídica avaliará a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nA equipe jurídica avaliará a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   tst: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TST`,
-    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Superior do Trabalho.\n\nResultado do julgamento:\n- ${nn(r.acordao_tst)}\n\nResumo do acórdão:\n${nn(r.acordao_tst_resumo)}\n\nNossa equipe analisará a decisão para definição das medidas processuais eventualmente cabíveis e manterá todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Superior do Trabalho.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nNossa equipe analisará a decisão para definição das medidas processuais eventualmente cabíveis e manterá todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   execucao: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Atualização da Fase de Execução`,
-    corpo: `Prezados,\n\nInformamos a atualização referente à fase de execução do processo em epígrafe.\n\nMovimentação processual:\n- ${nn(r.ultima_movimentacao)}\n\nResumo da execução:\n${nn(r.execucao_resumo)}\n\nPróximos passos: Nossa equipe seguirá acompanhando a execução e adotará todas as medidas processuais necessárias para resguardar os interesses da empresa.\n\nPermanecemos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos a atualização referente à fase de execução do processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nPróximos passos: Nossa equipe seguirá acompanhando a execução e adotará todas as medidas processuais necessárias para resguardar os interesses da empresa.\n\nPermanecemos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,`,
   }),
 };
 
