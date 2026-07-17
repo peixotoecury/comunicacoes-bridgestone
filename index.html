@@ -2332,7 +2332,12 @@ function recalcularDiferencasValores(){
 function vRecalcularAccrualPorFase(){
   const fase = document.getElementById('v-nova-fase').value;
   if(!fase || IA_ACCRUAL_PCT_POR_FASE[fase] == null) return;
-  const atualHistorico = parseMoedaBR(document.getElementById('v-atual-historico').value) || 0;
+  const campoHistorico = document.getElementById('v-atual-historico');
+  if(!campoHistorico.value.trim()){
+    toast('Fase selecionada, mas "Valor Atual do Histórico" está vazio — o Accrual sairia zerado. Preencha o Histórico (ou clique em 🔍 Atual) antes de escolher a Fase.', true);
+    return;
+  }
+  const atualHistorico = parseMoedaBR(campoHistorico.value) || 0;
   const accrual = atualHistorico * IA_ACCRUAL_PCT_POR_FASE[fase];
   document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
   recalcularDiferencasValores();
@@ -2997,18 +3002,20 @@ function iaLevarParaValores(){
 
   const fase = document.getElementById('ia-fase-processo').value;
   let msgAccrual = '';
+  let accrualFicouVazio = false;
   if(fase && IA_ACCRUAL_PCT_POR_FASE[fase] != null){
     const totalPrincipalProvavel = IA_VERBAS.filter(v => v.probabilidade === 'Provável').reduce((s,v) => s + iaNum(v.principal), 0);
     const accrual = totalPrincipalProvavel * IA_ACCRUAL_PCT_POR_FASE[fase];
     document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
     msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% do provável)`;
   } else {
-    msgAccrual = ' — selecione a Fase do processo na aba IA pra calcular o Accrual automaticamente';
+    accrualFicouVazio = true;
+    msgAccrual = ' — Accrual NÃO foi calculado (falta selecionar a Fase do processo na aba IA)';
   }
 
   recalcularDiferencasValores();
   document.getElementById('v-novo-historico').scrollIntoView({behavior:'smooth', block:'center'});
-  toast(`Histórico (Principal) e Provisão (corrigido) levados${msgAccrual} — confira antes de salvar.`);
+  toast(`Histórico (Principal) e Provisão (corrigido) levados${msgAccrual} — confira antes de salvar.`, accrualFicouVazio);
 }
 
 // ══════════════════════════════════════════════════════
@@ -3567,14 +3574,29 @@ function vBuscarForecastAtual(){
     return;
   }
   const fmt = n => Number(n||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-  const preencher = (id, val) => { const el = document.querySelector('#'+id); if(!el.value.trim()) el.value = fmt(val); };
+  // Se o Forecast trouxe null (coluna vazia no Excel do cliente), deixa o campo vazio
+  // em vez de escrever "0,00" — um "0,00" preenchido parece valor real, e escondia
+  // o Accrual (ou Histórico/Provisão) que na verdade nunca veio do Forecast.
+  const preencher = (id, val) => { const el = document.querySelector('#'+id); if(!el.value.trim() && val != null) el.value = fmt(val); };
   preencher('v-atual-historico', achado.historico_atual);
   preencher('v-atual-provisao', achado.provisao_atual);
   preencher('v-atual-accrual', achado.accrual_atual);
   const elFaseAtual = document.querySelector('#v-fase-atual');
   if(elFaseAtual && !elFaseAtual.value.trim()) elFaseAtual.value = achado.fase_atual || '';
   recalcularDiferencasValores();
-  hint.textContent = `✅ Valores Atuais preenchidos a partir do Forecast (Fase: ${achado.fase_atual || 'N/A'}).`;
+  // O Forecast do cliente às vezes vem com Histórico/Provisão/Accrual em branco pra
+  // um processo específico (a coluna "Probable" não foi preenchida naquele mês) —
+  // por isso avisa explicitamente qual valor faltou, em vez de um "tudo ok" genérico
+  // que escondia um Accrual vazio.
+  const faltando = [];
+  if(achado.historico_atual == null) faltando.push('Histórico');
+  if(achado.provisao_atual == null) faltando.push('Provisão');
+  if(achado.accrual_atual == null) faltando.push('Accrual');
+  if(faltando.length){
+    hint.textContent = `⚠️ Forecast encontrado, mas veio sem ${faltando.join('/')} Atual pra esse processo — confira/preencha manualmente (Fase: ${achado.fase_atual || 'N/A'}).`;
+  } else {
+    hint.textContent = `✅ Valores Atuais preenchidos a partir do Forecast (Fase: ${achado.fase_atual || 'N/A'}).`;
+  }
 }
 
 /* ===================== INIT ===================== */
