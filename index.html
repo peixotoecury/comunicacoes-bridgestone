@@ -104,6 +104,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--border2);background:var(--surface2);}
 .filter-input{background:#fff;border:1px solid #BFD6E4;border-radius:var(--radius);padding:8px 12px;color:var(--preto-pc);font-size:12px;font-family:var(--font);outline:none;flex:1;min-width:200px;}
 .filter-input:focus{border-color:var(--azul-pc);box-shadow:0 0 0 3px rgba(0,169,224,.14);}
+.filter-select{background:#fff;border:1px solid #BFD6E4;border-radius:var(--radius);padding:8px 12px;color:var(--preto-pc);font-size:12px;font-family:var(--font);outline:none;}
+.filter-select:focus{border-color:var(--azul-pc);box-shadow:0 0 0 3px rgba(0,169,224,.14);}
 
 .table-wrap{overflow-x:auto;}
 table.sol-table{width:100%;border-collapse:collapse;min-width:900px;background:#fff;}
@@ -171,6 +173,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <button class="tab-btn active" id="tab-btn-pericia" onclick="mudarAba('pericia')">🩺 Comunicação de Perícia</button>
   <button class="tab-btn" id="tab-btn-calculos" onclick="mudarAba('calculos')">🧮 Solicitação de Cálculos</button>
   <button class="tab-btn" id="tab-btn-decisao" onclick="mudarAba('decisao')">📑 Reporte de Decisão</button>
+  <button class="tab-btn" id="tab-btn-kits" onclick="mudarAba('kits')">📦 Kits</button>
   <button class="tab-btn" id="tab-btn-acordos" onclick="mudarAba('acordos')">💰 Reporte de Acordos</button>
   <button class="tab-btn" id="tab-btn-valores" onclick="mudarAba('valores')">💲 Inserção de Valores</button>
   <button class="tab-btn" id="tab-btn-ia" onclick="mudarAba('ia')">🤖 Lançamento IA</button>
@@ -602,17 +605,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
           <select id="d-sentenca-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
         </div>
-        <div class="info-box">ℹ️ Se <b>Não</b> a Embargos, preencher as guias do Recurso Ordinário abaixo.</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>GDJ — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ro-gdj-valor"></div>
-          <div class="mc-form-group"><label>GDJ — Vencimento</label><input type="date" id="d-ro-gdj-vencimento"></div>
-          <div class="mc-form-group"><label>GRU — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ro-gru-valor"></div>
-        </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>GRU — Vencimento</label><input type="date" id="d-ro-gru-vencimento"></div>
-          <div class="mc-form-group"><label>Custas — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ro-custas-valor"></div>
-          <div class="mc-form-group"><label>Custas — Vencimento</label><input type="date" id="d-ro-custas-vencimento"></div>
-        </div>
+        <div class="info-box">ℹ️ Se precisar de guias (GDJ/GRU/Custas) do Recurso Ordinário, abra uma solicitação na aba <b>Kits</b>.</div>
 
         <div class="section-title">Acórdão TRT</div>
         <div class="mc-form-grid cols-3">
@@ -664,28 +657,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-group"><label>Resultado do Recurso de Revista</label>
           <select id="d-recurso-revista-resultado"><option value="">—</option><option>Admitido</option><option>Denegado Seguimento</option><option>Pendente</option></select>
         </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>GDJ — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-rr-gdj-valor"></div>
-          <div class="mc-form-group"><label>GDJ — Vencimento</label><input type="date" id="d-rr-gdj-vencimento"></div>
-          <div class="mc-form-group"><label>GRU — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-rr-gru-valor"></div>
-        </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>GRU — Vencimento</label><input type="date" id="d-rr-gru-vencimento"></div>
-          <div class="mc-form-group"><label>Custas — Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-rr-custas-valor"></div>
-          <div class="mc-form-group"><label>Custas — Vencimento</label><input type="date" id="d-rr-custas-vencimento"></div>
-        </div>
-
-        <div class="info-box">ℹ️ Se o Recurso de Revista for <b>Denegado Seguimento</b>, preencher o Agravo de Instrumento abaixo (mesma solicitação de guias).</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Agravo — GDJ Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ai-gdj-valor"></div>
-          <div class="mc-form-group"><label>Agravo — GDJ Vencimento</label><input type="date" id="d-ai-gdj-vencimento"></div>
-          <div class="mc-form-group"><label>Agravo — GRU Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ai-gru-valor"></div>
-        </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Agravo — GRU Vencimento</label><input type="date" id="d-ai-gru-vencimento"></div>
-          <div class="mc-form-group"><label>Agravo — Custas Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-ai-custas-valor"></div>
-          <div class="mc-form-group"><label>Agravo — Custas Vencimento</label><input type="date" id="d-ai-custas-vencimento"></div>
-        </div>
+        <div class="info-box">ℹ️ Se precisar de guias (GDJ/GRU/Custas) do Recurso de Revista ou do Agravo de Instrumento, abra uma solicitação na aba <b>Kits</b>.</div>
 
         <div class="section-title">Acórdão TST</div>
         <div class="mc-form-grid cols-3">
@@ -786,7 +758,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="d-inserir-gerencia" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
-        <div class="info-box">⚠️ <b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> "Envio para o Cliente" só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se houver GDJ, GRU ou Custas preenchidos (Recurso Ordinário, Recurso de Revista ou Agravo) ou algum valor da seção Execução, <b>Giovanna Gatto e Gabi</b> entram automaticamente em cópia, com um resumo da decisão, das guias e/ou dos valores de execução no corpo do e-mail.</div>
+        <div class="info-box">⚠️ <b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> "Envio para o Cliente" só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se houver algum valor da seção Execução preenchido, <b>Giovanna Gatto e Gabi</b> entram automaticamente em cópia, com um resumo desses valores no corpo do e-mail. Precisa de guias de GDJ/GRU/Custas (Recurso Ordinário, Recurso de Revista ou Agravo)? Abra uma solicitação na aba <b>Kits</b>.</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
@@ -812,6 +784,61 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <table class="sol-table">
         <thead><tr><th>Processo</th><th>Reclamante</th><th>Laudo Peric.</th><th>Laudo Insalu.</th><th>Sentença</th><th>Execução</th><th>Atualizado em</th><th>Ações</th></tr></thead>
         <tbody id="d-tbody"><tr><td colspan="8" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA KITS: KITS E SOLICITAÇÕES DE PAGAMENTO ================= -->
+<div class="view" id="view-kits">
+  <div class="dash-card">
+    <div class="dash-card-head">📦 Nova Solicitação de Kit</div>
+    <div class="dash-card-body">
+      <div class="info-box">ℹ️ O advogado solicita o kit (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos ou Convolação de Depósitos) e a Gabi recebe o pedido por e-mail. Quando ela concluir, a solicitação fica marcada como <b>Concluído</b> no sistema e um e-mail de retorno é aberto pra você automaticamente.</div>
+      <form id="form-kits">
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Número do Processo</label><input type="text" id="k-processo" placeholder="0000000-00.0000.0.00.0000"></div>
+          <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="k-reclamante"></div>
+          <div class="mc-form-group"><label>Advogado Solicitante</label><select id="k-advogado"><option value="">Selecione…</option></select></div>
+        </div>
+        <div class="mc-form-grid cols-3">
+          <div class="mc-form-group"><label>Tipo de Solicitação</label>
+            <select id="k-tipo">
+              <option value="">Selecione…</option>
+              <option>Acordo</option>
+              <option>GDJ</option>
+              <option>Recurso Ordinário</option>
+              <option>Recurso de Revista</option>
+              <option>Agravo de Instrumento</option>
+              <option>Embargos à Execução</option>
+              <option>Depósito de Recurso Ordinário</option>
+              <option>Depósito de Recurso de Revista</option>
+              <option>Convolação de Depósitos</option>
+            </select>
+          </div>
+          <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="k-valor"></div>
+          <div class="mc-form-group"><label>Data (vencimento/depósito)</label><input type="date" id="k-data"></div>
+        </div>
+        <div class="mc-form-group"><label>Resumo (vai pra Gabi)</label><textarea id="k-resumo" rows="3" placeholder="Resumo em poucas linhas do que está sendo solicitado — entra direto no corpo do e-mail."></textarea></div>
+        <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📊 Solicitações de Kit <button class="export-btn" onclick="exportarExcel(HIST_KITS_FILTRADO, 'Kits_Solicitacoes')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="k-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoKits()">
+      <select class="filter-select" id="k-flt-status" onchange="renderHistoricoKits()">
+        <option value="">Status: todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Concluído">Concluído</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Valor</th><th>Data</th><th>Resumo</th><th>Advogado</th><th>Status</th><th>Criado em</th><th>Concluído em</th><th>Ações</th></tr></thead>
+        <tbody id="k-tbody"><tr><td colspan="11" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -1248,6 +1275,7 @@ const RECARREGAR_POR_TABELA = {
   comunicacoes_calculos: () => carregarHistoricoCalculos(),
   reportes_decisao: () => carregarHistoricoDecisao(),
   reportes_acordos: () => carregarHistoricoAcordos(),
+  kits_pagamento: () => carregarHistoricoKits(),
   solicitacoes_insercao_valores: () => carregarHistoricoValores(),
 };
 async function excluirRegistro(tabela, id){
@@ -1394,6 +1422,7 @@ function popularSelectProfissionais(select, cargo){
 }
 popularSelectProfissionais(document.getElementById('p-advogado'), 'Advogado');
 popularSelectProfissionais(document.getElementById('a-advogado'), 'Advogado');
+popularSelectProfissionais(document.getElementById('k-advogado'), 'Advogado');
 
 function abrirEmail(destinatarios, cc, assunto, corpo){
   const link = `mailto:${destinatarios}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
@@ -1592,12 +1621,6 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     laudo_insalubridade_outros: g('d-laudo-insalu-outros'),
     decisao_insalubridade_igual_laudo: g('d-decisao-insalu-igual-laudo'),
     sentenca_embargos: g('d-sentenca-embargos'),
-    ro_gdj_valor: numBR('d-ro-gdj-valor'),
-    ro_gdj_vencimento: g('d-ro-gdj-vencimento'),
-    ro_gru_valor: numBR('d-ro-gru-valor'),
-    ro_gru_vencimento: g('d-ro-gru-vencimento'),
-    ro_custas_valor: numBR('d-ro-custas-valor'),
-    ro_custas_vencimento: g('d-ro-custas-vencimento'),
     laudo_ergonomico: g('d-laudo-ergonomico'),
     perito_medica: g('d-perito-medica'),
     data_pericia_medica: g('d-data-pericia-medica'),
@@ -1631,18 +1654,6 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     acordao_trt_resumo: g('d-acordao-trt-resumo'),
     trt_embargos: g('d-trt-embargos'),
     recurso_revista_resultado: g('d-recurso-revista-resultado'),
-    rr_gdj_valor: numBR('d-rr-gdj-valor'),
-    rr_gdj_vencimento: g('d-rr-gdj-vencimento'),
-    rr_gru_valor: numBR('d-rr-gru-valor'),
-    rr_gru_vencimento: g('d-rr-gru-vencimento'),
-    rr_custas_valor: numBR('d-rr-custas-valor'),
-    rr_custas_vencimento: g('d-rr-custas-vencimento'),
-    ai_gdj_valor: numBR('d-ai-gdj-valor'),
-    ai_gdj_vencimento: g('d-ai-gdj-vencimento'),
-    ai_gru_valor: numBR('d-ai-gru-valor'),
-    ai_gru_vencimento: g('d-ai-gru-vencimento'),
-    ai_custas_valor: numBR('d-ai-custas-valor'),
-    ai_custas_vencimento: g('d-ai-custas-vencimento'),
     acordao_tst: g('d-acordao-tst'),
     acordao_tst_data: g('d-acordao-tst-data'),
     acordao_tst_camara: g('d-acordao-tst-camara'),
@@ -1738,33 +1749,11 @@ function renderHistoricoDecisao(){
 const DECISAO_TO_BASE = 'VialiHigor@la-bridgestone.com,mullermaria@la-bridgestone.com';
 const DECISAO_SHANA = 'MenezesShana@la-bridgestone.com';
 const DECISAO_CC = 'grupobridgestone@peixotoecury.com.br';
-/* Toda decisão com GDJ, GRU ou Custas preenchidos (Recurso Ordinário, Recurso de Revista
-   ou Agravo) vai em cópia pra Giovanna Gatto e Gabi, com um resumo da decisão
-   e das guias anexado ao corpo do e-mail — ver temGuias()/resumoGuias() abaixo. */
+/* Guias de GDJ/GRU/Custas (Recurso Ordinário, Recurso de Revista, Agravo) saíram
+   daqui — agora são solicitadas na aba Kits, com fluxo próprio de OK da Gabi.
+   GUIAS_CC continua valendo pros valores de Execução preenchidos aqui embaixo. */
 const GUIAS_CC = 'giovanna.gatto@peixotoecury.com.br,cicera.vicente@peixotoecury.com.br';
-function temGuias(r){
-  return !!(r.ro_gdj_valor || r.ro_gru_valor || r.ro_custas_valor ||
-            r.rr_gdj_valor || r.rr_gru_valor || r.rr_custas_valor ||
-            r.ai_gdj_valor || r.ai_gru_valor || r.ai_custas_valor);
-}
 function dataBR(v){ return v ? String(v).split('-').reverse().join('/') : null; }
-function resumoGuias(r){
-  const linhas = ['', '--- Resumo da decisão (GDJ / GRU / Custas) ---'];
-  const guia = (rotulo, valor, vencimento) => valor ? `  ${rotulo}: ${fmtMoeda(valor)}${vencimento ? ' (venc. ' + dataBR(vencimento) + ')' : ''}` : null;
-  if(r.ro_gdj_valor || r.ro_gru_valor || r.ro_custas_valor){
-    linhas.push(`Recurso Ordinário — Resultado da Sentença: ${nn(r.sentenca_resultado)}`);
-    [guia('GDJ', r.ro_gdj_valor, r.ro_gdj_vencimento), guia('GRU', r.ro_gru_valor, r.ro_gru_vencimento), guia('Custas', r.ro_custas_valor, r.ro_custas_vencimento)].filter(Boolean).forEach(l => linhas.push(l));
-  }
-  if(r.rr_gdj_valor || r.rr_gru_valor || r.rr_custas_valor){
-    linhas.push(`Recurso de Revista — Resultado do Acórdão TRT: ${nn(r.acordao_trt_reclamada)}`);
-    [guia('GDJ', r.rr_gdj_valor, r.rr_gdj_vencimento), guia('GRU', r.rr_gru_valor, r.rr_gru_vencimento), guia('Custas', r.rr_custas_valor, r.rr_custas_vencimento)].filter(Boolean).forEach(l => linhas.push(l));
-  }
-  if(r.ai_gdj_valor || r.ai_gru_valor || r.ai_custas_valor){
-    linhas.push(`Agravo de Instrumento — Resultado do Recurso de Revista: ${nn(r.recurso_revista_resultado)}`);
-    [guia('GDJ', r.ai_gdj_valor, r.ai_gdj_vencimento), guia('GRU', r.ai_gru_valor, r.ai_gru_vencimento), guia('Custas', r.ai_custas_valor, r.ai_custas_vencimento)].filter(Boolean).forEach(l => linhas.push(l));
-  }
-  return linhas.join('\n');
-}
 /* Seção Execução — Valores: cada item é independente e opcional — só entra no
    resumo do e-mail (e conta pra temExecucaoValores) se valor, data ou status
    tiver sido preenchido. */
@@ -1808,7 +1797,7 @@ function decisaoEnderecos(r){
     to = DECISAO_CC;
     cc = '';
   }
-  if(temGuias(r) || temExecucaoValores(r)) cc = cc ? (cc + ',' + GUIAS_CC) : GUIAS_CC;
+  if(temExecucaoValores(r)) cc = cc ? (cc + ',' + GUIAS_CC) : GUIAS_CC;
   return { to, cc };
 }
 const PH = '[Preencher]';
@@ -1855,7 +1844,6 @@ function gerarEmailDecisao(id, modelo){
   const { assunto, corpo } = EMAIL_MODELOS[modelo](r);
   const { to, cc } = decisaoEnderecos(r);
   let corpoFinal = corpo;
-  if(temGuias(r)) corpoFinal += '\n' + resumoGuias(r);
   if(temExecucaoValores(r)) corpoFinal += '\n' + resumoExecucaoValores(r);
   abrirEmail(to, cc, assunto, corpoFinal);
 }
@@ -1872,17 +1860,108 @@ const DECISAO_TIPO_LABEL = {
    o navegador não deixa abrir vários mailto: seguidos sem um clique novo pra cada um. */
 function enviarEmailsDecisao(registro, tipos){
   const { to, cc } = decisaoEnderecos(registro);
-  const guias = temGuias(registro) ? resumoGuias(registro) : '';
   const execDetalhe = temExecucaoValores(registro) ? resumoExecucaoValores(registro) : '';
   const emails = tipos.map(tipo => {
     const modelo = EMAIL_MODELOS[tipo];
     if(!modelo) return null;
     const { assunto, corpo } = modelo(registro);
-    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo: corpo + guias + execDetalhe };
+    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo: corpo + execDetalhe };
   }).filter(Boolean);
   if(!emails.length) return;
   abrirEmail(emails[0].to, emails[0].cc, emails[0].assunto, emails[0].corpo);
   mostrarEmailsPendentes(emails.slice(1));
+}
+
+/* ===================== ABA KITS: KITS E SOLICITAÇÕES DE PAGAMENTO ===================== */
+const KITS_GABI = 'cicera.vicente@peixotoecury.com.br';
+const KITS_CC = 'giovanna.gatto@peixotoecury.com.br,grupobridgestone@peixotoecury.com.br';
+
+document.getElementById('form-kits').addEventListener('submit', async function(ev){
+  ev.preventDefault();
+  const g = id => document.getElementById(id).value.trim() || null;
+  const registro = {
+    numero_processo: g('k-processo'),
+    nome_reclamante: g('k-reclamante'),
+    advogado_solicitante: g('k-advogado'),
+    tipo_solicitacao: g('k-tipo'),
+    valor: parseMoedaBR(document.getElementById('k-valor').value),
+    data_referencia: g('k-data'),
+    resumo: g('k-resumo'),
+    status: 'Pendente',
+  };
+  const assunto = `Solicitação de Kit — ${nn(registro.tipo_solicitacao)} — Processo ${nn(registro.numero_processo)}`;
+  const corpo = `Prezada Gabi,\n\nSolicitamos o kit abaixo referente ao processo:\n\nProcesso: ${nn(registro.numero_processo)}\nReclamante: ${nn(registro.nome_reclamante)}\nTipo de Solicitação: ${nn(registro.tipo_solicitacao)}\nValor: ${registro.valor != null ? fmtMoeda(registro.valor) : 'N/A'}\nData (vencimento/depósito): ${registro.data_referencia ? dataBR(registro.data_referencia) : 'N/A'}\n\nResumo:\n${nn(registro.resumo)}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}`;
+
+  const { error } = await sb.from('kits_pagamento').insert(registro);
+  if(error){
+    console.error(error);
+    toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
+  } else {
+    toast('Solicitação de kit registrada. Abrindo e-mail pra Gabi…');
+    carregarHistoricoKits();
+  }
+  abrirEmail(KITS_GABI, KITS_CC, assunto, corpo);
+
+  this.reset();
+});
+
+let HIST_KITS = [];
+let HIST_KITS_FILTRADO = [];
+async function carregarHistoricoKits(){
+  try{
+    const { data, error } = await sb.from('kits_pagamento').select('*').order('criado_em', {ascending:false}).limit(200);
+    if(error) throw error;
+    HIST_KITS = data || [];
+    renderHistoricoKits();
+  }catch(err){
+    console.error(err);
+    document.getElementById('k-tbody').innerHTML = `<tr><td colspan="11" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function renderHistoricoKits(){
+  const termo = document.getElementById('k-busca').value.toLowerCase();
+  const status = document.getElementById('k-flt-status').value;
+  const rows = HIST_KITS.filter(r =>
+    (!termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo)) &&
+    (!status || r.status === status)
+  );
+  HIST_KITS_FILTRADO = rows;
+  const tbody = document.getElementById('k-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="11" class="empty-state">Nenhuma solicitação de kit encontrada.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td class="mono">${esc(r.numero_processo)}</td>
+    <td>${esc(r.nome_reclamante)}</td>
+    <td>${esc(r.tipo_solicitacao)}</td>
+    <td>${r.valor != null ? fmtMoeda(r.valor) : ''}</td>
+    <td>${r.data_referencia ? dataBR(r.data_referencia) : ''}</td>
+    <td>${esc(r.resumo)}</td>
+    <td>${esc(r.advogado_solicitante)}</td>
+    <td>${esc(r.status)}</td>
+    <td>${fmtDataHora(r.criado_em)}</td>
+    <td>${r.concluido_em ? fmtDataHora(r.concluido_em) : ''}</td>
+    <td>
+      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="concluirKit(${r.id})">✅ Concluir</button>` : ''}
+      <button class="row-btn" onclick="excluirRegistro('kits_pagamento', ${r.id})" title="Excluir">🗑️ Excluir</button>
+    </td>
+  </tr>`).join('');
+}
+document.getElementById('k-flt-status').addEventListener('change', renderHistoricoKits);
+
+async function concluirKit(id){
+  const r = HIST_KITS.find(x => x.id === id);
+  if(!r) return;
+  const { error } = await sb.from('kits_pagamento').update({ status: 'Concluído', concluido_em: new Date().toISOString() }).eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao concluir: ' + error.message, true);
+    return;
+  }
+  toast('Solicitação marcada como concluída. Abrindo e-mail de retorno…');
+  const emailAdvogado = emailPorNome(r.advogado_solicitante);
+  const assunto = `Kit Concluído — ${nn(r.tipo_solicitacao)} — Processo ${nn(r.numero_processo)}`;
+  const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos que o kit abaixo foi processado:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Solicitação: ${nn(r.tipo_solicitacao)}\nValor: ${r.valor != null ? fmtMoeda(r.valor) : 'N/A'}\nData (vencimento/depósito): ${r.data_referencia ? dataBR(r.data_referencia) : 'N/A'}\n\nResumo:\n${nn(r.resumo)}\n\nAtenciosamente,\nGabi`;
+  if(emailAdvogado) abrirEmail(emailAdvogado, '', assunto, corpo);
+  carregarHistoricoKits();
 }
 
 /* ===================== ABA 4: REPORTE DE ACORDOS ===================== */
@@ -3265,6 +3344,7 @@ if(!sb){
   carregarHistoricoPericia();
   carregarHistoricoCalculos();
   carregarHistoricoDecisao();
+  carregarHistoricoKits();
   carregarHistoricoAcordos();
   carregarHistoricoValores();
   carregarForecast();
@@ -3272,6 +3352,7 @@ if(!sb){
   assinarRealtime('comunicacoes_pericia', carregarHistoricoPericia);
   assinarRealtime('comunicacoes_calculos', carregarHistoricoCalculos);
   assinarRealtime('reportes_decisao', carregarHistoricoDecisao);
+  assinarRealtime('kits_pagamento', carregarHistoricoKits);
   assinarRealtime('reportes_acordos', carregarHistoricoAcordos);
   assinarRealtime('solicitacoes_insercao_valores', carregarHistoricoValores);
   // O Realtime do Supabase dispara um evento POR LINHA alterada — uma substituição

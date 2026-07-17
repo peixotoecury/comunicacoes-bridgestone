@@ -65,6 +65,9 @@ create table if not exists reportes_decisao (
   laudo_insalubridade_fundamentacao text,    -- por que o laudo foi favoravel, se aplicavel
   decisao_insalubridade_igual_laudo text,    -- 'Sim' | 'Não' | 'Parcialmente' (comparado ao laudo)
   sentenca_embargos text,                    -- 'Sim' | 'Não'
+
+  -- Guias RO (HISTÓRICO — removido do formulário, movido pra kits_pagamento;
+  -- colunas mantidas só pra não perder os dados já preenchidos antes da mudança)
   ro_gdj_valor numeric,
   ro_gdj_vencimento date,
   ro_gru_valor numeric,
@@ -110,6 +113,9 @@ create table if not exists reportes_decisao (
   acordao_trt_resumo text,
   trt_embargos text,                         -- 'Sim' | 'Não'
   recurso_revista_resultado text,            -- 'Admitido' | 'Denegado Seguimento' | 'Pendente'
+
+  -- Guias RR e AI (HISTÓRICO — removido do formulário, movido pra kits_pagamento;
+  -- colunas mantidas só pra não perder os dados já preenchidos antes da mudança)
   rr_gdj_valor numeric,
   rr_gdj_vencimento date,
   rr_gru_valor numeric,
@@ -207,6 +213,26 @@ create table if not exists reportes_acordos (
 );
 alter table reportes_acordos enable row level security;
 create policy "anon all" on reportes_acordos for all to anon using (true) with check (true);
+
+-- Kits e Solicitações de Pagamento: pedido independente do advogado pra Gabi
+-- (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos e
+-- Convolação de Depósitos). Fluxo: advogado solicita -> Gabi dá OK -> concluído
+-- -> e-mail de retorno automático pro advogado solicitante.
+create table if not exists kits_pagamento (
+  id bigint generated always as identity primary key,
+  numero_processo text,
+  nome_reclamante text,
+  advogado_solicitante text,
+  tipo_solicitacao text,   -- 'Acordo' | 'GDJ' | 'Recurso Ordinário' | 'Recurso de Revista' | 'Agravo de Instrumento' | 'Embargos à Execução' | 'Depósito de Recurso Ordinário' | 'Depósito de Recurso de Revista' | 'Convolação de Depósitos'
+  valor numeric,
+  data_referencia date,    -- vencimento da guia ou data do depósito, conforme o tipo
+  resumo text,
+  status text not null default 'Pendente',   -- 'Pendente' | 'Concluído'
+  concluido_em timestamptz,
+  criado_em timestamptz not null default now()
+);
+alter table kits_pagamento enable row level security;
+create policy "anon all" on kits_pagamento for all to anon using (true) with check (true);
 
 create table if not exists solicitacoes_insercao_valores (
   id bigint generated always as identity primary key,
@@ -378,6 +404,7 @@ alter publication supabase_realtime add table comunicacoes_pericia;
 alter publication supabase_realtime add table comunicacoes_calculos;
 alter publication supabase_realtime add table reportes_decisao;
 alter publication supabase_realtime add table reportes_acordos;
+alter publication supabase_realtime add table kits_pagamento;
 alter publication supabase_realtime add table solicitacoes_insercao_valores;
 alter publication supabase_realtime add table forecast_atual;
 
