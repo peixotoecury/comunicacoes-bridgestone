@@ -156,6 +156,18 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 .chk-multi .check-row{padding:4px 0;}
 .chk-multi.chk-multi-3{grid-template-columns:1fr 1fr 1fr;}
 @media (max-width: 900px){ .chk-multi{grid-template-columns:1fr;} .chk-multi.chk-multi-3{grid-template-columns:1fr;} }
+
+.vd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+.vd-overlay.show{display:flex;}
+.vd-modal{background:var(--surface);border-radius:var(--radius-lg);max-width:720px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.35);}
+.vd-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border2);position:sticky;top:0;background:var(--surface);}
+.vd-modal-head h3{font-size:14px;font-weight:700;color:var(--escuro-pc);margin:0;}
+.vd-modal-body{padding:16px 20px;font-size:12.5px;color:var(--preto-pc);line-height:1.6;}
+.vd-modal-body .section-title:first-child{margin-top:0;}
+.vd-close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:2px 8px;line-height:1;}
+.vd-close-btn:hover{color:var(--escuro-pc);}
+.vd-kv{padding:6px 0;border-bottom:1px solid var(--border2);}
+.vd-kv b{color:var(--escuro-pc);}
 </style>
 </head>
 <body>
@@ -358,6 +370,17 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-group"><label>Advogado da Parte Contrária</label><input type="text" id="d-advogado-contraria" placeholder="Nome completo"></div>
 
+        <div class="section-title">Tipo de Reporte</div>
+        <div class="info-box"><span>ℹ️</span><span>Marque o(s) tipo(s) que você está reportando agora — só os campos correspondentes aparecem, pra não precisar rolar o formulário todo. Pode marcar mais de um (ex: Sentença + Acórdão no mesmo reporte).</span></div>
+        <div class="check-grid" style="margin-bottom:16px;">
+          <div class="check-row"><input type="checkbox" id="d-grupo-laudo" onchange="atualizarGruposDecisao()"><label for="d-grupo-laudo">Laudo (Periculosidade/Insalubridade/Ergonômico/Médico)</label></div>
+          <div class="check-row"><input type="checkbox" id="d-grupo-sentenca" onchange="atualizarGruposDecisao()"><label for="d-grupo-sentenca">Sentença</label></div>
+          <div class="check-row"><input type="checkbox" id="d-grupo-acordao" onchange="atualizarGruposDecisao()"><label for="d-grupo-acordao">Acórdão (TRT/TST)</label></div>
+          <div class="check-row"><input type="checkbox" id="d-grupo-execucao" onchange="atualizarGruposDecisao()"><label for="d-grupo-execucao">Execução</label></div>
+        </div>
+        <div class="info-box" id="d-grupo-vazio-hint">👆 Marque pelo menos um tipo acima pra abrir os campos do reporte.</div>
+
+        <div id="d-grupo-laudo-campos" style="display:none;">
         <div class="section-title">Periculosidade — Perícia</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Perito</label><input type="text" id="d-perito-peri"></div>
@@ -520,7 +543,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-group"><label>Resultado do Laudo</label><textarea id="d-medica-laudo-resultado" rows="2"></textarea></div>
         <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-medica-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
+        </div>
 
+        <div id="d-grupo-sentenca-campos" style="display:none;">
         <div class="section-title">Sentença</div>
         <div class="info-box">ℹ️ Os campos de Periculosidade e Insalubridade abaixo são o resultado da sentença sobre esses dois temas — compare com o "Resultado do Laudo" de cada um (lá em cima) pra ver se a sentença seguiu o laudo.</div>
         <div class="mc-form-grid cols-3">
@@ -606,7 +631,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <select id="d-sentenca-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
         </div>
         <div class="info-box">ℹ️ Se precisar de guias (GDJ/GRU/Custas) do Recurso Ordinário, abra uma solicitação na aba <b>Kits</b>.</div>
+        </div>
 
+        <div id="d-grupo-acordao-campos" style="display:none;">
         <div class="section-title">Acórdão TRT</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Resultado (Reclamada)</label>
@@ -695,7 +722,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
           <select id="d-tst-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
         </div>
+        </div>
 
+        <div id="d-grupo-execucao-campos" style="display:none;">
         <div class="section-title">Status</div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Execução</label>
@@ -748,10 +777,12 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
           <div class="mc-form-group"><label>Data da Solicitação de Pagamento</label><input type="date" id="d-exec-solicitacao-pagamento-data"></div>
         </div>
+        </div>
 
         <div class="section-title">Envio de E-mails</div>
         <div class="info-box"><span>⚠️</span><span><b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> O e-mail sempre sai completo, com todos os campos preenchidos no reporte (separados por seção). Cada bloco abaixo (Laudo, Sentença, Acórdão, Execução) tem sua própria opção de "Envio para o Cliente" — ela só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se houver algum valor da seção Execução preenchido, <b>Giovanna Gatto e Gabi</b> entram automaticamente em cópia, com um resumo desses valores no corpo do e-mail. Precisa de guias de GDJ/GRU/Custas (Recurso Ordinário, Recurso de Revista ou Agravo)? Abra uma solicitação na aba <b>Kits</b>.</span></div>
 
+        <div id="d-grupo-laudo-envio" style="display:none;">
         <div class="sub-title">Laudo</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
@@ -766,7 +797,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="d-inserir-gerencia-laudo" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
+        </div>
 
+        <div id="d-grupo-sentenca-envio" style="display:none;">
         <div class="sub-title">Sentença</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="sentenca" id="d-email-sentenca"><label for="d-email-sentenca">Sentença</label></div>
@@ -780,7 +813,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="d-inserir-gerencia-sentenca" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
+        </div>
 
+        <div id="d-grupo-acordao-envio" style="display:none;">
         <div class="sub-title">Acórdão</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="trt" id="d-email-trt"><label for="d-email-trt">Acórdão do TRT</label></div>
@@ -794,7 +829,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="d-inserir-gerencia-acordao" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
+        </div>
 
+        <div id="d-grupo-execucao-envio" style="display:none;">
         <div class="sub-title">Execução</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="execucao" id="d-email-execucao"><label for="d-email-execucao">Execução</label></div>
@@ -806,6 +843,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
             <select id="d-inserir-gerencia-execucao" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
+        </div>
         </div>
 
         <button type="submit" class="btn-cyan">💾 Salvar reporte de decisão e abrir e-mails marcados</button>
@@ -842,10 +880,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="k-pagamentos-list">
           <div class="k-pagamento-row mc-form-grid cols-3">
             <div class="mc-form-group"><label>Tipo de Solicitação</label>
-              <select class="k-tipo">
+              <select class="k-tipo" onchange="atualizarOutroKit(this)">
                 <option value="">Selecione…</option>
                 <option>Acordo</option>
                 <option>GDJ</option>
+                <option>INSS</option>
                 <option>Recurso Ordinário</option>
                 <option>Recurso de Revista</option>
                 <option>Agravo de Instrumento</option>
@@ -853,7 +892,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
                 <option>Depósito de Recurso Ordinário</option>
                 <option>Depósito de Recurso de Revista</option>
                 <option>Convolação de Depósitos</option>
+                <option>Outro</option>
               </select>
+              <input type="text" class="k-tipo-outro" placeholder="Especifique o tipo" style="display:none;margin-top:6px;">
             </div>
             <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor"></div>
             <div class="mc-form-group"><label>Data (vencimento/depósito)</label>
@@ -1308,6 +1349,16 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 <div class="toast" id="toast"></div>
 <div class="email-pendentes" id="email-pendentes"></div>
 
+<div class="vd-overlay" id="vd-overlay" onclick="if(event.target===this) fecharVerDetalhes()">
+  <div class="vd-modal">
+    <div class="vd-modal-head">
+      <h3 id="vd-titulo"></h3>
+      <button type="button" class="vd-close-btn" onclick="fecharVerDetalhes()" title="Fechar">✕</button>
+    </div>
+    <div class="vd-modal-body" id="vd-modal-body"></div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://sydamnqagkdmczmgkvso.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kA_IDYtEdATSygg7EajrdQ_cEi4d57N';
@@ -1318,6 +1369,28 @@ function toast(msg, isErr){
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show' + (isErr?' err':'');
   setTimeout(()=>t.classList.remove('show'), 4500);
+}
+
+/* Modal genérico "Ver detalhes" — usado pelas tabelas de histórico (Reportes Salvos,
+   Solicitações de Kit etc.) pra conferir o que foi salvo sem precisar abrir e-mail
+   nem editar nada. */
+function abrirVerDetalhes(titulo, htmlCorpo){
+  document.getElementById('vd-titulo').textContent = titulo;
+  document.getElementById('vd-modal-body').innerHTML = htmlCorpo;
+  document.getElementById('vd-overlay').classList.add('show');
+}
+function fecharVerDetalhes(){
+  document.getElementById('vd-overlay').classList.remove('show');
+}
+/* Converte o texto de montarResumoCompleto() (seções demarcadas com "--- Título ---")
+   em HTML com os mesmos títulos de seção do formulário. */
+function textoParaHtmlDetalhes(texto){
+  const partes = texto.split(/\n\n--- (.+?) ---\n/);
+  let html = partes[0] ? `<div>${esc(partes[0]).replace(/\n/g,'<br>')}</div>` : '';
+  for(let i=1;i<partes.length;i+=2){
+    html += `<div class="section-title" style="margin-top:16px;">${esc(partes[i])}</div><div>${esc(partes[i+1]||'').replace(/\n/g,'<br>')}</div>`;
+  }
+  return html;
 }
 
 const RECARREGAR_POR_TABELA = {
@@ -1633,6 +1706,20 @@ function renderHistoricoCalculos(){
 
 /* ===================== ABA 3: REPORTE DE DECISÃO ===================== */
 const DECISAO_SECOES = ['laudo', 'sentenca', 'acordao', 'execucao'];
+/* "Tipo de Reporte" no topo do formulário — mostra só os campos (e o bloco de
+   envio de e-mail correspondente) dos tipos marcados, pra não obrigar o
+   advogado a rolar o formulário inteiro pra reportar só uma sentença, por
+   exemplo. */
+function atualizarGruposDecisao(){
+  let algumMarcado = false;
+  DECISAO_SECOES.forEach(secao => {
+    const marcado = document.getElementById('d-grupo-' + secao).checked;
+    if(marcado) algumMarcado = true;
+    document.getElementById('d-grupo-' + secao + '-campos').style.display = marcado ? '' : 'none';
+    document.getElementById('d-grupo-' + secao + '-envio').style.display = marcado ? '' : 'none';
+  });
+  document.getElementById('d-grupo-vazio-hint').style.display = algumMarcado ? 'none' : '';
+}
 function atualizarInserirGerencia(secao){
   const envio = document.getElementById('d-envio-cliente-' + secao).value;
   const sel = document.getElementById('d-inserir-gerencia-' + secao);
@@ -1749,6 +1836,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     if(tiposEmail.length) enviarEmailsDecisao(registro, tiposEmail);
     this.reset();
     DECISAO_SECOES.forEach(atualizarInserirGerencia);
+    atualizarGruposDecisao();
     carregarHistoricoDecisao();
   }catch(err){
     console.error(err);
@@ -1796,9 +1884,16 @@ function renderHistoricoDecisao(){
         <option value="tst">7 — Acórdão do TST</option>
         <option value="execucao">8 — Execução</option>
       </select>
+      <button class="row-btn" onclick="verDetalhesDecisao(${r.id})" title="Ver todos os campos salvos" style="margin-top:5px;">👁️ Ver</button>
       <button class="row-btn" onclick="excluirRegistro('reportes_decisao', ${r.id})" title="Excluir" style="margin-top:5px;">🗑️ Excluir</button>
     </td>
   </tr>`).join('');
+}
+function verDetalhesDecisao(id){
+  const r = HIST_DECISAO.find(x => x.id === id);
+  if(!r) return;
+  const cabecalho = `Processo: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}`;
+  abrirVerDetalhes(`Reporte de Decisão — ${r.numero_processo || ''}`, textoParaHtmlDetalhes(cabecalho + montarResumoCompleto(r)));
 }
 
 /* ===================== MODELOS DE E-MAIL — REPORTE DE DECISÃO =====================
@@ -1989,7 +2084,7 @@ const EMAIL_MODELOS = {
   }),
   sentenca: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação da Sentença`,
-    corpo: `Prezados,\n\nInformamos que foi publicada a sentença referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nPróximos passos:\nA equipe jurídica está analisando a decisão para definição da estratégia recursal e adoção das medidas cabíveis dentro do prazo legal.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicada a sentença referente ao processo em epígrafe.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nPróximos passos:\nEstamos analisando a decisão para definição da estratégia recursal e adoção das medidas cabíveis dentro do prazo legal.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   embargos: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Julgamento dos Embargos de Declaração`,
@@ -1997,7 +2092,7 @@ const EMAIL_MODELOS = {
   }),
   trt: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TRT`,
-    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nA equipe jurídica avaliará a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nProcesso: ${r.numero_processo}\nReclamante: ${nn(r.nome_reclamante)}${montarResumoCompleto(r)}\n\nEstamos avaliando a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   tst: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TST`,
@@ -2047,10 +2142,11 @@ const KITS_CC = 'giovanna.gatto@peixotoecury.com.br,grupobridgestone@peixotoecur
 function novaLinhaKitHTML(){
   return `<div class="k-pagamento-row mc-form-grid cols-3">
     <div class="mc-form-group"><label>Tipo de Solicitação</label>
-      <select class="k-tipo">
+      <select class="k-tipo" onchange="atualizarOutroKit(this)">
         <option value="">Selecione…</option>
         <option>Acordo</option>
         <option>GDJ</option>
+        <option>INSS</option>
         <option>Recurso Ordinário</option>
         <option>Recurso de Revista</option>
         <option>Agravo de Instrumento</option>
@@ -2058,7 +2154,9 @@ function novaLinhaKitHTML(){
         <option>Depósito de Recurso Ordinário</option>
         <option>Depósito de Recurso de Revista</option>
         <option>Convolação de Depósitos</option>
+        <option>Outro</option>
       </select>
+      <input type="text" class="k-tipo-outro" placeholder="Especifique o tipo" style="display:none;margin-top:6px;">
     </div>
     <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor"></div>
     <div class="mc-form-group"><label>Data (vencimento/depósito)</label>
@@ -2068,6 +2166,11 @@ function novaLinhaKitHTML(){
       </div>
     </div>
   </div>`;
+}
+function atualizarOutroKit(select){
+  const outro = select.closest('.k-pagamento-row').querySelector('.k-tipo-outro');
+  outro.style.display = select.value === 'Outro' ? '' : 'none';
+  if(select.value !== 'Outro') outro.value = '';
 }
 function atualizarBotoesRemoverKit(){
   const rows = document.querySelectorAll('#k-pagamentos-list .k-pagamento-row');
@@ -2094,11 +2197,15 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
   const advogado = g('k-advogado');
   const resumo = g('k-resumo');
 
-  const pagamentos = Array.from(document.querySelectorAll('#k-pagamentos-list .k-pagamento-row')).map(row => ({
-    tipo_solicitacao: row.querySelector('.k-tipo').value.trim() || null,
-    valor: parseMoedaBR(row.querySelector('.k-valor').value),
-    data_referencia: row.querySelector('.k-data').value || null,
-  })).filter(p => p.tipo_solicitacao || p.valor != null || p.data_referencia);
+  const pagamentos = Array.from(document.querySelectorAll('#k-pagamentos-list .k-pagamento-row')).map(row => {
+    const tipoSelect = row.querySelector('.k-tipo').value.trim();
+    const tipo = tipoSelect === 'Outro' ? (row.querySelector('.k-tipo-outro').value.trim() || null) : (tipoSelect || null);
+    return {
+      tipo_solicitacao: tipo,
+      valor: parseMoedaBR(row.querySelector('.k-valor').value),
+      data_referencia: row.querySelector('.k-data').value || null,
+    };
+  }).filter(p => p.tipo_solicitacao || p.valor != null || p.data_referencia);
 
   if(!pagamentos.length){
     toast('Preencha ao menos um pagamento (Tipo/Valor/Data).', true);
@@ -2181,9 +2288,28 @@ function renderHistoricoKits(){
     <td>${r.concluido_em ? fmtDataHora(r.concluido_em) : ''}</td>
     <td>
       ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="concluirKit(${r.id})">✅ Concluir</button>` : ''}
+      <button class="row-btn" onclick="verDetalhesKit(${r.id})" title="Ver todos os campos salvos">👁️ Ver</button>
       <button class="row-btn" onclick="excluirRegistro('kits_pagamento', ${r.id})" title="Excluir">🗑️ Excluir</button>
     </td>
   </tr>`).join('');
+}
+function verDetalhesKit(id){
+  const r = HIST_KITS.find(x => x.id === id);
+  if(!r) return;
+  const linhas = [
+    ['Processo', r.numero_processo],
+    ['Reclamante', r.nome_reclamante],
+    ['Advogado Solicitante', r.advogado_solicitante],
+    ['Tipo de Solicitação', r.tipo_solicitacao],
+    ['Valor', r.valor != null ? fmtMoeda(r.valor) : null],
+    ['Data (vencimento/depósito)', r.data_referencia ? dataBR(r.data_referencia) : null],
+    ['Status', r.status],
+    ['Criado em', fmtDataHora(r.criado_em)],
+    ['Concluído em', r.concluido_em ? fmtDataHora(r.concluido_em) : null],
+  ];
+  const html = linhas.map(([label, val]) => `<div class="vd-kv"><b>${esc(label)}:</b> ${esc(val == null ? '—' : val)}</div>`).join('')
+    + `<div class="vd-kv"><b>Resumo:</b><br>${esc(r.resumo || '—').replace(/\n/g,'<br>')}</div>`;
+  abrirVerDetalhes(`Solicitação de Kit — ${r.numero_processo || ''}`, html);
 }
 document.getElementById('k-flt-status').addEventListener('change', renderHistoricoKits);
 
