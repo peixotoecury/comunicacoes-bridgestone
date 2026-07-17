@@ -107,6 +107,7 @@ create table if not exists reportes_decisao (
   acordao_trt_data date,
   acordao_trt_turma text,
   acordao_trt_relator text,
+  acordao_trt_resumo text,
   trt_embargos text,                         -- 'Sim' | 'Não'
   recurso_revista_resultado text,            -- 'Admitido' | 'Denegado Seguimento' | 'Pendente'
   rr_gdj_valor numeric,
@@ -127,11 +128,13 @@ create table if not exists reportes_decisao (
   acordao_tst_data date,
   acordao_tst_camara text,
   acordao_tst_ministro text,
+  acordao_tst_resumo text,
   tst_embargos text,                         -- 'Sim' | 'Não'
 
   -- Execução / status
   execucao text,                          -- 'Sim' | 'Não'
   ultima_movimentacao text,
+  execucao_resumo text,
 
   responsavel_sigla text,
   criado_em timestamptz not null default now(),

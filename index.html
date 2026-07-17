@@ -654,6 +654,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
         <div class="mc-form-group"><label>Relator</label><input type="text" id="d-acordao-trt-relator"></div>
+        <div class="mc-form-group"><label>Resumo do Acórdão TRT</label><textarea id="d-acordao-trt-resumo" rows="3" placeholder="Resumo em poucas linhas do que foi decidido e dos principais fundamentos — entra direto no corpo do e-mail."></textarea></div>
 
         <div class="sub-title">Acórdão TRT — Embargos e Recurso de Revista</div>
         <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
@@ -716,6 +717,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
         <div class="mc-form-group"><label>Ministro</label><input type="text" id="d-acordao-tst-ministro"></div>
+        <div class="mc-form-group"><label>Resumo do Acórdão TST</label><textarea id="d-acordao-tst-resumo" rows="3" placeholder="Resumo em poucas linhas do que foi decidido e dos principais fundamentos — entra direto no corpo do e-mail."></textarea></div>
 
         <div class="sub-title">Acórdão TST — Embargos de Declaração</div>
         <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
@@ -729,6 +731,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
           <div class="mc-form-group"><label>Última Movimentação Processual</label><input type="text" id="d-ultima-movimentacao"></div>
         </div>
+        <div class="mc-form-group"><label>Resumo da Execução</label><textarea id="d-execucao-resumo" rows="3" placeholder="Resumo em poucas linhas dos impactos e próximos passos da execução — entra direto no corpo do e-mail."></textarea></div>
 
         <div class="section-title">Envio de E-mails</div>
         <div class="mc-form-grid">
@@ -1621,6 +1624,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     acordao_trt_data: g('d-acordao-trt-data'),
     acordao_trt_turma: g('d-acordao-trt-turma'),
     acordao_trt_relator: g('d-acordao-trt-relator'),
+    acordao_trt_resumo: g('d-acordao-trt-resumo'),
     trt_embargos: g('d-trt-embargos'),
     recurso_revista_resultado: g('d-recurso-revista-resultado'),
     rr_gdj_valor: numBR('d-rr-gdj-valor'),
@@ -1639,9 +1643,11 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     acordao_tst_data: g('d-acordao-tst-data'),
     acordao_tst_camara: g('d-acordao-tst-camara'),
     acordao_tst_ministro: g('d-acordao-tst-ministro'),
+    acordao_tst_resumo: g('d-acordao-tst-resumo'),
     tst_embargos: g('d-tst-embargos'),
     execucao: g('d-execucao'),
     ultima_movimentacao: g('d-ultima-movimentacao'),
+    execucao_resumo: g('d-execucao-resumo'),
     atualizado_em: new Date().toISOString(),
   };
   const tiposEmail = Array.from(document.querySelectorAll('.d-email-check:checked')).map(cb => cb.value);
@@ -1779,15 +1785,15 @@ const EMAIL_MODELOS = {
   }),
   trt: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TRT`,
-    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nResultado do julgamento:\n- Recurso da Reclamada: ${nn(r.acordao_trt_reclamada)}\n- Recurso da Reclamante: ${PH}\n\nPrincipais fundamentos:\n- ${PH}\n- ${PH}\n- ${PH}\n\nA equipe jurídica avaliará a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Regional do Trabalho.\n\nResultado do julgamento:\n- Recurso da Reclamada: ${nn(r.acordao_trt_reclamada)}\n- Recurso da Reclamante: ${PH}\n\nResumo do acórdão:\n${nn(r.acordao_trt_resumo)}\n\nA equipe jurídica avaliará a viabilidade da interposição de novos recursos, observando os requisitos legais aplicáveis.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   tst: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Publicação do Acórdão do TST`,
-    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Superior do Trabalho.\n\nResultado do julgamento:\n- ${nn(r.acordao_tst)}\n\nPrincipais fundamentos:\n- ${PH}\n- ${PH}\n- ${PH}\n\nNossa equipe analisará a decisão para definição das medidas processuais eventualmente cabíveis e manterá todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos que foi publicado o acórdão proferido pelo Tribunal Superior do Trabalho.\n\nResultado do julgamento:\n- ${nn(r.acordao_tst)}\n\nResumo do acórdão:\n${nn(r.acordao_tst_resumo)}\n\nNossa equipe analisará a decisão para definição das medidas processuais eventualmente cabíveis e manterá todos informados sobre os próximos desdobramentos.\n\nPermanecemos à disposição.\n\nAtenciosamente,`,
   }),
   execucao: (r) => ({
     assunto: `Processo nº ${r.numero_processo} – Atualização da Fase de Execução`,
-    corpo: `Prezados,\n\nInformamos a atualização referente à fase de execução do processo em epígrafe.\n\nMovimentação processual:\n- ${nn(r.ultima_movimentacao)}\n\nImpactos da decisão:\n- ${PH}\n\nPróximos passos: Nossa equipe seguirá acompanhando a execução e adotará todas as medidas processuais necessárias para resguardar os interesses da empresa.\n\nPermanecemos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,`,
+    corpo: `Prezados,\n\nInformamos a atualização referente à fase de execução do processo em epígrafe.\n\nMovimentação processual:\n- ${nn(r.ultima_movimentacao)}\n\nResumo da execução:\n${nn(r.execucao_resumo)}\n\nPróximos passos: Nossa equipe seguirá acompanhando a execução e adotará todas as medidas processuais necessárias para resguardar os interesses da empresa.\n\nPermanecemos à disposição para quaisquer esclarecimentos.\n\nAtenciosamente,`,
   }),
 };
 
