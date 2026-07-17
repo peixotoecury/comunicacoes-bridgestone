@@ -302,6 +302,15 @@ create table if not exists solicitacoes_insercao_valores (
   acima_400k boolean not null default false,  -- true se |diff_historico|, |diff_provisao| ou |diff_accrual| >= 400000; dispara nota pro Nicolau
   enviado_cliente text,                   -- 'Sim' | 'Não'
   justificativa_envio text,
+
+  -- Status: enquanto 'Pendente', o Cálculo/Inserção de Valores/Mudança de Fase do
+  -- mesmo processo atualizam esta mesma linha (em vez de criar linhas desconectadas);
+  -- vira 'Concluído' quando a assistente confirma a inserção (LM/Elaw) e dispara o
+  -- e-mail de retorno pro advogado solicitante.
+  status text not null default 'Pendente',    -- 'Pendente' | 'Concluído'
+  concluido_em timestamptz,
+  atualizado_em timestamptz not null default now(),
+
   criado_em timestamptz not null default now()
 );
 alter table solicitacoes_insercao_valores enable row level security;

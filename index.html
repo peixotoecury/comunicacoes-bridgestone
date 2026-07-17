@@ -1050,7 +1050,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <div class="dash-card">
     <div class="dash-card-head">💲 Nova Solicitação de Inserção de Valores</div>
     <div class="dash-card-body">
-      <div class="info-box">ℹ️ O pedido (seção Cálculo) é do advogado para a assistente — o e-mail vai para <b>Gabi</b>, com cópia para o Grupo Bridgestone, e abre direto ao salvar. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, aparece um botão pra abrir a nota extra pro <b>Nicolau</b>. Quando a assistente marcar "Inserido no LM" ou "Inserido no Elaw" como <b>Sim</b> (seção Inserção), aparece outro botão pra abrir a confirmação pro <b>Grupo Bridgestone</b>. Esses extras vêm como botão (não abrem sozinhos) porque o navegador bloqueia abrir vários e-mails automaticamente.</div>
+      <div class="info-box"><span>ℹ️</span><span>O pedido é do advogado para a assistente — o e-mail vai para <b>Gabi</b>, com cópia para o Grupo Bridgestone, e abre direto ao salvar. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, aparece um botão pra abrir a nota extra pro <b>Nicolau</b>. Cada processo mantém <b>uma linha só</b> enquanto estiver Pendente — mandar primeiro o Cálculo e depois a Mudança de Fase (por exemplo) atualiza a mesma solicitação, em vez de criar outra desconectada. Quando a assistente confirmar a inserção (botão <b>✅ Concluir</b> no histórico), o sistema marca como Concluído e abre o e-mail de retorno pro advogado.</span></div>
       <form id="form-valores">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
@@ -1070,11 +1070,23 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>UF</label><input type="text" id="v-uf" maxlength="2" placeholder="SP" style="text-transform:uppercase;"></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Advogado Solicitante</label><input type="text" id="v-advogado-solicitante" placeholder="Nome completo"></div>
+          <div class="mc-form-group"><label>Advogado Solicitante</label><select id="v-advogado-solicitante"><option value="">Selecione…</option></select></div>
           <div class="mc-form-group"><label>Assistente Responsável</label><input type="text" id="v-assistente-responsavel" placeholder="Nome completo"></div>
         </div>
 
-        <div class="section-title">Cálculo</div>
+        <div class="section-title">Tipo de Solicitação</div>
+        <div class="info-box"><span>ℹ️</span><span>Escolha o que você está pedindo agora — só os campos correspondentes aparecem. Pode voltar aqui depois (enquanto a solicitação estiver Pendente) pra completar com outro tipo do mesmo processo.</span></div>
+        <div class="mc-form-group">
+          <select id="v-tipo-solicitacao" onchange="atualizarTipoValores()">
+            <option value="">Selecione…</option>
+            <option value="calculo">Cálculo</option>
+            <option value="valores">Inserção de Valores</option>
+            <option value="fase">Mudança de Fase</option>
+          </select>
+        </div>
+        <div class="info-box" id="v-tipo-vazio-hint">👆 Escolha o tipo de solicitação acima pra abrir os campos.</div>
+
+        <div id="v-grupo-calculo" style="display:none;">
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Tipo de Decisão</label>
             <select id="v-tipo-decisao">
@@ -1114,7 +1126,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
           <div class="mc-form-group"><label>Justificativa Revisão</label><textarea id="v-justificativa-revisao" rows="2" placeholder="O que foi observado na revisão: cálculo ok ou precisa voltar para a MADI ajustar?"></textarea></div>
         </div>
+        <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
+        </div>
 
+        <div id="v-grupo-valores" style="display:none;">
         <div class="sub-title">Valores — Histórico</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores(); vRecalcularAccrualPorFase();"></div>
@@ -1135,8 +1150,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Novo Valor do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-accrual" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-accrual" readonly></div>
         </div>
+        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
+        </div>
 
-        <div class="sub-title">Mudança de Fase</div>
+        <div id="v-grupo-fase" style="display:none;">
         <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo. Mesmo que o Histórico não mude, a mudança de fase recalcula o "Novo Valor do Accrual" automaticamente (Valor Atual do Histórico × % da nova fase) — confira antes de salvar.</div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Fase Atual</label><input type="text" id="v-fase-atual" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
@@ -1149,29 +1166,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             </select>
           </div>
         </div>
-
-        <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
-        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
-
-        <div class="section-title">Inserção</div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Inserido no LM</label>
-            <select id="v-inserido-lm"><option value="">—</option><option>Sim</option><option>Não</option></select>
-          </div>
-          <div class="mc-form-group"><label>Data Inserção LM</label><input type="date" id="v-data-insercao-lm"></div>
-          <div class="mc-form-group"><label>Inserido no Elaw</label>
-            <select id="v-inserido-sistema"><option value="">—</option><option>Sim</option><option>Não</option></select>
-          </div>
+        <div class="mc-form-group"><label>Novo Valor do Accrual calculado (R$)</label><input type="text" id="v-fase-novo-accrual-preview" readonly placeholder="Selecione a Nova Fase pra calcular"></div>
         </div>
-        <div class="mc-form-group"><label>Data Inserção no Elaw</label><input type="date" id="v-data-insercao-sistema"></div>
 
-        <div class="section-title">Envio ao Cliente</div>
-        <div class="mc-form-group"><label>Já Enviado ao Cliente</label>
-          <select id="v-enviado-cliente"><option value="">—</option><option>Sim</option><option>Não</option></select>
-        </div>
-        <div class="mc-form-group"><label>Justificativa Envio</label><textarea id="v-justificativa-envio" rows="2"></textarea></div>
-
-        <button type="submit" class="btn-cyan">✉️ Gerar e-mail e registrar solicitação</button>
+        <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
       </form>
     </div>
   </div>
@@ -1180,10 +1178,15 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     <div class="dash-card-head">📜 Histórico de Solicitações de Inserção de Valores <button class="export-btn" onclick="exportarExcel(HIST_VALORES_FILTRADO, 'Solicitacoes_Insercao_Valores')">⬇ Exportar Excel</button></div>
     <div class="filters">
       <input class="filter-input" id="v-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoValores()">
+      <select class="filter-select" id="v-flt-status" onchange="renderHistoricoValores()">
+        <option value="">Status: todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Concluído">Concluído</option>
+      </select>
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Dif. Histórico</th><th>Dif. Provisão</th><th>Dif. Accrual</th><th>Acima 400k</th><th>Inserido Elaw</th><th>Enviado em</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo Cálculo</th><th>Dif. Histórico</th><th>Dif. Provisão</th><th>Dif. Accrual</th><th>Acima 400k</th><th>Status</th><th>Atualizado em</th><th>Ações</th></tr></thead>
         <tbody id="v-tbody"><tr><td colspan="10" class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
@@ -1356,6 +1359,35 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <button type="button" class="vd-close-btn" onclick="fecharVerDetalhes()" title="Fechar">✕</button>
     </div>
     <div class="vd-modal-body" id="vd-modal-body"></div>
+  </div>
+</div>
+
+<div class="vd-overlay" id="vr-overlay" onclick="if(event.target===this) fecharRetornoValores()">
+  <div class="vd-modal" style="max-width:520px;">
+    <div class="vd-modal-head">
+      <h3 id="vr-titulo">Retorno da Assistente</h3>
+      <button type="button" class="vd-close-btn" onclick="fecharRetornoValores()" title="Fechar">✕</button>
+    </div>
+    <div class="vd-modal-body">
+      <input type="hidden" id="vr-id">
+      <div class="mc-form-grid">
+        <div class="mc-form-group"><label>Inserido no LM</label>
+          <select id="vr-inserido-lm"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        </div>
+        <div class="mc-form-group"><label>Data Inserção LM</label><input type="date" id="vr-data-insercao-lm"></div>
+      </div>
+      <div class="mc-form-grid">
+        <div class="mc-form-group"><label>Inserido no Elaw</label>
+          <select id="vr-inserido-sistema"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        </div>
+        <div class="mc-form-group"><label>Data Inserção no Elaw</label><input type="date" id="vr-data-insercao-sistema"></div>
+      </div>
+      <div class="mc-form-group"><label>Já Enviado ao Cliente</label>
+        <select id="vr-enviado-cliente"><option value="">—</option><option>Sim</option><option>Não</option></select>
+      </div>
+      <div class="mc-form-group"><label>Justificativa Envio</label><textarea id="vr-justificativa-envio" rows="2"></textarea></div>
+      <button type="button" class="btn-cyan" onclick="salvarRetornoValores()">✅ Concluir e enviar retorno pro advogado</button>
+    </div>
   </div>
 </div>
 
@@ -1546,6 +1578,7 @@ function popularSelectProfissionais(select, cargo){
 popularSelectProfissionais(document.getElementById('p-advogado'), 'Advogado');
 popularSelectProfissionais(document.getElementById('a-advogado'), 'Advogado');
 popularSelectProfissionais(document.getElementById('k-advogado'), 'Advogado');
+popularSelectProfissionais(document.getElementById('v-advogado-solicitante'), 'Advogado');
 
 function abrirEmail(destinatarios, cc, assunto, corpo){
   const link = `mailto:${destinatarios}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
@@ -2465,129 +2498,272 @@ function vRecalcularAccrualPorFase(){
   }
   const atualHistorico = parseMoedaBR(campoHistorico.value) || 0;
   const accrual = atualHistorico * IA_ACCRUAL_PCT_POR_FASE[fase];
-  document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const accrualFmt = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('v-novo-accrual').value = accrualFmt;
+  const preview = document.getElementById('v-fase-novo-accrual-preview');
+  if(preview) preview.value = accrualFmt;
   recalcularDiferencasValores();
 }
+/* "Tipo de Solicitação" no topo — mesmo padrão da aba Reporte de Decisão: só
+   abre os campos do tipo escolhido (Cálculo / Inserção de Valores / Mudança
+   de Fase), pra reduzir a rolagem. */
+function atualizarTipoValores(){
+  const tipo = document.getElementById('v-tipo-solicitacao').value;
+  document.getElementById('v-grupo-calculo').style.display = tipo === 'calculo' ? '' : 'none';
+  document.getElementById('v-grupo-valores').style.display = tipo === 'valores' ? '' : 'none';
+  document.getElementById('v-grupo-fase').style.display = tipo === 'fase' ? '' : 'none';
+  document.getElementById('v-tipo-vazio-hint').style.display = tipo ? 'none' : '';
+}
 
+const VALORES_TIPO_LABEL = { calculo: 'Cálculo', valores: 'Inserção de Valores', fase: 'Mudança de Fase' };
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
   const num = id => parseMoedaBR(document.getElementById(id).value);
   const rotuloSelecionado = id => { const opt = document.getElementById(id).selectedOptions[0]; return opt && opt.value ? opt.textContent.trim() : null; };
-  const atualHistorico = num('v-atual-historico');
-  const novoHistorico = num('v-novo-historico');
-  const atualProvisao = num('v-atual-provisao');
-  const novoProvisao = num('v-novo-provisao');
-  const atualAccrual = num('v-atual-accrual');
-  const novoAccrual = num('v-novo-accrual');
-  const diffHistorico = (novoHistorico || 0) - (atualHistorico || 0);
-  const diffProvisao = (novoProvisao || 0) - (atualProvisao || 0);
-  const diffAccrual = (novoAccrual || 0) - (atualAccrual || 0);
-  const maiorDiff = Math.max(Math.abs(diffHistorico), Math.abs(diffProvisao), Math.abs(diffAccrual));
-  const acima400k = maiorDiff >= LIMIAR_ALERTA_VALOR;
+
+  const tipo = document.getElementById('v-tipo-solicitacao').value;
+  if(!tipo){
+    toast('Escolha o Tipo de Solicitação (Cálculo, Inserção de Valores ou Mudança de Fase).', true);
+    return;
+  }
+  const numeroProcesso = g('v-processo');
+  const nomeReclamante = g('v-reclamante');
   const registro = {
-    numero_processo: g('v-processo'),
-    nome_reclamante: g('v-reclamante'),
+    numero_processo: numeroProcesso,
+    nome_reclamante: nomeReclamante,
     reclamada: g('v-reclamada'),
     vara_turma_camara: g('v-vara'),
     comarca: g('v-comarca'),
     uf: g('v-uf') ? g('v-uf').toUpperCase() : null,
     advogado_solicitante: g('v-advogado-solicitante'),
     assistente_responsavel: g('v-assistente-responsavel'),
-    tipo_decisao: g('v-tipo-decisao'),
-    tipo_calculo: g('v-tipo-calculo'),
-    data_calculo: g('v-data-calculo'),
-    revisado: g('v-revisado'),
-    justificativa_revisao: g('v-justificativa-revisao'),
-    inserido_lm: g('v-inserido-lm'),
-    data_insercao_lm: g('v-data-insercao-lm'),
-    inserido_sistema: g('v-inserido-sistema'),
-    data_insercao_sistema: g('v-data-insercao-sistema'),
-    valor_atual_historico: atualHistorico,
-    valor_novo_historico: novoHistorico,
-    diff_historico: diffHistorico,
-    valor_atual_provisao: atualProvisao,
-    valor_novo_provisao: novoProvisao,
-    diff_provisao: diffProvisao,
-    valor_atual_accrual: atualAccrual,
-    valor_novo_accrual: novoAccrual,
-    diff_accrual: diffAccrual,
-    fase_atual: g('v-fase-atual'),
-    nova_fase: rotuloSelecionado('v-nova-fase'),
-    link_calculo: g('v-link-calculo'),
-    acima_400k: acima400k,
-    enviado_cliente: g('v-enviado-cliente'),
-    justificativa_envio: g('v-justificativa-envio'),
+    atualizado_em: new Date().toISOString(),
   };
+
+  let acima400k = false;
+  let resumoValores = '';
+  let resumoTipo = '';
+
+  if(tipo === 'calculo'){
+    Object.assign(registro, {
+      tipo_decisao: g('v-tipo-decisao'),
+      tipo_calculo: g('v-tipo-calculo'),
+      data_calculo: g('v-data-calculo'),
+      revisado: g('v-revisado'),
+      justificativa_revisao: g('v-justificativa-revisao'),
+      link_calculo: g('v-link-calculo'),
+    });
+    resumoTipo = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nRevisado: ${nn(registro.revisado)}${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}`;
+  } else if(tipo === 'valores'){
+    const atualHistorico = num('v-atual-historico');
+    const novoHistorico = num('v-novo-historico');
+    const atualProvisao = num('v-atual-provisao');
+    const novoProvisao = num('v-novo-provisao');
+    const atualAccrual = num('v-atual-accrual');
+    const novoAccrual = num('v-novo-accrual');
+    const diffHistorico = (novoHistorico || 0) - (atualHistorico || 0);
+    const diffProvisao = (novoProvisao || 0) - (atualProvisao || 0);
+    const diffAccrual = (novoAccrual || 0) - (atualAccrual || 0);
+    const maiorDiff = Math.max(Math.abs(diffHistorico), Math.abs(diffProvisao), Math.abs(diffAccrual));
+    acima400k = maiorDiff >= LIMIAR_ALERTA_VALOR;
+    Object.assign(registro, {
+      valor_atual_historico: atualHistorico, valor_novo_historico: novoHistorico, diff_historico: diffHistorico,
+      valor_atual_provisao: atualProvisao, valor_novo_provisao: novoProvisao, diff_provisao: diffProvisao,
+      valor_atual_accrual: atualAccrual, valor_novo_accrual: novoAccrual, diff_accrual: diffAccrual,
+      acima_400k: acima400k,
+    });
+    resumoValores = `Histórico — Atual: ${fmtMoeda(atualHistorico)} | Novo: ${fmtMoeda(novoHistorico)} | Diferença: ${fmtMoeda(diffHistorico)}\nProvisão — Atual: ${fmtMoeda(atualProvisao)} | Novo: ${fmtMoeda(novoProvisao)} | Diferença: ${fmtMoeda(diffProvisao)}\nAccrual — Atual: ${fmtMoeda(atualAccrual)} | Novo: ${fmtMoeda(novoAccrual)} | Diferença: ${fmtMoeda(diffAccrual)}`;
+    resumoTipo = resumoValores;
+  } else if(tipo === 'fase'){
+    Object.assign(registro, {
+      fase_atual: g('v-fase-atual'),
+      nova_fase: rotuloSelecionado('v-nova-fase'),
+      valor_novo_accrual: num('v-novo-accrual'),
+    });
+    resumoTipo = `Fase Atual: ${nn(registro.fase_atual)}\nNova Fase: ${nn(registro.nova_fase)}${registro.valor_novo_accrual != null ? '\nNovo Valor do Accrual (recalculado): ' + fmtMoeda(registro.valor_novo_accrual) : ''}`;
+  }
+
   const destinatarios = 'cicera.vicente@peixotoecury.com.br';
   const cc = 'grupobridgestone@peixotoecury.com.br';
-  const resumoValores = `Histórico — Atual: ${fmtMoeda(registro.valor_atual_historico)} | Novo: ${fmtMoeda(registro.valor_novo_historico)} | Diferença: ${fmtMoeda(registro.diff_historico)}\nProvisão — Atual: ${fmtMoeda(registro.valor_atual_provisao)} | Novo: ${fmtMoeda(registro.valor_novo_provisao)} | Diferença: ${fmtMoeda(registro.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(registro.valor_atual_accrual)} | Novo: ${fmtMoeda(registro.valor_novo_accrual)} | Diferença: ${fmtMoeda(registro.diff_accrual)}`;
-  const assunto = `Solicitação de Inserção de Valores — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
-  const corpo = `Prezada Gabi,\n\nSolicitamos a inserção dos valores abaixo referentes ao processo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\nTipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${nn(registro.data_calculo)}\n\n${resumoValores}\n${(registro.fase_atual || registro.nova_fase) ? '\nMudança de Fase: ' + nn(registro.fase_atual) + ' → ' + nn(registro.nova_fase) : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+  const assunto = `Solicitação de ${VALORES_TIPO_LABEL[tipo]} — Processo ${numeroProcesso} — ${nomeReclamante}`;
+  const corpo = `Prezada Gabi,\n\nSolicitamos abaixo referente ao processo:\n\nProcesso: ${numeroProcesso}\nReclamante: ${nomeReclamante}\nReclamada: ${nn(registro.reclamada)}\nVara/Turma/Câmara: ${nn(registro.vara_turma_camara)}\nComarca/UF: ${nn(registro.comarca)}/${nn(registro.uf)}\n\n${resumoTipo}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
 
-  const inseridoConfirmado = (registro.inserido_lm === 'Sim') || (registro.inserido_sistema === 'Sim');
-
-  const { error } = await sb.from('solicitacoes_insercao_valores').insert(registro);
-  if(error){
-    console.error(error);
-    toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
-  } else {
-    toast('Solicitação registrada. Abrindo e-mail — clique nos botões pra abrir os e-mails extras.');
+  try{
+    // Enquanto a solicitação do processo estiver Pendente, os 3 tipos (Cálculo/
+    // Valores/Fase) acumulam na MESMA linha — evita que reportar só a Mudança de
+    // Fase depois do Cálculo pareça "apagar" o que já tinha sido salvo.
+    const { data: existentes, error: errBusca } = await sb.from('solicitacoes_insercao_valores')
+      .select('id').eq('numero_processo', numeroProcesso).eq('status', 'Pendente')
+      .order('criado_em', {ascending:false}).limit(1);
+    if(errBusca) throw errBusca;
+    if(existentes && existentes.length){
+      const { error } = await sb.from('solicitacoes_insercao_valores').update(registro).eq('id', existentes[0].id);
+      if(error) throw error;
+      toast('Solicitação atualizada (mesmo processo, ainda Pendente). Abrindo e-mail…');
+    } else {
+      const { error } = await sb.from('solicitacoes_insercao_valores').insert({...registro, status: 'Pendente'});
+      if(error) throw error;
+      toast('Solicitação registrada. Abrindo e-mail…');
+    }
     carregarHistoricoValores();
+  }catch(err){
+    console.error(err);
+    toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + err.message, true);
   }
   abrirEmail(destinatarios, cc, assunto, corpo);
 
-  const pendentes = [];
   if(acima400k){
-    const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 400.000,00 — Processo ${registro.numero_processo}`;
-    const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
-    pendentes.push({ label: 'Nota pro Nicolau (acima de R$ 400k)', to: NICOLAU_EMAIL, cc, assunto: assuntoNicolau, corpo: corpoNicolau });
+    const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 400.000,00 — Processo ${numeroProcesso}`;
+    const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${numeroProcesso}\nReclamante: ${nomeReclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+    mostrarEmailsPendentes([{ label: 'Nota pro Nicolau (acima de R$ 400k)', to: NICOLAU_EMAIL, cc, assunto: assuntoNicolau, corpo: corpoNicolau }]);
   }
-  if(inseridoConfirmado){
-    const assuntoConfirma = `Valores Inseridos — Processo ${registro.numero_processo} — ${registro.nome_reclamante}`;
-    const corpoConfirma = `Prezados,\n\nConfirmamos a inserção dos valores solicitados pelo(a) advogado(a) ${nn(registro.advogado_solicitante)} no processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\n\n${resumoValores}\n\nInserido no LM: ${nn(registro.inserido_lm)}${registro.data_insercao_lm ? ' (' + registro.data_insercao_lm.split('-').reverse().join('/') + ')' : ''}\nInserido no Elaw: ${nn(registro.inserido_sistema)}${registro.data_insercao_sistema ? ' (' + registro.data_insercao_sistema.split('-').reverse().join('/') + ')' : ''}\n${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}\n\nResponsável pela inserção: ${nn(registro.assistente_responsavel)}`;
-    pendentes.push({ label: 'Confirmação de inserção pro Grupo', to: cc, cc: '', assunto: assuntoConfirma, corpo: corpoConfirma });
-  }
-  mostrarEmailsPendentes(pendentes);
 
-  this.reset();
-  document.getElementById('v-diff-historico').value = '';
-  document.getElementById('v-diff-provisao').value = '';
-  document.getElementById('v-diff-accrual').value = '';
-  document.getElementById('v-alerta-400k').style.display = 'none';
+  // Mantém Identificação preenchida — o mesmo processo pode receber os 3 tipos
+  // de solicitação em sequência — só limpa os campos do tipo que acabou de
+  // enviar e volta a pedir pra escolher o próximo tipo.
+  if(tipo === 'calculo'){
+    ['v-tipo-decisao','v-tipo-calculo','v-data-calculo','v-revisado','v-link-calculo'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('v-justificativa-revisao').value = '';
+  } else if(tipo === 'valores'){
+    ['v-atual-historico','v-novo-historico','v-atual-provisao','v-novo-provisao','v-atual-accrual','v-novo-accrual'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('v-diff-historico').value = '';
+    document.getElementById('v-diff-provisao').value = '';
+    document.getElementById('v-diff-accrual').value = '';
+    document.getElementById('v-alerta-400k').style.display = 'none';
+  } else if(tipo === 'fase'){
+    document.getElementById('v-fase-atual').value = '';
+    document.getElementById('v-nova-fase').value = '';
+    document.getElementById('v-fase-novo-accrual-preview').value = '';
+  }
+  document.getElementById('v-tipo-solicitacao').value = '';
+  atualizarTipoValores();
 });
 
 let HIST_VALORES = [];
 let HIST_VALORES_FILTRADO = [];
 async function carregarHistoricoValores(){
   try{
-    const { data, error } = await sb.from('solicitacoes_insercao_valores').select('*').order('criado_em', {ascending:false}).limit(200);
+    const { data, error } = await sb.from('solicitacoes_insercao_valores').select('*').order('atualizado_em', {ascending:false}).limit(200);
     if(error) throw error;
     HIST_VALORES = data || [];
     renderHistoricoValores();
   }catch(err){
     console.error(err);
-    document.getElementById('v-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+    document.getElementById('v-tbody').innerHTML = `<tr><td colspan="10" class="empty-state">Erro ao carregar histórico.</td></tr>`;
   }
 }
 function renderHistoricoValores(){
   const termo = document.getElementById('v-busca').value.toLowerCase();
-  const rows = HIST_VALORES.filter(r => !termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo));
+  const status = document.getElementById('v-flt-status').value;
+  const rows = HIST_VALORES.filter(r =>
+    (!termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo)) &&
+    (!status || (r.status||'Pendente') === status)
+  );
   HIST_VALORES_FILTRADO = rows;
   const tbody = document.getElementById('v-tbody');
   if(!rows.length){ tbody.innerHTML = `<tr><td colspan="10" class="empty-state">Nenhuma solicitação encontrada.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
-    <td><span class="badge badge-blue">${esc(r.tipo_calculo)}</span></td>
-    <td class="mono">${fmtMoeda(r.diff_historico)}</td>
-    <td class="mono">${fmtMoeda(r.diff_provisao)}</td>
-    <td class="mono">${fmtMoeda(r.diff_accrual)}</td>
+    <td>${r.tipo_calculo ? `<span class="badge badge-blue">${esc(r.tipo_calculo)}</span>` : ''}</td>
+    <td class="mono">${r.diff_historico != null ? fmtMoeda(r.diff_historico) : ''}</td>
+    <td class="mono">${r.diff_provisao != null ? fmtMoeda(r.diff_provisao) : ''}</td>
+    <td class="mono">${r.diff_accrual != null ? fmtMoeda(r.diff_accrual) : ''}</td>
     <td>${r.acima_400k ? '<span class="badge badge-orange">Sim</span>' : '<span class="badge badge-green">Não</span>'}</td>
-    <td>${esc(r.inserido_sistema)}</td>
-    <td class="mono">${fmtDataHora(r.criado_em)}</td>
-    <td><button class="row-btn" onclick="excluirRegistro('solicitacoes_insercao_valores', ${r.id})" title="Excluir">🗑️ Excluir</button></td>
+    <td><span class="badge ${r.status==='Concluído'?'badge-green':'badge-orange'}">${esc(r.status||'Pendente')}</span></td>
+    <td class="mono">${fmtDataHora(r.atualizado_em || r.criado_em)}</td>
+    <td>
+      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="abrirRetornoValores(${r.id})">✅ Concluir</button>` : ''}
+      <button class="row-btn" onclick="verDetalhesValores(${r.id})" title="Ver todos os campos salvos">👁️ Ver</button>
+      <button class="row-btn" onclick="excluirRegistro('solicitacoes_insercao_valores', ${r.id})" title="Excluir">🗑️ Excluir</button>
+    </td>
   </tr>`).join('');
+}
+function verDetalhesValores(id){
+  const r = HIST_VALORES.find(x => x.id === id);
+  if(!r) return;
+  const linhas = [
+    ['Processo', r.numero_processo], ['Reclamante', r.nome_reclamante], ['Reclamada', r.reclamada],
+    ['Vara/Turma/Câmara', r.vara_turma_camara], ['Comarca', r.comarca], ['UF', r.uf],
+    ['Advogado Solicitante', r.advogado_solicitante], ['Assistente Responsável', r.assistente_responsavel],
+    ['Tipo de Decisão', r.tipo_decisao], ['Tipo de Cálculo', r.tipo_calculo],
+    ['Data do Cálculo', r.data_calculo ? dataBR(r.data_calculo) : null],
+    ['Revisado', r.revisado], ['Justificativa Revisão', r.justificativa_revisao],
+    ['Valor Atual Histórico', r.valor_atual_historico != null ? fmtMoeda(r.valor_atual_historico) : null],
+    ['Novo Valor Histórico', r.valor_novo_historico != null ? fmtMoeda(r.valor_novo_historico) : null],
+    ['Diferença Histórico', r.diff_historico != null ? fmtMoeda(r.diff_historico) : null],
+    ['Valor Atual Provisão', r.valor_atual_provisao != null ? fmtMoeda(r.valor_atual_provisao) : null],
+    ['Novo Valor Provisão', r.valor_novo_provisao != null ? fmtMoeda(r.valor_novo_provisao) : null],
+    ['Diferença Provisão', r.diff_provisao != null ? fmtMoeda(r.diff_provisao) : null],
+    ['Valor Atual Accrual', r.valor_atual_accrual != null ? fmtMoeda(r.valor_atual_accrual) : null],
+    ['Novo Valor Accrual', r.valor_novo_accrual != null ? fmtMoeda(r.valor_novo_accrual) : null],
+    ['Diferença Accrual', r.diff_accrual != null ? fmtMoeda(r.diff_accrual) : null],
+    ['Acima de 400k', r.acima_400k ? 'Sim' : null],
+    ['Fase Atual', r.fase_atual], ['Nova Fase', r.nova_fase],
+    ['Link do Cálculo', r.link_calculo],
+    ['Inserido no LM', r.inserido_lm], ['Data Inserção LM', r.data_insercao_lm ? dataBR(r.data_insercao_lm) : null],
+    ['Inserido no Elaw', r.inserido_sistema], ['Data Inserção Elaw', r.data_insercao_sistema ? dataBR(r.data_insercao_sistema) : null],
+    ['Já Enviado ao Cliente', r.enviado_cliente], ['Justificativa Envio', r.justificativa_envio],
+    ['Status', r.status || 'Pendente'], ['Criado em', fmtDataHora(r.criado_em)],
+    ['Atualizado em', r.atualizado_em ? fmtDataHora(r.atualizado_em) : null],
+    ['Concluído em', r.concluido_em ? fmtDataHora(r.concluido_em) : null],
+  ];
+  const html = linhas.filter(([, v]) => v != null && v !== '').map(([label, val]) => `<div class="vd-kv"><b>${esc(label)}:</b> ${esc(val)}</div>`).join('');
+  abrirVerDetalhes(`Solicitação de Inserção de Valores — ${r.numero_processo || ''}`, html);
+}
+
+/* Retorno da Assistente — mesmo padrão da aba Kits: a assistente confirma a
+   inserção (LM/Elaw) e o envio ao cliente, o sistema marca Concluído e abre
+   o e-mail de retorno pro advogado que pediu (busca o e-mail em PROFISSIONAIS
+   pelo nome salvo em advogado_solicitante). */
+function abrirRetornoValores(id){
+  const r = HIST_VALORES.find(x => x.id === id);
+  if(!r) return;
+  document.getElementById('vr-id').value = id;
+  document.getElementById('vr-inserido-lm').value = r.inserido_lm || '';
+  document.getElementById('vr-data-insercao-lm').value = r.data_insercao_lm || '';
+  document.getElementById('vr-inserido-sistema').value = r.inserido_sistema || '';
+  document.getElementById('vr-data-insercao-sistema').value = r.data_insercao_sistema || '';
+  document.getElementById('vr-enviado-cliente').value = r.enviado_cliente || '';
+  document.getElementById('vr-justificativa-envio').value = r.justificativa_envio || '';
+  document.getElementById('vr-titulo').textContent = `Retorno da Assistente — ${r.numero_processo || ''}`;
+  document.getElementById('vr-overlay').classList.add('show');
+}
+function fecharRetornoValores(){
+  document.getElementById('vr-overlay').classList.remove('show');
+}
+async function salvarRetornoValores(){
+  const id = Number(document.getElementById('vr-id').value);
+  const r = HIST_VALORES.find(x => x.id === id);
+  if(!r) return;
+  const g = vid => document.getElementById(vid).value.trim() || null;
+  const atualizacao = {
+    inserido_lm: g('vr-inserido-lm'),
+    data_insercao_lm: g('vr-data-insercao-lm'),
+    inserido_sistema: g('vr-inserido-sistema'),
+    data_insercao_sistema: g('vr-data-insercao-sistema'),
+    enviado_cliente: g('vr-enviado-cliente'),
+    justificativa_envio: g('vr-justificativa-envio'),
+    status: 'Concluído',
+    concluido_em: new Date().toISOString(),
+    atualizado_em: new Date().toISOString(),
+  };
+  const { error } = await sb.from('solicitacoes_insercao_valores').update(atualizacao).eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao concluir: ' + error.message, true);
+    return;
+  }
+  fecharRetornoValores();
+  toast('Solicitação concluída. Abrindo e-mail de retorno…');
+  const emailAdvogado = emailPorNome(r.advogado_solicitante);
+  const resumoValores = `Histórico — Atual: ${fmtMoeda(r.valor_atual_historico)} | Novo: ${fmtMoeda(r.valor_novo_historico)} | Diferença: ${fmtMoeda(r.diff_historico)}\nProvisão — Atual: ${fmtMoeda(r.valor_atual_provisao)} | Novo: ${fmtMoeda(r.valor_novo_provisao)} | Diferença: ${fmtMoeda(r.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(r.valor_atual_accrual)} | Novo: ${fmtMoeda(r.valor_novo_accrual)} | Diferença: ${fmtMoeda(r.diff_accrual)}`;
+  const assunto = `Valores Inseridos — Processo ${nn(r.numero_processo)} — ${nn(r.nome_reclamante)}`;
+  const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos a inserção/atualização referente ao processo abaixo:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Cálculo: ${nn(r.tipo_calculo)}\n\n${resumoValores}\n${(r.fase_atual || r.nova_fase) ? '\nMudança de Fase: ' + nn(r.fase_atual) + ' → ' + nn(r.nova_fase) : ''}\n\nInserido no LM: ${nn(atualizacao.inserido_lm)}${atualizacao.data_insercao_lm ? ' (' + dataBR(atualizacao.data_insercao_lm) + ')' : ''}\nInserido no Elaw: ${nn(atualizacao.inserido_sistema)}${atualizacao.data_insercao_sistema ? ' (' + dataBR(atualizacao.data_insercao_sistema) + ')' : ''}\n${r.link_calculo ? '\nLink do Cálculo (PDF): ' + r.link_calculo : ''}\n\nResponsável pela inserção: ${nn(r.assistente_responsavel)}`;
+  if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
+  else toast('Advogado sem e-mail cadastrado (nome não bate com a lista de profissionais) — abra o e-mail de retorno manualmente.', true);
+  carregarHistoricoValores();
 }
 
 /* ===================== EXPORTAR EXCEL (todas as abas) ===================== */
