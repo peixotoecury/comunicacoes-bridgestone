@@ -96,8 +96,19 @@ create table if not exists reportes_decisao (
   coisa_julgada text,                     -- 'Sim' | 'Não'
   coisa_julgada_resultado text,
   coisa_julgada_motivo text,
-  envio_cliente text,                     -- 'Sim' | 'Não' (só registro, não trava nada)
-  inserir_gerencia text,                  -- 'Sim' | 'Não' -- inclui a Shana como destinatária dos e-mails de decisão quando 'Sim'
+  envio_cliente text,                     -- HISTÓRICO — substituído pelas colunas por seção abaixo, mantida só pra não perder dados antigos
+  inserir_gerencia text,                  -- HISTÓRICO — substituído pelas colunas por seção abaixo, mantida só pra não perder dados antigos
+
+  -- Envio de E-mails por seção: cada seção (Laudo, Sentença, Acórdão, Execução)
+  -- decide independentemente se o e-mail vai pro cliente e se inclui a Shana (gerência).
+  envio_cliente_laudo text,                -- 'Sim' | 'Não'
+  inserir_gerencia_laudo text,             -- 'Sim' | 'Não' -- inclui a Shana quando 'Sim'
+  envio_cliente_sentenca text,
+  inserir_gerencia_sentenca text,
+  envio_cliente_acordao text,
+  inserir_gerencia_acordao text,
+  envio_cliente_execucao text,
+  inserir_gerencia_execucao text,
   sentenca_pedidos_deferidos text,
   sentenca_pedidos_indeferidos text,
   sentenca_causa_raiz text,

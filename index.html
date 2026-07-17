@@ -750,24 +750,62 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
 
         <div class="section-title">Envio de E-mails</div>
-        <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Envio para o Cliente?</label>
-            <select id="d-envio-cliente" onchange="atualizarInserirGerencia()"><option value="">—</option><option>Sim</option><option>Não</option></select>
-          </div>
-          <div class="mc-form-group"><label>Inserir Gerência?</label>
-            <select id="d-inserir-gerencia" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
-          </div>
-        </div>
-        <div class="info-box">⚠️ <b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> "Envio para o Cliente" só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se houver algum valor da seção Execução preenchido, <b>Giovanna Gatto e Gabi</b> entram automaticamente em cópia, com um resumo desses valores no corpo do e-mail. Precisa de guias de GDJ/GRU/Custas (Recurso Ordinário, Recurso de Revista ou Agravo)? Abra uma solicitação na aba <b>Kits</b>.</div>
+        <div class="info-box"><span>⚠️</span><span><b>Toda decisão precisa ser enviada por e-mail — sempre, sem exceção.</b> O e-mail sempre sai completo, com todos os campos preenchidos no reporte (separados por seção). Cada bloco abaixo (Laudo, Sentença, Acórdão, Execução) tem sua própria opção de "Envio para o Cliente" — ela só decide PRA QUEM vai (não SE vai): <b>Sim</b> envia pro cliente (Higor e Maria, + Shana também se "Inserir Gerência" for Sim, sempre com cópia pro Grupo Bridgestone). <b>Não</b> (ou em branco) mantém o envio só interno, pro Grupo Bridgestone. Marque os e-mails que devem ser abertos no Outlook assim que o reporte for salvo — o 1º marcado abre direto; se marcar mais de um, os demais aparecem como botão pra você clicar um de cada vez (o navegador bloqueia abrir vários mailto: sozinho). Se houver algum valor da seção Execução preenchido, <b>Giovanna Gatto e Gabi</b> entram automaticamente em cópia, com um resumo desses valores no corpo do e-mail. Precisa de guias de GDJ/GRU/Custas (Recurso Ordinário, Recurso de Revista ou Agravo)? Abra uma solicitação na aba <b>Kits</b>.</span></div>
+
+        <div class="sub-title">Laudo</div>
         <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="medico" id="d-email-medico"><label for="d-email-medico">Laudo Pericial Médico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="ergonomico" id="d-email-ergonomico"><label for="d-email-ergonomico">Laudo Pericial Ergonômico</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="tecnico" id="d-email-tecnico"><label for="d-email-tecnico">Laudo Pericial Técnico (Insalu./Peric.)</label></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Envio para o Cliente?</label>
+            <select id="d-envio-cliente-laudo" onchange="atualizarInserirGerencia('laudo')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
+            <select id="d-inserir-gerencia-laudo" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+        </div>
+
+        <div class="sub-title">Sentença</div>
+        <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="sentenca" id="d-email-sentenca"><label for="d-email-sentenca">Sentença</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="embargos" id="d-email-embargos"><label for="d-email-embargos">Embargos de Declaração</label></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Envio para o Cliente?</label>
+            <select id="d-envio-cliente-sentenca" onchange="atualizarInserirGerencia('sentenca')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
+            <select id="d-inserir-gerencia-sentenca" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+        </div>
+
+        <div class="sub-title">Acórdão</div>
+        <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="trt" id="d-email-trt"><label for="d-email-trt">Acórdão do TRT</label></div>
           <div class="check-row"><input type="checkbox" class="d-email-check" value="tst" id="d-email-tst"><label for="d-email-tst">Acórdão do TST</label></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Envio para o Cliente?</label>
+            <select id="d-envio-cliente-acordao" onchange="atualizarInserirGerencia('acordao')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
+            <select id="d-inserir-gerencia-acordao" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+        </div>
+
+        <div class="sub-title">Execução</div>
+        <div class="check-grid">
           <div class="check-row"><input type="checkbox" class="d-email-check" value="execucao" id="d-email-execucao"><label for="d-email-execucao">Execução</label></div>
+        </div>
+        <div class="mc-form-grid">
+          <div class="mc-form-group"><label>Envio para o Cliente?</label>
+            <select id="d-envio-cliente-execucao" onchange="atualizarInserirGerencia('execucao')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
+            <select id="d-inserir-gerencia-execucao" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          </div>
         </div>
 
         <button type="submit" class="btn-cyan">💾 Salvar reporte de decisão e abrir e-mails marcados</button>
@@ -794,37 +832,45 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <div class="dash-card">
     <div class="dash-card-head">📦 Nova Solicitação de Kit</div>
     <div class="dash-card-body">
-      <div class="info-box">ℹ️ O advogado solicita o kit (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos ou Convolação de Depósitos) e a Gabi recebe o pedido por e-mail. Quando ela concluir, a solicitação fica marcada como <b>Concluído</b> no sistema e um e-mail de retorno é aberto pra você automaticamente.</div>
+      <div class="info-box"><span>ℹ️</span><span>O advogado solicita o(s) kit(s) (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos ou Convolação de Depósitos) e a Gabi recebe o pedido por e-mail. Se o processo tiver vários pagamentos, use <b>➕ Adicionar outro pagamento</b> pra incluir todos na mesma solicitação (ex: GDJ e GRU juntos). Quando ela concluir, a solicitação fica marcada como <b>Concluído</b> no sistema e um e-mail de retorno é aberto pra você automaticamente.</span></div>
       <form id="form-kits">
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Número do Processo</label><input type="text" id="k-processo" placeholder="0000000-00.0000.0.00.0000"></div>
           <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="k-reclamante"></div>
           <div class="mc-form-group"><label>Advogado Solicitante</label><select id="k-advogado"><option value="">Selecione…</option></select></div>
         </div>
-        <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Tipo de Solicitação</label>
-            <select id="k-tipo">
-              <option value="">Selecione…</option>
-              <option>Acordo</option>
-              <option>GDJ</option>
-              <option>Recurso Ordinário</option>
-              <option>Recurso de Revista</option>
-              <option>Agravo de Instrumento</option>
-              <option>Embargos à Execução</option>
-              <option>Depósito de Recurso Ordinário</option>
-              <option>Depósito de Recurso de Revista</option>
-              <option>Convolação de Depósitos</option>
-            </select>
+        <div id="k-pagamentos-list">
+          <div class="k-pagamento-row mc-form-grid cols-3">
+            <div class="mc-form-group"><label>Tipo de Solicitação</label>
+              <select class="k-tipo">
+                <option value="">Selecione…</option>
+                <option>Acordo</option>
+                <option>GDJ</option>
+                <option>Recurso Ordinário</option>
+                <option>Recurso de Revista</option>
+                <option>Agravo de Instrumento</option>
+                <option>Embargos à Execução</option>
+                <option>Depósito de Recurso Ordinário</option>
+                <option>Depósito de Recurso de Revista</option>
+                <option>Convolação de Depósitos</option>
+              </select>
+            </div>
+            <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor"></div>
+            <div class="mc-form-group"><label>Data (vencimento/depósito)</label>
+              <div style="display:flex;gap:8px;">
+                <input type="date" class="k-data" style="flex:1;">
+                <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)" style="display:none;">🗑️</button>
+              </div>
+            </div>
           </div>
-          <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="k-valor"></div>
-          <div class="mc-form-group"><label>Data (vencimento/depósito)</label><input type="date" id="k-data"></div>
         </div>
+        <div style="margin:-4px 0 14px;"><button type="button" class="row-btn" onclick="adicionarLinhaKit()">➕ Adicionar outro pagamento</button></div>
         <div class="mc-form-group"><label>Resumo (vai pra Gabi)</label><textarea id="k-resumo" rows="3" placeholder="Resumo em poucas linhas do que está sendo solicitado — entra direto no corpo do e-mail."></textarea></div>
         <div style="display:flex;gap:10px;">
           <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
           <button type="button" class="row-btn" onclick="limparFormularioKits()" title="Use quando trocar de processo">🧹 Limpar tudo</button>
         </div>
-        <div class="info-box" style="margin-top:10px;">💡 Depois de enviar, Processo/Reclamante/Advogado continuam preenchidos — é só trocar o Tipo/Valor/Data/Resumo e enviar de novo pra registrar outro pagamento do mesmo processo (ex: GDJ e depois GRU).</div>
+        <div class="info-box" style="margin-top:10px;">💡 Depois de enviar, Processo/Reclamante/Advogado continuam preenchidos e a lista de pagamentos volta a ter uma linha só — é só preencher de novo (ou adicionar várias linhas) pra registrar os próximos pagamentos do mesmo processo.</div>
       </form>
     </div>
   </div>
@@ -1586,9 +1632,10 @@ function renderHistoricoCalculos(){
 }
 
 /* ===================== ABA 3: REPORTE DE DECISÃO ===================== */
-function atualizarInserirGerencia(){
-  const envio = document.getElementById('d-envio-cliente').value;
-  const sel = document.getElementById('d-inserir-gerencia');
+const DECISAO_SECOES = ['laudo', 'sentenca', 'acordao', 'execucao'];
+function atualizarInserirGerencia(secao){
+  const envio = document.getElementById('d-envio-cliente-' + secao).value;
+  const sel = document.getElementById('d-inserir-gerencia-' + secao);
   sel.disabled = envio !== 'Sim';
   if(sel.disabled) sel.value = '';
 }
@@ -1643,8 +1690,14 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     coisa_julgada: g('d-coisa-julgada'),
     coisa_julgada_resultado: g('d-coisa-julgada-resultado'),
     coisa_julgada_motivo: g('d-coisa-julgada-motivo'),
-    envio_cliente: g('d-envio-cliente'),
-    inserir_gerencia: g('d-inserir-gerencia'),
+    envio_cliente_laudo: g('d-envio-cliente-laudo'),
+    inserir_gerencia_laudo: g('d-inserir-gerencia-laudo'),
+    envio_cliente_sentenca: g('d-envio-cliente-sentenca'),
+    inserir_gerencia_sentenca: g('d-inserir-gerencia-sentenca'),
+    envio_cliente_acordao: g('d-envio-cliente-acordao'),
+    inserir_gerencia_acordao: g('d-inserir-gerencia-acordao'),
+    envio_cliente_execucao: g('d-envio-cliente-execucao'),
+    inserir_gerencia_execucao: g('d-inserir-gerencia-execucao'),
     sentenca_pedidos_deferidos: g('d-sentenca-deferidos'),
     sentenca_pedidos_indeferidos: g('d-sentenca-indeferidos'),
     sentenca_causa_raiz: g('d-sentenca-causa-raiz'),
@@ -1695,7 +1748,7 @@ document.getElementById('form-decisao').addEventListener('submit', async functio
     toast('Reporte de decisão salvo com sucesso.' + (tiposEmail.length > 1 ? ' Abrindo o 1º e-mail — clique nos botões pros demais.' : tiposEmail.length === 1 ? ' Abrindo e-mail…' : ''));
     if(tiposEmail.length) enviarEmailsDecisao(registro, tiposEmail);
     this.reset();
-    atualizarInserirGerencia();
+    DECISAO_SECOES.forEach(atualizarInserirGerencia);
     carregarHistoricoDecisao();
   }catch(err){
     console.error(err);
@@ -1889,15 +1942,24 @@ function montarResumoCompleto(r){
   if(temExecucaoValores(r)) partes += '\n' + resumoExecucaoValores(r);
   return partes;
 }
+/* Cada tipo de e-mail pertence a uma seção (Laudo/Sentença/Acórdão/Execução), e cada
+   seção decide, independentemente das outras, se o envio é pro Cliente ou só interno,
+   e se a Shana (gerência) entra. */
+const DECISAO_TIPO_SECAO = {
+  medico: 'laudo', ergonomico: 'laudo', tecnico: 'laudo',
+  sentenca: 'sentenca', embargos: 'sentenca',
+  trt: 'acordao', tst: 'acordao',
+  execucao: 'execucao',
+};
 /* Envio para o Cliente = Sim -> vai pros contatos externos da Bridgestone (Higor/Maria,
    + Shana se Inserir Gerência = Sim), cc Grupo Bridgestone (interno).
    Envio para o Cliente = Não (ou vazio) -> fica só interno, vai só pro Grupo Bridgestone.
    Em qualquer um dos dois casos, se houver guia (GDJ/GRU/Custas) ou valores de
    execução preenchidos, soma Giovanna Gatto e Gabi na cópia. */
-function decisaoEnderecos(r){
+function decisaoEnderecosSecao(r, secao){
   let to, cc;
-  if(r.envio_cliente === 'Sim'){
-    to = (r.inserir_gerencia === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
+  if(r['envio_cliente_' + secao] === 'Sim'){
+    to = (r['inserir_gerencia_' + secao] === 'Sim') ? (DECISAO_SHANA + ',' + DECISAO_TO_BASE) : DECISAO_TO_BASE;
     cc = DECISAO_CC;
   } else {
     to = DECISAO_CC;
@@ -1905,6 +1967,9 @@ function decisaoEnderecos(r){
   }
   if(temExecucaoValores(r)) cc = cc ? (cc + ',' + GUIAS_CC) : GUIAS_CC;
   return { to, cc };
+}
+function decisaoEnderecosPara(r, tipo){
+  return decisaoEnderecosSecao(r, DECISAO_TIPO_SECAO[tipo] || 'execucao');
 }
 const PH = '[Preencher]';
 function nn(v){ return v || PH; }
@@ -1948,10 +2013,8 @@ function gerarEmailDecisao(id, modelo){
   const r = HIST_DECISAO.find(x => x.id === id);
   if(!r || !EMAIL_MODELOS[modelo]) return;
   const { assunto, corpo } = EMAIL_MODELOS[modelo](r);
-  const { to, cc } = decisaoEnderecos(r);
-  let corpoFinal = corpo;
-  if(temExecucaoValores(r)) corpoFinal += '\n' + resumoExecucaoValores(r);
-  abrirEmail(to, cc, assunto, corpoFinal);
+  const { to, cc } = decisaoEnderecosPara(r, modelo);
+  abrirEmail(to, cc, assunto, corpo);
 }
 
 /* Abre um e-mail por tipo marcado, um de cada vez (mailto sequencial precisa de intervalo
@@ -1965,13 +2028,12 @@ const DECISAO_TIPO_LABEL = {
 /* Só o 1º e-mail abre sozinho (é o clique de Salvar). Os demais viram botões —
    o navegador não deixa abrir vários mailto: seguidos sem um clique novo pra cada um. */
 function enviarEmailsDecisao(registro, tipos){
-  const { to, cc } = decisaoEnderecos(registro);
-  const execDetalhe = temExecucaoValores(registro) ? resumoExecucaoValores(registro) : '';
   const emails = tipos.map(tipo => {
     const modelo = EMAIL_MODELOS[tipo];
     if(!modelo) return null;
     const { assunto, corpo } = modelo(registro);
-    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo: corpo + execDetalhe };
+    const { to, cc } = decisaoEnderecosPara(registro, tipo);
+    return { label: DECISAO_TIPO_LABEL[tipo] || tipo, to, cc, assunto, corpo };
   }).filter(Boolean);
   if(!emails.length) return;
   abrirEmail(emails[0].to, emails[0].cc, emails[0].assunto, emails[0].corpo);
@@ -1982,44 +2044,105 @@ function enviarEmailsDecisao(registro, tipos){
 const KITS_GABI = 'cicera.vicente@peixotoecury.com.br';
 const KITS_CC = 'giovanna.gatto@peixotoecury.com.br,grupobridgestone@peixotoecury.com.br';
 
+function novaLinhaKitHTML(){
+  return `<div class="k-pagamento-row mc-form-grid cols-3">
+    <div class="mc-form-group"><label>Tipo de Solicitação</label>
+      <select class="k-tipo">
+        <option value="">Selecione…</option>
+        <option>Acordo</option>
+        <option>GDJ</option>
+        <option>Recurso Ordinário</option>
+        <option>Recurso de Revista</option>
+        <option>Agravo de Instrumento</option>
+        <option>Embargos à Execução</option>
+        <option>Depósito de Recurso Ordinário</option>
+        <option>Depósito de Recurso de Revista</option>
+        <option>Convolação de Depósitos</option>
+      </select>
+    </div>
+    <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor"></div>
+    <div class="mc-form-group"><label>Data (vencimento/depósito)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="date" class="k-data" style="flex:1;">
+        <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)">🗑️</button>
+      </div>
+    </div>
+  </div>`;
+}
+function atualizarBotoesRemoverKit(){
+  const rows = document.querySelectorAll('#k-pagamentos-list .k-pagamento-row');
+  rows.forEach(r => { r.querySelector('.k-remove-row').style.display = rows.length > 1 ? '' : 'none'; });
+}
+function adicionarLinhaKit(){
+  document.getElementById('k-pagamentos-list').insertAdjacentHTML('beforeend', novaLinhaKitHTML());
+  atualizarBotoesRemoverKit();
+}
+function removerLinhaKit(btn){
+  btn.closest('.k-pagamento-row').remove();
+  atualizarBotoesRemoverKit();
+}
+function resetLinhasKit(){
+  document.getElementById('k-pagamentos-list').innerHTML = novaLinhaKitHTML();
+  atualizarBotoesRemoverKit();
+}
+
 document.getElementById('form-kits').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
-  const registro = {
-    numero_processo: g('k-processo'),
-    nome_reclamante: g('k-reclamante'),
-    advogado_solicitante: g('k-advogado'),
-    tipo_solicitacao: g('k-tipo'),
-    valor: parseMoedaBR(document.getElementById('k-valor').value),
-    data_referencia: g('k-data'),
-    resumo: g('k-resumo'),
-    status: 'Pendente',
-  };
-  const assunto = `Solicitação de Kit — ${nn(registro.tipo_solicitacao)} — Processo ${nn(registro.numero_processo)}`;
-  const corpo = `Prezada Gabi,\n\nSolicitamos o kit abaixo referente ao processo:\n\nProcesso: ${nn(registro.numero_processo)}\nReclamante: ${nn(registro.nome_reclamante)}\nTipo de Solicitação: ${nn(registro.tipo_solicitacao)}\nValor: ${registro.valor != null ? fmtMoeda(registro.valor) : 'N/A'}\nData (vencimento/depósito): ${registro.data_referencia ? dataBR(registro.data_referencia) : 'N/A'}\n\nResumo:\n${nn(registro.resumo)}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}`;
+  const processo = g('k-processo');
+  const reclamante = g('k-reclamante');
+  const advogado = g('k-advogado');
+  const resumo = g('k-resumo');
 
-  const { error } = await sb.from('kits_pagamento').insert(registro);
+  const pagamentos = Array.from(document.querySelectorAll('#k-pagamentos-list .k-pagamento-row')).map(row => ({
+    tipo_solicitacao: row.querySelector('.k-tipo').value.trim() || null,
+    valor: parseMoedaBR(row.querySelector('.k-valor').value),
+    data_referencia: row.querySelector('.k-data').value || null,
+  })).filter(p => p.tipo_solicitacao || p.valor != null || p.data_referencia);
+
+  if(!pagamentos.length){
+    toast('Preencha ao menos um pagamento (Tipo/Valor/Data).', true);
+    return;
+  }
+
+  const registros = pagamentos.map(p => ({
+    numero_processo: processo,
+    nome_reclamante: reclamante,
+    advogado_solicitante: advogado,
+    tipo_solicitacao: p.tipo_solicitacao,
+    valor: p.valor,
+    data_referencia: p.data_referencia,
+    resumo: resumo,
+    status: 'Pendente',
+  }));
+
+  const tiposLista = pagamentos.map(p => nn(p.tipo_solicitacao)).join(', ');
+  const assunto = `Solicitação de Kit — ${tiposLista} — Processo ${nn(processo)}`;
+  const linhasPagamento = pagamentos.map(p =>
+    `- ${nn(p.tipo_solicitacao)} | Valor: ${p.valor != null ? fmtMoeda(p.valor) : 'N/A'} | Data: ${p.data_referencia ? dataBR(p.data_referencia) : 'N/A'}`
+  ).join('\n');
+  const corpo = `Prezada Gabi,\n\nSolicitamos o(s) kit(s) abaixo referente ao processo:\n\nProcesso: ${nn(processo)}\nReclamante: ${nn(reclamante)}\n\nPagamentos:\n${linhasPagamento}\n\nResumo:\n${nn(resumo)}\n\nAdvogado Solicitante: ${nn(advogado)}`;
+
+  const { error } = await sb.from('kits_pagamento').insert(registros);
   if(error){
     console.error(error);
     toast('E-mail aberto, mas NÃO foi possível salvar no histórico: ' + error.message, true);
   } else {
-    toast('Solicitação de kit registrada. Abrindo e-mail pra Gabi…');
+    toast(pagamentos.length > 1 ? 'Solicitações de kit registradas. Abrindo e-mail pra Gabi…' : 'Solicitação de kit registrada. Abrindo e-mail pra Gabi…');
     carregarHistoricoKits();
   }
   abrirEmail(KITS_GABI, KITS_CC, assunto, corpo);
 
   // Mantém Processo/Reclamante/Advogado preenchidos — às vezes um mesmo processo
-  // tem vários pagamentos (ex: GDJ e depois GRU), então só limpa os campos do
-  // pagamento em si pra já deixar pronto pra próxima solicitação.
-  document.getElementById('k-tipo').value = '';
-  document.getElementById('k-valor').value = '';
-  document.getElementById('k-data').value = '';
+  // tem vários pagamentos, então só reseta a lista de pagamentos e o resumo
+  // pra já deixar pronto pra próxima solicitação.
+  resetLinhasKit();
   document.getElementById('k-resumo').value = '';
-  document.getElementById('k-tipo').focus();
 });
 
 function limparFormularioKits(){
   document.getElementById('form-kits').reset();
+  resetLinhasKit();
 }
 
 let HIST_KITS = [];
