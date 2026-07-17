@@ -136,6 +136,28 @@ create table if not exists reportes_decisao (
   ultima_movimentacao text,
   execucao_resumo text,
 
+  -- Execução — Valores: cada item é independente e opcional (valor + data),
+  -- preenchido só quando aplicável ao caso (movido de solicitacoes_insercao_valores).
+  exec_calculo_reclamante_valor numeric,
+  exec_calculo_reclamante_data date,
+  exec_calculo_reclamada_valor numeric,
+  exec_calculo_reclamada_data date,
+  exec_pagamento_valor numeric,
+  exec_pagamento_data date,
+  exec_inss_valor numeric,
+  exec_inss_data date,
+  exec_garantia_valor numeric,
+  exec_garantia_data date,
+  exec_custas_valor numeric,
+  exec_custas_data date,
+  exec_gru_valor numeric,
+  exec_gru_data date,
+  exec_homologacao_calculos text,         -- 'Sim' | 'Não' -- Sentença de Liquidação / Homologação dos Cálculos
+  exec_valor_homologado numeric,
+  exec_valor_homologado_data date,
+  exec_solicitacao_pagamento text,        -- 'Sim' | 'Não'
+  exec_solicitacao_pagamento_data date,
+
   responsavel_sigla text,
   criado_em timestamptz not null default now(),
   atualizado_em timestamptz not null default now()
@@ -217,8 +239,10 @@ create table if not exists solicitacoes_insercao_valores (
   fase_atual text,                        -- mudança de fase mesmo sem alteração de valores (ex: muda o % de provisão)
   nova_fase text,
 
-  -- Execução: cada item é independente e opcional (valor + data), preenchido só
-  -- quando aplicável ao caso.
+  -- Execução (HISTÓRICO — campo removido do formulário, movido pra reportes_decisao;
+  -- colunas mantidas só pra não perder os dados já preenchidos antes da mudança):
+  -- cada item era independente e opcional (valor + data), preenchido só quando
+  -- aplicável ao caso.
   exec_calculo_reclamante_valor numeric,
   exec_calculo_reclamante_data date,
   exec_calculo_reclamada_valor numeric,
