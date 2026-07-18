@@ -2751,7 +2751,7 @@ document.getElementById('form-valores').addEventListener('submit', async functio
       justificativa_revisao: g('v-justificativa-revisao'),
       link_calculo: g('v-link-calculo'),
     });
-    resumoTipo = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nRevisado: ${nn(registro.revisado)}${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}`;
+    resumoTipo = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${registro.tipo_calculo || 'N/A'}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nRevisado: ${nn(registro.revisado)}${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}`;
   } else if(tipo === 'valores'){
     const atualHistorico = num('v-atual-historico');
     const novoHistorico = num('v-novo-historico');
@@ -2773,7 +2773,7 @@ document.getElementById('form-valores').addEventListener('submit', async functio
       valor_atual_accrual: atualAccrual, valor_novo_accrual: novoAccrual, diff_accrual: diffAccrual,
       acima_400k: acima400k,
     });
-    resumoValores = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nHistórico — Atual: ${fmtMoeda(atualHistorico)} | Novo: ${fmtMoeda(novoHistorico)} | Diferença: ${fmtMoeda(diffHistorico)}\nProvisão — Atual: ${fmtMoeda(atualProvisao)} | Novo: ${fmtMoeda(novoProvisao)} | Diferença: ${fmtMoeda(diffProvisao)}\nAccrual — Atual: ${fmtMoeda(atualAccrual)} | Novo: ${fmtMoeda(novoAccrual)} | Diferença: ${fmtMoeda(diffAccrual)}`;
+    resumoValores = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${registro.tipo_calculo || 'N/A'}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nHistórico — Atual: ${fmtMoeda(atualHistorico)} | Novo: ${fmtMoeda(novoHistorico)} | Diferença: ${fmtMoeda(diffHistorico)}\nProvisão — Atual: ${fmtMoeda(atualProvisao)} | Novo: ${fmtMoeda(novoProvisao)} | Diferença: ${fmtMoeda(diffProvisao)}\nAccrual — Atual: ${fmtMoeda(atualAccrual)} | Novo: ${fmtMoeda(novoAccrual)} | Diferença: ${fmtMoeda(diffAccrual)}`;
     resumoTipo = resumoValores;
   } else if(tipo === 'fase'){
     Object.assign(registro, {
@@ -2960,7 +2960,7 @@ async function salvarRetornoValores(){
   const emailAdvogado = emailPorNome(r.advogado_solicitante);
   const resumoValores = `Histórico — Atual: ${fmtMoeda(r.valor_atual_historico)} | Novo: ${fmtMoeda(r.valor_novo_historico)} | Diferença: ${fmtMoeda(r.diff_historico)}\nProvisão — Atual: ${fmtMoeda(r.valor_atual_provisao)} | Novo: ${fmtMoeda(r.valor_novo_provisao)} | Diferença: ${fmtMoeda(r.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(r.valor_atual_accrual)} | Novo: ${fmtMoeda(r.valor_novo_accrual)} | Diferença: ${fmtMoeda(r.diff_accrual)}`;
   const assunto = `Valores Inseridos — Processo ${nn(r.numero_processo)} — ${nn(r.nome_reclamante)}`;
-  const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos a inserção/atualização referente ao processo abaixo:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Cálculo: ${nn(r.tipo_calculo)}\n\n${resumoValores}\n${(r.fase_atual || r.nova_fase) ? '\nMudança de Fase: ' + nn(r.fase_atual) + ' → ' + nn(r.nova_fase) : ''}\n\nInserido no LM: ${nn(atualizacao.inserido_lm)}${atualizacao.data_insercao_lm ? ' (' + dataBR(atualizacao.data_insercao_lm) + ')' : ''}\nInserido no Elaw: ${nn(atualizacao.inserido_sistema)}${atualizacao.data_insercao_sistema ? ' (' + dataBR(atualizacao.data_insercao_sistema) + ')' : ''}\n${r.link_calculo ? '\nLink do Cálculo (PDF): ' + r.link_calculo : ''}\n\nResponsável pela inserção: ${nn(r.assistente_responsavel)}`;
+  const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos a inserção/atualização referente ao processo abaixo:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Cálculo: ${r.tipo_calculo || 'N/A'}\n\n${resumoValores}\n${(r.fase_atual || r.nova_fase) ? '\nMudança de Fase: ' + nn(r.fase_atual) + ' → ' + nn(r.nova_fase) : ''}\n\nInserido no LM: ${nn(atualizacao.inserido_lm)}${atualizacao.data_insercao_lm ? ' (' + dataBR(atualizacao.data_insercao_lm) + ')' : ''}\nInserido no Elaw: ${nn(atualizacao.inserido_sistema)}${atualizacao.data_insercao_sistema ? ' (' + dataBR(atualizacao.data_insercao_sistema) + ')' : ''}\n${r.link_calculo ? '\nLink do Cálculo (PDF): ' + r.link_calculo : ''}\n\nResponsável pela inserção: ${nn(r.assistente_responsavel)}`;
   if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
   else toast('Advogado sem e-mail cadastrado (nome não bate com a lista de profissionais) — abra o e-mail de retorno manualmente.', true);
   carregarHistoricoValores();
