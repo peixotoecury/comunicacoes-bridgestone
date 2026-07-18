@@ -1106,13 +1106,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <select id="v-tipo-solicitacao" onchange="atualizarTipoValores()">
             <option value="">Selecione…</option>
             <option value="calculo">Solicitação de Cálculo</option>
-            <option value="valores">Inserção de Valores</option>
+            <option value="valores">Inserção de Valores/Requantificação</option>
             <option value="fase">Mudança de Fase</option>
           </select>
         </div>
         <div class="info-box" id="v-tipo-vazio-hint">👆 Escolha o tipo de solicitação acima pra abrir os campos.</div>
 
-        <div id="v-grupo-calculo" style="display:none;">
+        <div id="v-grupo-decisao-calculo" style="display:none;">
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Tipo de Decisão</label>
             <select id="v-tipo-decisao">
@@ -1133,6 +1133,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <select id="v-tipo-calculo">
               <option value="">N/A</option>
               <option>Inicial</option>
+              <option>Cálculo Inicial de Casos Novos</option>
+              <option>Improcedência</option>
               <option>Sentença</option>
               <option>Acórdão TRT</option>
               <option>Acórdão TST</option>
@@ -1148,6 +1150,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
           <div class="mc-form-group"><label>Data do Cálculo</label><input type="date" id="v-data-calculo"></div>
         </div>
+        </div>
+
+        <div id="v-grupo-calculo" style="display:none;">
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Revisado</label>
             <select id="v-revisado"><option value="">—</option><option>Sim</option><option>Não</option></select>
@@ -2700,13 +2705,14 @@ function vRecalcularAccrualPorFase(){
    de Fase), pra reduzir a rolagem. */
 function atualizarTipoValores(){
   const tipo = document.getElementById('v-tipo-solicitacao').value;
+  document.getElementById('v-grupo-decisao-calculo').style.display = (tipo === 'calculo' || tipo === 'valores') ? '' : 'none';
   document.getElementById('v-grupo-calculo').style.display = tipo === 'calculo' ? '' : 'none';
   document.getElementById('v-grupo-valores').style.display = tipo === 'valores' ? '' : 'none';
   document.getElementById('v-grupo-fase').style.display = tipo === 'fase' ? '' : 'none';
   document.getElementById('v-tipo-vazio-hint').style.display = tipo ? 'none' : '';
 }
 
-const VALORES_TIPO_LABEL = { calculo: 'Cálculo', valores: 'Inserção de Valores', fase: 'Mudança de Fase' };
+const VALORES_TIPO_LABEL = { calculo: 'Cálculo', valores: 'Inserção de Valores/Requantificação', fase: 'Mudança de Fase' };
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
@@ -2759,12 +2765,15 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     const maiorDiff = Math.max(Math.abs(diffHistorico), Math.abs(diffProvisao), Math.abs(diffAccrual));
     acima400k = maiorDiff >= LIMIAR_ALERTA_VALOR;
     Object.assign(registro, {
+      tipo_decisao: g('v-tipo-decisao'),
+      tipo_calculo: g('v-tipo-calculo'),
+      data_calculo: g('v-data-calculo'),
       valor_atual_historico: atualHistorico, valor_novo_historico: novoHistorico, diff_historico: diffHistorico,
       valor_atual_provisao: atualProvisao, valor_novo_provisao: novoProvisao, diff_provisao: diffProvisao,
       valor_atual_accrual: atualAccrual, valor_novo_accrual: novoAccrual, diff_accrual: diffAccrual,
       acima_400k: acima400k,
     });
-    resumoValores = `Histórico — Atual: ${fmtMoeda(atualHistorico)} | Novo: ${fmtMoeda(novoHistorico)} | Diferença: ${fmtMoeda(diffHistorico)}\nProvisão — Atual: ${fmtMoeda(atualProvisao)} | Novo: ${fmtMoeda(novoProvisao)} | Diferença: ${fmtMoeda(diffProvisao)}\nAccrual — Atual: ${fmtMoeda(atualAccrual)} | Novo: ${fmtMoeda(novoAccrual)} | Diferença: ${fmtMoeda(diffAccrual)}`;
+    resumoValores = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${nn(registro.tipo_calculo)}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nHistórico — Atual: ${fmtMoeda(atualHistorico)} | Novo: ${fmtMoeda(novoHistorico)} | Diferença: ${fmtMoeda(diffHistorico)}\nProvisão — Atual: ${fmtMoeda(atualProvisao)} | Novo: ${fmtMoeda(novoProvisao)} | Diferença: ${fmtMoeda(diffProvisao)}\nAccrual — Atual: ${fmtMoeda(atualAccrual)} | Novo: ${fmtMoeda(novoAccrual)} | Diferença: ${fmtMoeda(diffAccrual)}`;
     resumoTipo = resumoValores;
   } else if(tipo === 'fase'){
     Object.assign(registro, {
@@ -2817,7 +2826,7 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     ['v-tipo-decisao','v-tipo-calculo','v-data-calculo','v-revisado','v-link-calculo'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('v-justificativa-revisao').value = '';
   } else if(tipo === 'valores'){
-    ['v-atual-historico','v-novo-historico','v-atual-provisao','v-novo-provisao','v-atual-accrual','v-novo-accrual'].forEach(id => { document.getElementById(id).value = ''; });
+    ['v-tipo-decisao','v-tipo-calculo','v-data-calculo','v-atual-historico','v-novo-historico','v-atual-provisao','v-novo-provisao','v-atual-accrual','v-novo-accrual'].forEach(id => { document.getElementById(id).value = ''; });
     document.getElementById('v-diff-historico').value = '';
     document.getElementById('v-diff-provisao').value = '';
     document.getElementById('v-diff-accrual').value = '';
