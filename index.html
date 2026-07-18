@@ -3498,7 +3498,12 @@ function iaLevarParaValores(){
     const totalPrincipalProvavel = IA_VERBAS.filter(v => v.probabilidade === 'Provável').reduce((s,v) => s + iaNum(v.principal), 0);
     const accrual = totalPrincipalProvavel * IA_ACCRUAL_PCT_POR_FASE[fase];
     document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-    msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% do provável)`;
+    if(totalPrincipalProvavel === 0){
+      accrualFicouVazio = true;
+      msgAccrual = ' — Accrual saiu R$ 0,00 porque NENHUMA verba está marcada como "Provável" na grade acima (accrual só soma o Principal das verbas "Provável") — confira se é isso mesmo ou se esqueceu de marcar a probabilidade';
+    } else {
+      msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% do provável)`;
+    }
   } else {
     accrualFicouVazio = true;
     msgAccrual = ' — Accrual NÃO foi calculado (falta selecionar a Fase do processo na aba IA)';
