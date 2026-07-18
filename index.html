@@ -111,6 +111,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 table.sol-table{width:100%;border-collapse:collapse;min-width:900px;background:#fff;}
 table.sol-table thead th{position:sticky;top:0;background:var(--escuro-pc);color:#fff;padding:10px 12px;text-transform:uppercase;font-size:10px;letter-spacing:.6px;text-align:left;white-space:nowrap;}
 table.sol-table tbody td{padding:10px 12px;border-bottom:1px solid #E5EEF4;color:var(--preto-pc);font-size:12px;vertical-align:middle;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Célula de Ações tem select + vários botões empilhados (Ver/Concluir/Excluir) —
+   o corte de texto com ellipsis da regra acima escondia os botões de baixo. */
+table.sol-table tbody td:has(.row-btn){white-space:normal;overflow:visible;text-overflow:clip;max-width:none;}
 table.sol-table tbody tr:hover td{background:#F8FCFF;}
 td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
 
@@ -915,6 +918,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             </div>
             <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento?</label>
               <select class="k-convolado" onchange="atualizarCamposKit(this)"><option value="">—</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Convolação Integral ou Parcial?</label>
+              <select class="k-convolacao-tipo"><option value="">—</option><option>Integral</option><option>Parcial</option></select>
             </div>
             <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pro Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamante"></div>
             <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pra Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamada"></div>
@@ -2266,6 +2272,9 @@ function novaLinhaKitHTML(){
     <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento?</label>
       <select class="k-convolado" onchange="atualizarCamposKit(this)"><option value="">—</option><option>Sim</option><option>Não</option></select>
     </div>
+    <div class="mc-form-group k-split-wrap" style="display:none;"><label>Convolação Integral ou Parcial?</label>
+      <select class="k-convolacao-tipo"><option value="">—</option><option>Integral</option><option>Parcial</option></select>
+    </div>
     <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pro Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamante"></div>
     <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pra Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamada"></div>
   </div>`;
@@ -2290,6 +2299,7 @@ function atualizarCamposKit(el){
   const mostrarSplit = tipo === 'Convolação de Depósitos' || (tipo === 'Garantia da Execução' && convoladoSelect.value === 'Sim');
   row.querySelectorAll('.k-split-wrap').forEach(w => { w.style.display = mostrarSplit ? '' : 'none'; });
   if(!mostrarSplit){
+    row.querySelector('.k-convolacao-tipo').value = '';
     row.querySelector('.k-valor-reclamante').value = '';
     row.querySelector('.k-valor-reclamada').value = '';
   }
@@ -2330,6 +2340,7 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
       valor_reclamante: parseMoedaBR(row.querySelector('.k-valor-reclamante').value),
       valor_reclamada: parseMoedaBR(row.querySelector('.k-valor-reclamada').value),
       convolado: (convoladoSelect && convoladoSelect.value) ? convoladoSelect.value : null,
+      convolacao_tipo: row.querySelector('.k-convolacao-tipo').value.trim() || null,
     };
   }).filter(p => p.tipo_solicitacao || p.valor != null || p.data_referencia || p.valor_reclamante != null || p.valor_reclamada != null);
 
@@ -2348,6 +2359,7 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
     valor_reclamante: p.valor_reclamante,
     valor_reclamada: p.valor_reclamada,
     convolado: p.convolado,
+    convolacao_tipo: p.convolacao_tipo,
     resumo: resumo,
     status: 'Pendente',
   }));
@@ -2356,6 +2368,7 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
   const assunto = `Solicitação de Kit — ${tiposLista} — Processo ${nn(processo)}`;
   const linhasPagamento = pagamentos.map(p => {
     let extra = '';
+    if(p.convolacao_tipo) extra += ` | Convolação ${p.convolacao_tipo}`;
     if(p.valor_reclamante != null || p.valor_reclamada != null){
       extra += ` | Reclamante: ${p.valor_reclamante != null ? fmtMoeda(p.valor_reclamante) : 'N/A'} | Reclamada: ${p.valor_reclamada != null ? fmtMoeda(p.valor_reclamada) : 'N/A'}`;
     }
@@ -2436,6 +2449,7 @@ function verDetalhesKit(id){
     ['Advogado Solicitante', r.advogado_solicitante],
     ['Tipo de Solicitação', r.tipo_solicitacao],
     ['Valor', r.valor != null ? fmtMoeda(r.valor) : null],
+    ['Convolação Integral ou Parcial?', r.convolacao_tipo],
     ['Valor pro Reclamante', r.valor_reclamante != null ? fmtMoeda(r.valor_reclamante) : null],
     ['Valor pra Reclamada', r.valor_reclamada != null ? fmtMoeda(r.valor_reclamada) : null],
     ['Convolado em pagamento?', r.convolado],

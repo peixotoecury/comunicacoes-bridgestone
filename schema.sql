@@ -253,6 +253,7 @@ create table if not exists kits_pagamento (
   -- depósito em pagamento); em 'Garantia da Execução' só quando convolado = 'Sim'.
   valor_reclamante numeric,
   valor_reclamada numeric,
+  convolacao_tipo text,   -- 'Integral' | 'Parcial' -- junto com o split Reclamante/Reclamada acima
   convolado text,          -- 'Sim' | 'Não' -- só usado quando tipo_solicitacao = 'Garantia da Execução'
   data_referencia date,    -- vencimento da guia ou data do depósito, conforme o tipo
   resumo text,
