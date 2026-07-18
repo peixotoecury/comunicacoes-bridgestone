@@ -246,8 +246,14 @@ create table if not exists kits_pagamento (
   numero_processo text,
   nome_reclamante text,
   advogado_solicitante text,
-  tipo_solicitacao text,   -- 'Acordo' | 'GDJ' | 'Recurso Ordinário' | 'Recurso de Revista' | 'Agravo de Instrumento' | 'Embargos à Execução' | 'Depósito de Recurso Ordinário' | 'Depósito de Recurso de Revista' | 'Convolação de Depósitos'
+  tipo_solicitacao text,   -- 'Acordo' | 'GDJ' | 'INSS' | 'Honorários Periciais' | 'Recurso Ordinário' | 'Recurso de Revista' | 'Agravo de Instrumento' | 'Embargos à Execução' | 'Depósito de Recurso Ordinário' | 'Depósito de Recurso de Revista' | 'Garantia da Execução' | 'Convolação de Depósitos'
   valor numeric,
+  -- Split do valor entre Reclamante/Reclamada: sempre preenchido quando
+  -- tipo_solicitacao = 'Convolação de Depósitos' (a própria conversão do
+  -- depósito em pagamento); em 'Garantia da Execução' só quando convolado = 'Sim'.
+  valor_reclamante numeric,
+  valor_reclamada numeric,
+  convolado text,          -- 'Sim' | 'Não' -- só usado quando tipo_solicitacao = 'Garantia da Execução'
   data_referencia date,    -- vencimento da guia ou data do depósito, conforme o tipo
   resumo text,
   status text not null default 'Pendente',   -- 'Pendente' | 'Concluído'

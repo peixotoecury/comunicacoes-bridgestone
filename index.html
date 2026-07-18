@@ -888,17 +888,19 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="k-pagamentos-list">
           <div class="k-pagamento-row mc-form-grid cols-3">
             <div class="mc-form-group"><label>Tipo de Solicitação</label>
-              <select class="k-tipo" onchange="atualizarOutroKit(this)">
+              <select class="k-tipo" onchange="atualizarCamposKit(this)">
                 <option value="">Selecione…</option>
                 <option>Acordo</option>
                 <option>GDJ</option>
                 <option>INSS</option>
+                <option>Honorários Periciais</option>
                 <option>Recurso Ordinário</option>
                 <option>Recurso de Revista</option>
                 <option>Agravo de Instrumento</option>
                 <option>Embargos à Execução</option>
                 <option>Depósito de Recurso Ordinário</option>
                 <option>Depósito de Recurso de Revista</option>
+                <option>Garantia da Execução</option>
                 <option>Convolação de Depósitos</option>
                 <option>Outro</option>
               </select>
@@ -911,6 +913,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
                 <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)" style="display:none;">🗑️</button>
               </div>
             </div>
+            <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento?</label>
+              <select class="k-convolado" onchange="atualizarCamposKit(this)"><option value="">—</option><option>Sim</option><option>Não</option></select>
+            </div>
+            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pro Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamante"></div>
+            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pra Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamada"></div>
           </div>
         </div>
         <div style="margin:-4px 0 14px;"><button type="button" class="row-btn" onclick="adicionarLinhaKit()">➕ Adicionar outro pagamento</button></div>
@@ -2231,17 +2238,19 @@ const KITS_CC = 'giovanna.gatto@peixotoecury.com.br,grupobridgestone@peixotoecur
 function novaLinhaKitHTML(){
   return `<div class="k-pagamento-row mc-form-grid cols-3">
     <div class="mc-form-group"><label>Tipo de Solicitação</label>
-      <select class="k-tipo" onchange="atualizarOutroKit(this)">
+      <select class="k-tipo" onchange="atualizarCamposKit(this)">
         <option value="">Selecione…</option>
         <option>Acordo</option>
         <option>GDJ</option>
         <option>INSS</option>
+        <option>Honorários Periciais</option>
         <option>Recurso Ordinário</option>
         <option>Recurso de Revista</option>
         <option>Agravo de Instrumento</option>
         <option>Embargos à Execução</option>
         <option>Depósito de Recurso Ordinário</option>
         <option>Depósito de Recurso de Revista</option>
+        <option>Garantia da Execução</option>
         <option>Convolação de Depósitos</option>
         <option>Outro</option>
       </select>
@@ -2254,12 +2263,36 @@ function novaLinhaKitHTML(){
         <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)">🗑️</button>
       </div>
     </div>
+    <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento?</label>
+      <select class="k-convolado" onchange="atualizarCamposKit(this)"><option value="">—</option><option>Sim</option><option>Não</option></select>
+    </div>
+    <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pro Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamante"></div>
+    <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pra Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamada"></div>
   </div>`;
 }
-function atualizarOutroKit(select){
-  const outro = select.closest('.k-pagamento-row').querySelector('.k-tipo-outro');
-  outro.style.display = select.value === 'Outro' ? '' : 'none';
-  if(select.value !== 'Outro') outro.value = '';
+/* Convolação de Depósitos sempre pede o split Reclamante/Reclamada (é a própria
+   conversão do depósito em pagamento). Garantia da Execução só pede o split se
+   for marcada como convolada em pagamento — senão é só a garantia, sem divisão. */
+function atualizarCamposKit(el){
+  const row = el.closest('.k-pagamento-row');
+  const tipoSelect = row.querySelector('.k-tipo');
+  const tipo = tipoSelect.value;
+  const outro = row.querySelector('.k-tipo-outro');
+  outro.style.display = tipo === 'Outro' ? '' : 'none';
+  if(tipo !== 'Outro') outro.value = '';
+
+  const convoladoWrap = row.querySelector('.k-convolado-wrap');
+  const convoladoSelect = row.querySelector('.k-convolado');
+  const mostrarConvolado = tipo === 'Garantia da Execução';
+  convoladoWrap.style.display = mostrarConvolado ? '' : 'none';
+  if(!mostrarConvolado) convoladoSelect.value = '';
+
+  const mostrarSplit = tipo === 'Convolação de Depósitos' || (tipo === 'Garantia da Execução' && convoladoSelect.value === 'Sim');
+  row.querySelectorAll('.k-split-wrap').forEach(w => { w.style.display = mostrarSplit ? '' : 'none'; });
+  if(!mostrarSplit){
+    row.querySelector('.k-valor-reclamante').value = '';
+    row.querySelector('.k-valor-reclamada').value = '';
+  }
 }
 function atualizarBotoesRemoverKit(){
   const rows = document.querySelectorAll('#k-pagamentos-list .k-pagamento-row');
@@ -2289,12 +2322,16 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
   const pagamentos = Array.from(document.querySelectorAll('#k-pagamentos-list .k-pagamento-row')).map(row => {
     const tipoSelect = row.querySelector('.k-tipo').value.trim();
     const tipo = tipoSelect === 'Outro' ? (row.querySelector('.k-tipo-outro').value.trim() || null) : (tipoSelect || null);
+    const convoladoSelect = row.querySelector('.k-convolado');
     return {
       tipo_solicitacao: tipo,
       valor: parseMoedaBR(row.querySelector('.k-valor').value),
       data_referencia: row.querySelector('.k-data').value || null,
+      valor_reclamante: parseMoedaBR(row.querySelector('.k-valor-reclamante').value),
+      valor_reclamada: parseMoedaBR(row.querySelector('.k-valor-reclamada').value),
+      convolado: (convoladoSelect && convoladoSelect.value) ? convoladoSelect.value : null,
     };
-  }).filter(p => p.tipo_solicitacao || p.valor != null || p.data_referencia);
+  }).filter(p => p.tipo_solicitacao || p.valor != null || p.data_referencia || p.valor_reclamante != null || p.valor_reclamada != null);
 
   if(!pagamentos.length){
     toast('Preencha ao menos um pagamento (Tipo/Valor/Data).', true);
@@ -2308,15 +2345,23 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
     tipo_solicitacao: p.tipo_solicitacao,
     valor: p.valor,
     data_referencia: p.data_referencia,
+    valor_reclamante: p.valor_reclamante,
+    valor_reclamada: p.valor_reclamada,
+    convolado: p.convolado,
     resumo: resumo,
     status: 'Pendente',
   }));
 
   const tiposLista = pagamentos.map(p => nn(p.tipo_solicitacao)).join(', ');
   const assunto = `Solicitação de Kit — ${tiposLista} — Processo ${nn(processo)}`;
-  const linhasPagamento = pagamentos.map(p =>
-    `- ${nn(p.tipo_solicitacao)} | Valor: ${p.valor != null ? fmtMoeda(p.valor) : 'N/A'} | Data: ${p.data_referencia ? dataBR(p.data_referencia) : 'N/A'}`
-  ).join('\n');
+  const linhasPagamento = pagamentos.map(p => {
+    let extra = '';
+    if(p.valor_reclamante != null || p.valor_reclamada != null){
+      extra += ` | Reclamante: ${p.valor_reclamante != null ? fmtMoeda(p.valor_reclamante) : 'N/A'} | Reclamada: ${p.valor_reclamada != null ? fmtMoeda(p.valor_reclamada) : 'N/A'}`;
+    }
+    if(p.convolado) extra += ` | Convolado em pagamento: ${p.convolado}`;
+    return `- ${nn(p.tipo_solicitacao)} | Valor: ${p.valor != null ? fmtMoeda(p.valor) : 'N/A'} | Data: ${p.data_referencia ? dataBR(p.data_referencia) : 'N/A'}${extra}`;
+  }).join('\n');
   const corpo = `Prezada Gabi,\n\nSolicitamos o(s) kit(s) abaixo referente ao processo:\n\nProcesso: ${nn(processo)}\nReclamante: ${nn(reclamante)}\n\nPagamentos:\n${linhasPagamento}\n\nResumo:\n${nn(resumo)}\n\nAdvogado Solicitante: ${nn(advogado)}`;
 
   const { error } = await sb.from('kits_pagamento').insert(registros);
@@ -2391,6 +2436,9 @@ function verDetalhesKit(id){
     ['Advogado Solicitante', r.advogado_solicitante],
     ['Tipo de Solicitação', r.tipo_solicitacao],
     ['Valor', r.valor != null ? fmtMoeda(r.valor) : null],
+    ['Valor pro Reclamante', r.valor_reclamante != null ? fmtMoeda(r.valor_reclamante) : null],
+    ['Valor pra Reclamada', r.valor_reclamada != null ? fmtMoeda(r.valor_reclamada) : null],
+    ['Convolado em pagamento?', r.convolado],
     ['Data (vencimento/depósito)', r.data_referencia ? dataBR(r.data_referencia) : null],
     ['Status', r.status],
     ['Criado em', fmtDataHora(r.criado_em)],
