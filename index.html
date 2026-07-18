@@ -1158,7 +1158,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="v-grupo-valores" style="display:none;">
         <div class="sub-title">Valores — Histórico</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores(); vRecalcularAccrualPorFase();"></div>
+          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores();"></div>
           <div class="mc-form-group"><label>Novo Valor do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-historico" oninput="recalcularDiferencasValores()"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-historico" readonly></div>
         </div>
@@ -1166,7 +1166,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="sub-title">Valores — Provisão</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Valor Atual da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-provisao" oninput="recalcularDiferencasValores()"></div>
-          <div class="mc-form-group"><label>Novo Valor da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-provisao" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Novo Valor da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-provisao" oninput="recalcularDiferencasValores(); vRecalcularAccrualPorFase();"></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-provisao" readonly></div>
         </div>
 
@@ -1180,7 +1180,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
 
         <div id="v-grupo-fase" style="display:none;">
-        <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo. Mesmo que o Histórico não mude, a mudança de fase recalcula o "Novo Valor do Accrual" automaticamente (Valor Atual do Histórico × % da nova fase) — confira antes de salvar.</div>
+        <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo. Mesmo que a Provisão não mude, a mudança de fase recalcula o "Novo Valor do Accrual" automaticamente (Novo Valor da Provisão × % da nova fase) — confira antes de salvar.</div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Fase Atual</label><input type="text" id="v-fase-atual" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
           <div class="mc-form-group"><label>Nova Fase</label>
@@ -1320,7 +1320,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <option value="3">Fase 3 — Execução (100% do provável)</option>
           </select>
         </div>
-        <div class="hint" style="margin-top:6px;">Accrual = % da fase × soma do <b>Principal</b> das verbas marcadas como <b>Provável</b> na grade acima.</div>
+        <div class="hint" style="margin-top:6px;">Accrual = % da fase × soma do <b>Total Corrigido (Provisão)</b> das verbas marcadas como <b>Provável</b> na grade acima.</div>
       </div>
 
       <div style="margin-top:14px;">
@@ -2675,18 +2675,18 @@ function recalcularDiferencasValores(){
 }
 
 /* Ao escolher a Nova Fase (mesma tabela de % da aba Lançamento IA — IA_ACCRUAL_PCT_POR_FASE,
-   definida mais abaixo), recalcula o Novo Valor do Accrual = Valor Atual do Histórico × % da
+   definida mais abaixo), recalcula o Novo Valor do Accrual = Novo Valor da Provisão × % da
    fase. Não sobrescreve nada se nenhuma fase estiver selecionada. */
 function vRecalcularAccrualPorFase(){
   const fase = document.getElementById('v-nova-fase').value;
   if(!fase || IA_ACCRUAL_PCT_POR_FASE[fase] == null) return;
-  const campoHistorico = document.getElementById('v-atual-historico');
-  if(!campoHistorico.value.trim()){
-    toast('Fase selecionada, mas "Valor Atual do Histórico" está vazio — o Accrual sairia zerado. Preencha o Histórico (ou clique em 🔍 Atual) antes de escolher a Fase.', true);
+  const campoProvisao = document.getElementById('v-novo-provisao');
+  if(!campoProvisao.value.trim()){
+    toast('Fase selecionada, mas "Novo Valor da Provisão" está vazio — o Accrual sairia zerado. Preencha a Provisão antes de escolher a Fase.', true);
     return;
   }
-  const atualHistorico = parseMoedaBR(campoHistorico.value) || 0;
-  const accrual = atualHistorico * IA_ACCRUAL_PCT_POR_FASE[fase];
+  const novoProvisao = parseMoedaBR(campoProvisao.value) || 0;
+  const accrual = novoProvisao * IA_ACCRUAL_PCT_POR_FASE[fase];
   const accrualFmt = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
   document.getElementById('v-novo-accrual').value = accrualFmt;
   const preview = document.getElementById('v-fase-novo-accrual-preview');
@@ -3467,9 +3467,9 @@ function iaDrawVerbas(){
   document.querySelector('#ia-total-principal').textContent = iaMoney(totalPrincipal);
 }
 
-// Percentual de Accrual por fase do processo — sobre a soma do Principal das
-// verbas marcadas como "Provável" (não sobre o Total corrigido, nem sobre as
-// verbas "Possível"/"Remoto").
+// Percentual de Accrual por fase do processo — sobre a soma do Total Corrigido
+// (Provisão) das verbas marcadas como "Provável" (não sobre o Principal, nem
+// sobre as verbas "Possível"/"Remoto").
 const IA_ACCRUAL_PCT_POR_FASE = {'1': 0.405, '2': 0.54, '3': 1.0};
 
 function iaLevarParaValores(){
@@ -3495,12 +3495,12 @@ function iaLevarParaValores(){
   let msgAccrual = '';
   let accrualFicouVazio = false;
   if(fase && IA_ACCRUAL_PCT_POR_FASE[fase] != null){
-    const totalPrincipalProvavel = IA_VERBAS.filter(v => v.probabilidade === 'Provável').reduce((s,v) => s + iaNum(v.principal), 0);
-    const accrual = totalPrincipalProvavel * IA_ACCRUAL_PCT_POR_FASE[fase];
+    const totalCorrigidoProvavel = IA_VERBAS.filter(v => v.probabilidade === 'Provável').reduce((s,v) => s + iaNum(v.total), 0);
+    const accrual = totalCorrigidoProvavel * IA_ACCRUAL_PCT_POR_FASE[fase];
     document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-    if(totalPrincipalProvavel === 0){
+    if(totalCorrigidoProvavel === 0){
       accrualFicouVazio = true;
-      msgAccrual = ' — Accrual saiu R$ 0,00 porque NENHUMA verba está marcada como "Provável" na grade acima (accrual só soma o Principal das verbas "Provável") — confira se é isso mesmo ou se esqueceu de marcar a probabilidade';
+      msgAccrual = ' — Accrual saiu R$ 0,00 porque NENHUMA verba está marcada como "Provável" na grade acima (accrual só soma o Total Corrigido/Provisão das verbas "Provável") — confira se é isso mesmo ou se esqueceu de marcar a probabilidade';
     } else {
       msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% do provável)`;
     }
