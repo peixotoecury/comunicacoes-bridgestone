@@ -368,11 +368,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Número do Processo <span class="req">*</span></label><input type="text" id="d-processo" required></div>
-          <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="d-reclamante"></div>
-          <div class="mc-form-group"><label>Responsável (sigla)</label><input type="text" id="d-responsavel"></div>
+          <div class="mc-form-group"><label>Nome do Reclamante <span class="req">*</span></label><input type="text" id="d-reclamante" required></div>
+          <div class="mc-form-group"><label>Responsável (sigla) <span class="req">*</span></label><input type="text" id="d-responsavel" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Advogado Responsável</label><select id="d-advogado-responsavel"><option value="">Selecione…</option></select></div>
+          <div class="mc-form-group"><label>Advogado Responsável <span class="req">*</span></label><select id="d-advogado-responsavel" required><option value="">Selecione…</option></select></div>
           <div class="mc-form-group"><label>Advogado da Parte Contrária</label><input type="text" id="d-advogado-contraria" placeholder="Nome completo"></div>
         </div>
 
@@ -884,14 +884,14 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <div class="info-box"><span>ℹ️</span><span>O advogado solicita o(s) kit(s) (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos ou Convolação de Depósitos) e a Gabi recebe o pedido por e-mail. Se o processo tiver vários pagamentos, use <b>➕ Adicionar outro pagamento</b> pra incluir todos na mesma solicitação (ex: GDJ e GRU juntos). Quando ela concluir, a solicitação fica marcada como <b>Concluído</b> no sistema e um e-mail de retorno é aberto pra você automaticamente.</span></div>
       <form id="form-kits">
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Número do Processo</label><input type="text" id="k-processo" placeholder="0000000-00.0000.0.00.0000"></div>
-          <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="k-reclamante"></div>
-          <div class="mc-form-group"><label>Advogado Solicitante</label><select id="k-advogado"><option value="">Selecione…</option></select></div>
+          <div class="mc-form-group"><label>Número do Processo <span class="req">*</span></label><input type="text" id="k-processo" required placeholder="0000000-00.0000.0.00.0000"></div>
+          <div class="mc-form-group"><label>Nome do Reclamante <span class="req">*</span></label><input type="text" id="k-reclamante" required></div>
+          <div class="mc-form-group"><label>Advogado Solicitante <span class="req">*</span></label><select id="k-advogado" required><option value="">Selecione…</option></select></div>
         </div>
         <div id="k-pagamentos-list">
           <div class="k-pagamento-row mc-form-grid cols-3">
-            <div class="mc-form-group"><label>Tipo de Solicitação</label>
-              <select class="k-tipo" onchange="atualizarCamposKit(this)">
+            <div class="mc-form-group"><label>Tipo de Solicitação <span class="req">*</span></label>
+              <select class="k-tipo" required onchange="atualizarCamposKit(this)">
                 <option value="">Selecione…</option>
                 <option>Acordo</option>
                 <option>GDJ</option>
@@ -909,10 +909,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               </select>
               <input type="text" class="k-tipo-outro" placeholder="Especifique o tipo" style="display:none;margin-top:6px;">
             </div>
-            <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor"></div>
-            <div class="mc-form-group"><label>Data (vencimento/depósito)</label>
+            <div class="mc-form-group"><label>Valor (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" required placeholder="0,00" class="k-valor"></div>
+            <div class="mc-form-group"><label>Data (vencimento/depósito) <span class="req">*</span></label>
               <div style="display:flex;gap:8px;">
-                <input type="date" class="k-data" style="flex:1;">
+                <input type="date" class="k-data" required style="flex:1;">
                 <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)" style="display:none;">🗑️</button>
               </div>
             </div>
@@ -1088,16 +1088,16 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <div class="hint" id="v-forecast-hint"></div>
           </div>
           <div class="mc-form-group"><label>Reclamante <span class="req">*</span></label><input type="text" id="v-reclamante" required placeholder="Nome completo"></div>
-          <div class="mc-form-group"><label>Reclamada</label><input type="text" id="v-reclamada"></div>
+          <div class="mc-form-group"><label>Reclamada <span class="req">*</span></label><input type="text" id="v-reclamada" required></div>
         </div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Vara/Turma/Câmara</label><input type="text" id="v-vara"></div>
-          <div class="mc-form-group"><label>Comarca</label><input type="text" id="v-comarca"></div>
-          <div class="mc-form-group"><label>UF</label><input type="text" id="v-uf" maxlength="2" placeholder="SP" style="text-transform:uppercase;"></div>
+          <div class="mc-form-group"><label>Vara/Turma/Câmara <span class="req">*</span></label><input type="text" id="v-vara" required></div>
+          <div class="mc-form-group"><label>Comarca <span class="req">*</span></label><input type="text" id="v-comarca" required></div>
+          <div class="mc-form-group"><label>UF <span class="req">*</span></label><input type="text" id="v-uf" required maxlength="2" placeholder="SP" style="text-transform:uppercase;"></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Advogado Solicitante</label><select id="v-advogado-solicitante"><option value="">Selecione…</option></select></div>
-          <div class="mc-form-group"><label>Assistente Responsável</label><input type="text" id="v-assistente-responsavel" placeholder="Nome completo"></div>
+          <div class="mc-form-group"><label>Advogado Solicitante <span class="req">*</span></label><select id="v-advogado-solicitante" required><option value="">Selecione…</option></select></div>
+          <div class="mc-form-group"><label>Assistente Responsável <span class="req">*</span></label><input type="text" id="v-assistente-responsavel" required placeholder="Nome completo"></div>
         </div>
 
         <div class="section-title">Tipo de Solicitação</div>
@@ -2250,8 +2250,8 @@ const KITS_CC = 'giovanna.gatto@peixotoecury.com.br,grupobridgestone@peixotoecur
 
 function novaLinhaKitHTML(){
   return `<div class="k-pagamento-row mc-form-grid cols-3">
-    <div class="mc-form-group"><label>Tipo de Solicitação</label>
-      <select class="k-tipo" onchange="atualizarCamposKit(this)">
+    <div class="mc-form-group"><label>Tipo de Solicitação <span class="req">*</span></label>
+      <select class="k-tipo" required onchange="atualizarCamposKit(this)">
         <option value="">Selecione…</option>
         <option>Acordo</option>
         <option>GDJ</option>
@@ -2269,10 +2269,10 @@ function novaLinhaKitHTML(){
       </select>
       <input type="text" class="k-tipo-outro" placeholder="Especifique o tipo" style="display:none;margin-top:6px;">
     </div>
-    <div class="mc-form-group"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor"></div>
-    <div class="mc-form-group"><label>Data (vencimento/depósito)</label>
+    <div class="mc-form-group"><label>Valor (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" required placeholder="0,00" class="k-valor"></div>
+    <div class="mc-form-group"><label>Data (vencimento/depósito) <span class="req">*</span></label>
       <div style="display:flex;gap:8px;">
-        <input type="date" class="k-data" style="flex:1;">
+        <input type="date" class="k-data" required style="flex:1;">
         <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)">🗑️</button>
       </div>
     </div>
@@ -2738,6 +2738,27 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     atualizado_em: new Date().toISOString(),
   };
 
+  // Busca uma solicitação Pendente já existente do mesmo processo ANTES de montar
+  // o corpo do e-mail. Campos de identificação (Reclamada/Vara/Comarca/UF/
+  // Advogado/Assistente) deixados em branco nesta submissão preservam o que já
+  // tinha sido salvo antes, em vez de apagar — sem isso, reabrir a página só pra
+  // completar outro tipo do mesmo processo sobrescrevia esses campos com null.
+  let existente = null;
+  try{
+    const { data: existentes, error: errBusca } = await sb.from('solicitacoes_insercao_valores')
+      .select('*').eq('numero_processo', numeroProcesso).eq('status', 'Pendente')
+      .order('criado_em', {ascending:false}).limit(1);
+    if(errBusca) throw errBusca;
+    existente = (existentes && existentes[0]) || null;
+  }catch(err){
+    console.error(err);
+  }
+  if(existente){
+    ['reclamada','vara_turma_camara','comarca','uf','advogado_solicitante','assistente_responsavel'].forEach(campo => {
+      if(registro[campo] == null) registro[campo] = existente[campo] ?? null;
+    });
+  }
+
   let acima400k = false;
   let resumoValores = '';
   let resumoTipo = '';
@@ -2754,11 +2775,17 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     resumoTipo = `Tipo de Decisão: ${nn(registro.tipo_decisao)}\nTipo de Cálculo: ${registro.tipo_calculo || 'N/A'}\nData do Cálculo: ${registro.data_calculo ? dataBR(registro.data_calculo) : PH}\nRevisado: ${nn(registro.revisado)}${registro.justificativa_revisao ? '\nJustificativa Revisão: ' + registro.justificativa_revisao : ''}${registro.link_calculo ? '\nLink do Cálculo (PDF): ' + registro.link_calculo : ''}`;
   } else if(tipo === 'valores'){
     const atualHistorico = num('v-atual-historico');
-    const novoHistorico = num('v-novo-historico');
     const atualProvisao = num('v-atual-provisao');
-    const novoProvisao = num('v-novo-provisao');
     const atualAccrual = num('v-atual-accrual');
-    const novoAccrual = num('v-novo-accrual');
+    // Novo Valor em branco = "sem mudança nesta rubrica" (repete o Atual), não
+    // zero — antes, deixar em branco fazia a diferença ser calculada como se o
+    // valor tivesse sido zerado (Atual inteiro virava "diferença").
+    const novoHistoricoInformado = num('v-novo-historico');
+    const novoProvisaoInformado = num('v-novo-provisao');
+    const novoAccrualInformado = num('v-novo-accrual');
+    const novoHistorico = novoHistoricoInformado != null ? novoHistoricoInformado : atualHistorico;
+    const novoProvisao = novoProvisaoInformado != null ? novoProvisaoInformado : atualProvisao;
+    const novoAccrual = novoAccrualInformado != null ? novoAccrualInformado : atualAccrual;
     const diffHistorico = (novoHistorico || 0) - (atualHistorico || 0);
     const diffProvisao = (novoProvisao || 0) - (atualProvisao || 0);
     const diffAccrual = (novoAccrual || 0) - (atualAccrual || 0);
@@ -2793,12 +2820,9 @@ document.getElementById('form-valores').addEventListener('submit', async functio
     // Enquanto a solicitação do processo estiver Pendente, os 3 tipos (Cálculo/
     // Valores/Fase) acumulam na MESMA linha — evita que reportar só a Mudança de
     // Fase depois do Cálculo pareça "apagar" o que já tinha sido salvo.
-    const { data: existentes, error: errBusca } = await sb.from('solicitacoes_insercao_valores')
-      .select('id').eq('numero_processo', numeroProcesso).eq('status', 'Pendente')
-      .order('criado_em', {ascending:false}).limit(1);
-    if(errBusca) throw errBusca;
-    if(existentes && existentes.length){
-      const { error } = await sb.from('solicitacoes_insercao_valores').update(registro).eq('id', existentes[0].id);
+    // (busca de `existente` já feita mais acima, antes de montar o corpo do e-mail)
+    if(existente){
+      const { error } = await sb.from('solicitacoes_insercao_valores').update(registro).eq('id', existente.id);
       if(error) throw error;
       toast('Solicitação atualizada (mesmo processo, ainda Pendente). Abrindo e-mail…');
     } else {
@@ -2958,7 +2982,7 @@ async function salvarRetornoValores(){
   fecharRetornoValores();
   toast('Solicitação concluída. Abrindo e-mail de retorno…');
   const emailAdvogado = emailPorNome(r.advogado_solicitante);
-  const resumoValores = `Histórico — Atual: ${fmtMoeda(r.valor_atual_historico)} | Novo: ${fmtMoeda(r.valor_novo_historico)} | Diferença: ${fmtMoeda(r.diff_historico)}\nProvisão — Atual: ${fmtMoeda(r.valor_atual_provisao)} | Novo: ${fmtMoeda(r.valor_novo_provisao)} | Diferença: ${fmtMoeda(r.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(r.valor_atual_accrual)} | Novo: ${fmtMoeda(r.valor_novo_accrual)} | Diferença: ${fmtMoeda(r.diff_accrual)}`;
+  const resumoValores = `Histórico — Atual: ${fmtMoeda(r.valor_atual_historico)} | Novo: ${fmtMoeda(r.valor_novo_historico ?? r.valor_atual_historico)} | Diferença: ${fmtMoeda(r.diff_historico)}\nProvisão — Atual: ${fmtMoeda(r.valor_atual_provisao)} | Novo: ${fmtMoeda(r.valor_novo_provisao ?? r.valor_atual_provisao)} | Diferença: ${fmtMoeda(r.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(r.valor_atual_accrual)} | Novo: ${fmtMoeda(r.valor_novo_accrual ?? r.valor_atual_accrual)} | Diferença: ${fmtMoeda(r.diff_accrual)}`;
   const assunto = `Valores Inseridos — Processo ${nn(r.numero_processo)} — ${nn(r.nome_reclamante)}`;
   const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos a inserção/atualização referente ao processo abaixo:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Cálculo: ${r.tipo_calculo || 'N/A'}\n\n${resumoValores}\n${(r.fase_atual || r.nova_fase) ? '\nMudança de Fase: ' + nn(r.fase_atual) + ' → ' + nn(r.nova_fase) : ''}\n\nInserido no LM: ${nn(atualizacao.inserido_lm)}${atualizacao.data_insercao_lm ? ' (' + dataBR(atualizacao.data_insercao_lm) + ')' : ''}\nInserido no Elaw: ${nn(atualizacao.inserido_sistema)}${atualizacao.data_insercao_sistema ? ' (' + dataBR(atualizacao.data_insercao_sistema) + ')' : ''}\n${r.link_calculo ? '\nLink do Cálculo (PDF): ' + r.link_calculo : ''}\n\nResponsável pela inserção: ${nn(r.assistente_responsavel)}`;
   if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
