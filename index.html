@@ -1812,6 +1812,19 @@ function atualizarInserirGerencia(secao){
 
 document.getElementById('form-decisao').addEventListener('submit', async function(ev){
   ev.preventDefault();
+  /* Se marcou pra enviar algum modelo de e-mail de uma seção mas deixou "Enviar
+     para Cliente" em branco, o código antigo tratava silenciosamente como "Não"
+     (só interno) — ninguém percebia que o e-mail nunca saía pro cliente de fato.
+     Bloqueia aqui e obriga escolher Sim/Não antes de salvar. */
+  const secoesEmailMarcadas = new Set(
+    Array.from(document.querySelectorAll('.d-email-check:checked')).map(cb => DECISAO_TIPO_SECAO[cb.value])
+  );
+  const secoesFaltandoEnvio = Array.from(secoesEmailMarcadas).filter(secao => !document.getElementById('d-envio-cliente-' + secao).value);
+  if(secoesFaltandoEnvio.length){
+    const labels = secoesFaltandoEnvio.map(s => DECISAO_SECAO_LABEL[s]).join(', ');
+    toast(`Selecione "Enviar para Cliente" (Sim/Não) em: ${labels} antes de salvar.`, true);
+    return;
+  }
   const g = id => document.getElementById(id).value.trim() || null;
   const marcados = classe => {
     const v = Array.from(document.querySelectorAll('.' + classe + ':checked')).map(cb => cb.value);
@@ -2155,6 +2168,7 @@ const DECISAO_TIPO_SECAO = {
   trt: 'acordao', tst: 'acordao',
   execucao: 'execucao',
 };
+const DECISAO_SECAO_LABEL = { laudo: 'Laudo', sentenca: 'Sentença', acordao: 'Acórdão', execucao: 'Execução' };
 /* Envio para o Cliente = Sim -> vai pros contatos externos da Bridgestone (Higor/Maria,
    + Shana se Inserir Gerência = Sim), cc Grupo Bridgestone (interno).
    Envio para o Cliente = Não (ou vazio) -> fica só interno, vai só pro Grupo Bridgestone.
