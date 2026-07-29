@@ -3878,51 +3878,128 @@ function forecastAcharCabecalho(wb){
   return melhor;
 }
 
-// As ~85 colunas do arquivo, na ordem em que aparecem, como OFFSET relativo à coluna
-// "Process" (ex.: offset -16 = 16 colunas antes de "Process"; offset 5 = 5 colunas
-// depois). Várias colunas do arquivo repetem o MESMO nome de cabeçalho (Plaintiff,
-// Defendant, Deposit at the Court's disposal?...), então não dá pra achar por nome —
-// a estrutura é um relatório padrão da MADI e a posição de cada coluna é estável mês a
-// mês (só o nome da aba muda). "num" = número, "txt" = texto (datas ficam como texto,
-// porque o arquivo às vezes traz "***" no lugar de uma data).
+// O bloco de "Pedidos" (Root Cause / Risk Assessment por tipo de verba) no meio
+// do arquivo MUDA DE TAMANHO mês a mês, conforme os tipos de verba ativos —
+// então NÃO dá pra ler tudo por um offset fixo a partir da coluna "Process"
+// (era o bug antigo: Escritório/Status vinham vazios, e Provisão/Accrual vinham
+// de colunas erradas sempre que o bloco de Pedidos crescia/encolhia). Em vez
+// disso, acha cada bloco pelo NOME de uma coluna-âncora que é estável e não se
+// repete antes dela (Process 1ª/2ª ocorrência, Current Phase, Previous Phase,
+// os 3 rótulos de Depósito) e lê o resto por offset relativo a essa âncora —
+// só o próprio bloco de Pedidos (entre a 2ª "Process" e "Current Phase") pode
+// variar de tamanho, e nenhum campo é lido de dentro dele.
+function forecastResolverAncoras(header){
+  const acharDepois = (nome, desde) => {
+    for(let i = desde; i < header.length; i++){ if(header[i] === nome) return i; }
+    return -1;
+  };
+  const p1 = acharDepois('Process', 0);
+  const p2 = p1 < 0 ? -1 : acharDepois('Process', p1 + 1);
+  const cur = p2 < 0 ? -1 : acharDepois('Current Phase', p2 + 1);
+  const prev = cur < 0 ? -1 : acharDepois('Previous Phase', cur + 1);
+  const depG = prev < 0 ? -1 : acharDepois('Deposit Purpose - Guarantee', prev + 1);
+  const depP = depG < 0 ? -1 : acharDepois('Deposit Purpose - Payment', depG + 1);
+  const depR = depP < 0 ? -1 : acharDepois('Appeal Bond Deposit', depP + 1);
+  return { p1, p2, cur, prev, depG, depP, depR };
+}
+
+// [campo, tipo, âncora, offset relativo à âncora]. "num" tenta Number() (0 se
+// vazio/inválido); "txt" guarda texto ou null se vazio (ver forecastValorTexto).
 const FORECAST_COLS = [
-  [-16,'escritorio','txt'], [-15,'assessed_status','txt'], [-14,'status_processo','txt'],
-  [-13,'data_distribuicao','txt'], [-12,'data_ajuizamento','txt'], [-11,'data_encerramento','txt'],
-  [-10,'rl','txt'], [-9,'centro_custo','txt'], [-8,'data_admissao','txt'], [-7,'data_demissao','txt'],
-  [-6,'cargo','txt'], [-5,'tipo_salario','txt'], [-4,'departamento_1','txt'], [-3,'departamento_2','txt'],
-  [-2,'business','txt'], [-1,'tipo_caso','txt'],
-  [1,'revised','txt'], [2,'forecast_grupo','txt'], [3,'cidade','txt'], [4,'uf','txt'],
-  [5,'reclamante','txt'], [6,'cpf_reclamante','txt'], [7,'advogado_reclamante','txt'],
-  [8,'reclamada','txt'], [9,'terceirizacao','txt'], [10,'empresa','txt'], [11,'empresa_status','txt'],
-  [12,'fase_atual','txt'], [13,'fase_atual_divisao','txt'],
-  [14,'historico_percentual_atual','num'], [15,'historico_atual','num'], [16,'correcao_atual','num'],
-  [17,'correcao_percentual_atual','num'], [18,'juros_atual','num'], [19,'juros_percentual_atual','num'],
-  [20,'provisao_atual','num'], [21,'correcao_juros_percentual_atual','num'], [22,'total_possivel_atual','num'],
-  [23,'total_remoto_atual','num'], [24,'accrual_atual','num'],
-  [25,'fase_anterior','txt'], [26,'fase_anterior_divisao','txt'],
-  [27,'historico_percentual_anterior','num'], [28,'historico_anterior','num'], [29,'correcao_anterior','num'],
-  [30,'correcao_percentual_anterior','num'], [31,'juros_anterior','num'], [32,'juros_percentual_anterior','num'],
-  [33,'provisao_anterior','num'], [34,'correcao_juros_percentual_anterior','num'], [35,'total_possivel_anterior','num'],
-  [36,'total_remoto_anterior','num'], [37,'accrual_anterior','num'],
-  [38,'diferenca_accrual','num'], [39,'diferenca_juros_correcao','num'], [40,'diferenca_historico','num'],
-  [41,'mudanca_fase','txt'], [42,'mudanca_fase_detalhe','txt'], [43,'ajuste','txt'],
-  [44,'pagamentos_liberacao_depositos','num'], [45,'pagamento_historico_inss_honorarios_ir','num'],
-  [46,'baixa_recursal_pagamento','num'],
-  [47,'deposito_garantia_valor','num'], [48,'deposito_garantia_data','txt'],
-  [49,'deposito_garantia_disposicao_1','txt'], [50,'deposito_garantia_disposicao_2','txt'],
-  [51,'deposito_garantia_comparativo','txt'], [52,'deposito_garantia_reclamante','num'], [53,'deposito_garantia_reclamada','num'],
-  [54,'deposito_pagamento_valor','num'], [55,'deposito_pagamento_data','txt'],
-  [56,'deposito_pagamento_disposicao_1','txt'], [57,'deposito_pagamento_disposicao_2','txt'],
-  [58,'deposito_pagamento_comparativo','txt'], [59,'deposito_pagamento_reclamante','num'], [60,'deposito_pagamento_reclamada','num'],
-  [61,'deposito_recursal_valor','num'], [62,'deposito_recursal_disposicao_1','txt'], [63,'deposito_recursal_disposicao_2','txt'],
-  [64,'deposito_recursal_comparativo','txt'], [65,'deposito_recursal_reclamante','num'], [66,'deposito_recursal_reclamada','num'],
-  [67,'apontamentos_depositos','txt'], [68,'observacoes','txt'],
+  ['escritorio','txt','p1',1], ['assessed_status','txt','p1',2], ['status_processo','txt','p1',3],
+  ['data_distribuicao','txt','p1',4], ['data_ajuizamento','txt','p1',5], ['data_encerramento','txt','p1',6],
+  ['rl','txt','p1',7], ['centro_custo','txt','p1',8], ['data_admissao','txt','p1',9], ['data_demissao','txt','p1',10],
+  ['cargo','txt','p1',11], ['tipo_salario','txt','p1',12], ['departamento_1','txt','p1',13], ['departamento_2','txt','p1',14],
+  ['business','txt','p1',15], ['tipo_caso','txt','p1',16],
+
+  ['revised','txt','p2',1], ['cidade','txt','p2',2], ['uf','txt','p2',3], ['reclamante','txt','p2',4],
+  ['cpf_reclamante','txt','p2',5], ['advogado_reclamante','txt','p2',6], ['reclamada','txt','p2',7],
+  ['terceirizacao','txt','p2',8], ['empresa','txt','p2',9], ['empresa_status','txt','p2',10],
+  // "forecast_grupo" não tem mais coluna correspondente no relatório atual da MADI
+  // (o arquivo ganhou "City"/"UF" que não existiam quando esse campo foi mapeado
+  // originalmente) — fica sempre null em vez de arriscar gravar valor errado.
+
+  ['fase_atual','txt','cur',0], ['fase_atual_divisao','txt','cur',1],
+  ['historico_percentual_atual','num','cur',2], ['historico_atual','num','cur',3],
+  ['correcao_atual','num','cur',5], ['correcao_percentual_atual','num','cur',6],
+  ['juros_atual','num','cur',7], ['juros_percentual_atual','num','cur',8],
+  ['provisao_atual','num','cur',9], ['correcao_juros_percentual_atual','num','cur',10],
+  ['total_possivel_atual','num','cur',14], ['total_remoto_atual','num','cur',18], ['accrual_atual','num','cur',19],
+
+  ['fase_anterior','txt','prev',0], ['fase_anterior_divisao','txt','prev',1],
+  ['historico_percentual_anterior','num','prev',2], ['historico_anterior','num','prev',3],
+  ['correcao_anterior','num','prev',4], ['correcao_percentual_anterior','num','prev',5],
+  ['juros_anterior','num','prev',6], ['juros_percentual_anterior','num','prev',7],
+  ['provisao_anterior','num','prev',8], ['correcao_juros_percentual_anterior','num','prev',9],
+  ['total_possivel_anterior','num','prev',10], ['total_remoto_anterior','num','prev',11], ['accrual_anterior','num','prev',12],
+
+  // 9 colunas de largura fixa entre o resumo "Anterior" e o bloco de Depósitos
+  // (diferenças, mudança de fase, ajuste, pagamentos). Os nomes reais do
+  // cabeçalho não batem 1:1 com "pagamentos_liberacao_depositos" e
+  // "baixa_recursal_pagamento" (o arquivo atual não tem rótulo equivalente
+  // claro pra esses dois) — mantidos por posição relativa nesse trecho, que
+  // não varia de tamanho como o bloco de Pedidos. Vale conferir esses dois
+  // (e "diferenca_juros_correcao") depois do primeiro upload.
+  ['diferenca_juros_correcao','num','prev',14], ['diferenca_accrual','num','prev',15],
+  ['diferenca_historico','num','prev',16], ['baixa_recursal_pagamento','num','prev',17],
+  ['pagamento_historico_inss_honorarios_ir','num','prev',18],
+  ['mudanca_fase','txt','prev',19], ['mudanca_fase_detalhe','txt','prev',20], ['ajuste','txt','prev',21],
+  ['pagamentos_liberacao_depositos','num','prev',13],
+
+  ['deposito_garantia_valor','num','depG',0], ['deposito_garantia_data','txt','depG',1],
+  ['deposito_garantia_disposicao_1','txt','depG',2], ['deposito_garantia_disposicao_2','txt','depG',3],
+  ['deposito_garantia_comparativo','txt','depG',4], ['deposito_garantia_reclamante','num','depG',5], ['deposito_garantia_reclamada','num','depG',6],
+
+  ['deposito_pagamento_valor','num','depP',0], ['deposito_pagamento_data','txt','depP',1],
+  ['deposito_pagamento_disposicao_1','txt','depP',2], ['deposito_pagamento_disposicao_2','txt','depP',3],
+  ['deposito_pagamento_comparativo','txt','depP',4], ['deposito_pagamento_reclamante','num','depP',5], ['deposito_pagamento_reclamada','num','depP',6],
+
+  ['deposito_recursal_valor','num','depR',0],
+  ['deposito_recursal_disposicao_1','txt','depR',1], ['deposito_recursal_disposicao_2','txt','depR',2],
+  ['deposito_recursal_comparativo','txt','depR',3], ['deposito_recursal_reclamante','num','depR',4], ['deposito_recursal_reclamada','num','depR',5],
+  ['apontamentos_depositos','txt','depR',6], ['observacoes','txt','depR',7],
 ];
 
 function forecastValorTexto(v){
   if(v == null || v === '') return null;
   if(v instanceof Date) return v.toISOString().slice(0,10);
   return String(v).trim() || null;
+}
+
+// Lê o arquivo (Forecast ou Contingency — mesmo layout), acha o cabeçalho, resolve
+// as âncoras e monta um registro por processo. Lança erro (com mensagem pronta pra
+// mostrar na tela) se não achar "Process" ou alguma âncora essencial — isso evita
+// repetir silenciosamente o bug de colunas desalinhadas se o layout mudar de novo.
+function forecastLerArquivo(wb){
+  const achado = forecastAcharCabecalho(wb);
+  if(!achado) throw new Error('Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.');
+  const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
+  const anc = forecastResolverAncoras(header);
+  if(anc.p1 < 0) throw new Error(`Não encontrei a coluna "Process" na aba "${achado.nome}".`);
+  const faltando = [];
+  if(anc.p2 < 0) faltando.push('2ª coluna "Process"');
+  if(anc.cur < 0) faltando.push('"Current Phase"');
+  if(anc.prev < 0) faltando.push('"Previous Phase"');
+  if(anc.depG < 0) faltando.push('"Deposit Purpose - Guarantee"');
+  if(anc.depP < 0) faltando.push('"Deposit Purpose - Payment"');
+  if(anc.depR < 0) faltando.push('"Appeal Bond Deposit"');
+  if(faltando.length){
+    throw new Error(`A aba "${achado.nome}" não tem as colunas esperadas: ${faltando.join(', ')}. O layout do arquivo pode ter mudado — avise o suporte antes de confirmar a substituição.`);
+  }
+  const registros = [];
+  for(let i = achado.idx + 1; i < achado.linhas.length; i++){
+    const l = achado.linhas[i];
+    const processo = String(l[anc.p1] || '').trim();
+    if(!processo) continue; // fim dos dados da tabela
+    const registro = { processo };
+    FORECAST_COLS.forEach(([campo, tipo, ancora, offset]) => {
+      const base = anc[ancora];
+      const bruto = base < 0 ? undefined : l[base + offset];
+      registro[campo] = tipo === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
+    });
+    registros.push(registro);
+  }
+  return { nome: achado.nome, registros };
 }
 
 async function forecastUploadFile(file){
@@ -3932,35 +4009,16 @@ async function forecastUploadFile(file){
   document.querySelector('#forecast-preview').style.display = 'none';
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, {type:'array', cellDates:true});
-  const achado = forecastAcharCabecalho(wb);
-  if(!achado){
-    info.textContent = '⚠️ Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.';
-    return;
-  }
-  const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
-  const colProcesso = header.findIndex(h => h === 'Process');
-  if(colProcesso < 0){
-    info.textContent = `⚠️ Não encontrei a coluna "Process" na aba "${achado.nome}".`;
-    return;
-  }
-  const registros = [];
-  for(let i = achado.idx + 1; i < achado.linhas.length; i++){
-    const l = achado.linhas[i];
-    const processo = String(l[colProcesso] || '').trim();
-    if(!processo) continue; // fim dos dados da tabela
-    const registro = { processo };
-    FORECAST_COLS.forEach(([offset, campo, tipo]) => {
-      const bruto = l[colProcesso + offset];
-      registro[campo] = tipo === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
-    });
-    registros.push(registro);
-  }
+  let leitura;
+  try{ leitura = forecastLerArquivo(wb); }
+  catch(e){ info.textContent = '⚠️ ' + e.message; return; }
+  const { nome, registros } = leitura;
   if(!registros.length){
-    info.textContent = `⚠️ A aba "${achado.nome}" tem a coluna "Process", mas nenhuma linha com Processo preenchido.`;
+    info.textContent = `⚠️ A aba "${nome}" tem a coluna "Process", mas nenhuma linha com Processo preenchido.`;
     return;
   }
   FORECAST_PENDENTE = registros;
-  info.textContent = `✓ Arquivo lido: ${file.name} (aba "${achado.nome}")`;
+  info.textContent = `✓ Arquivo lido: ${file.name} (aba "${nome}")`;
   document.querySelector('#forecast-preview-texto').textContent =
     `${registros.length} processo(s) identificado(s), com todas as colunas do arquivo. Confirme para substituir o Forecast Atual (${HIST_FORECAST.length} processo(s) hoje) por estes dados.`;
   document.querySelector('#forecast-preview').style.display = 'block';
@@ -4171,35 +4229,16 @@ async function contingencyUploadFile(file){
   document.querySelector('#contingency-preview').style.display = 'none';
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, {type:'array', cellDates:true});
-  const achado = forecastAcharCabecalho(wb);
-  if(!achado){
-    info.textContent = '⚠️ Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.';
-    return;
-  }
-  const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
-  const colProcesso = header.findIndex(h => h === 'Process');
-  if(colProcesso < 0){
-    info.textContent = `⚠️ Não encontrei a coluna "Process" na aba "${achado.nome}".`;
-    return;
-  }
-  const registros = [];
-  for(let i = achado.idx + 1; i < achado.linhas.length; i++){
-    const l = achado.linhas[i];
-    const processo = String(l[colProcesso] || '').trim();
-    if(!processo) continue; // fim dos dados da tabela
-    const registro = { processo };
-    FORECAST_COLS.forEach(([offset, campo, tipo]) => {
-      const bruto = l[colProcesso + offset];
-      registro[campo] = tipo === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
-    });
-    registros.push(registro);
-  }
+  let leitura;
+  try{ leitura = forecastLerArquivo(wb); }
+  catch(e){ info.textContent = '⚠️ ' + e.message; return; }
+  const { nome, registros } = leitura;
   if(!registros.length){
-    info.textContent = `⚠️ A aba "${achado.nome}" tem a coluna "Process", mas nenhuma linha com Processo preenchido.`;
+    info.textContent = `⚠️ A aba "${nome}" tem a coluna "Process", mas nenhuma linha com Processo preenchido.`;
     return;
   }
   CONTINGENCY_PENDENTE = registros;
-  info.textContent = `✓ Arquivo lido: ${file.name} (aba "${achado.nome}")`;
+  info.textContent = `✓ Arquivo lido: ${file.name} (aba "${nome}")`;
   document.querySelector('#contingency-preview-texto').textContent =
     `${registros.length} processo(s) identificado(s), com todas as colunas do arquivo. Confirme para substituir o Contingency Atual (${HIST_CONTINGENCY.length} processo(s) hoje) por estes dados.`;
   document.querySelector('#contingency-preview').style.display = 'block';
