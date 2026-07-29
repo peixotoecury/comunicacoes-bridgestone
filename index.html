@@ -1346,6 +1346,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     <div class="dash-card-body">
       <div class="info-box">ℹ️ Suba aqui o Forecast (.xlsx) mais recente enviado ao cliente. O sistema lê o processo, a fase, e os valores Histórico/Provisão/Accrual (coluna "Probable" do mês atual do arquivo) de cada caso. <b>Cada upload substitui completamente</b> o forecast anterior — só existe o mais recente. Esses valores alimentam o botão "🔍 Atual" na aba Inserção de Valores.</div>
 
+      <div id="forecast-frescor-nota" style="display:none;border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:14px;font-weight:600;"></div>
+
       <div id="forecast-dropzone" style="border:2px dashed var(--azul-pc);border-radius:var(--radius-lg);padding:22px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:14px;" onclick="document.getElementById('forecast-file').click()" ondragover="event.preventDefault();this.style.background='var(--cyan-lt)'" ondragleave="this.style.background='var(--surface2)'" ondrop="forecastDropFile(event)">
         <input id="forecast-file" type="file" accept=".xlsx,.xls" style="display:none" onchange="forecastUploadFile(event.target.files[0])">
         <div style="font-size:22px;">📤</div>
@@ -1388,6 +1390,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
     <div class="dash-card-head">🧾 Contingency Atual</div>
     <div class="dash-card-body">
       <div class="info-box">ℹ️ Suba aqui o Contingency (.xlsx) mais recente enviado ao cliente — mesmo layout de colunas do Forecast, só que é o arquivo/base de Contingency. O sistema lê o processo, a fase, e os valores Histórico/Provisão/Accrual (coluna "Probable" do mês atual do arquivo) de cada caso. <b>Cada upload substitui completamente</b> o Contingency anterior — só existe o mais recente.</div>
+
+      <div id="contingency-frescor-nota" style="display:none;border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:14px;font-weight:600;"></div>
 
       <div id="contingency-dropzone" style="border:2px dashed var(--azul-pc);border-radius:var(--radius-lg);padding:22px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:14px;" onclick="document.getElementById('contingency-file').click()" ondragover="event.preventDefault();this.style.background='var(--cyan-lt)'" ondragleave="this.style.background='var(--surface2)'" ondrop="contingencyDropFile(event)">
         <input id="contingency-file" type="file" accept=".xlsx,.xls" style="display:none" onchange="contingencyUploadFile(event.target.files[0])">
@@ -4099,6 +4103,7 @@ async function carregarForecast(){
     ? new Date(maisRecente).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
     : '—';
   renderForecast();
+  compararFrescor();
 }
 
 // Todas as ~85 colunas guardadas, na mesma ordem do arquivo original, pra exibir
@@ -4300,6 +4305,54 @@ async function carregarContingency(){
     ? new Date(maisRecente).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
     : '—';
   renderContingency();
+  compararFrescor();
+}
+
+// Só existe UM "atual" por vez entre Forecast e Contingency — são enviados pelo
+// cliente em datas diferentes do mês (ex.: Contingency sempre dia 22, Forecast
+// por volta do dia 12 do mês seguinte) e cada upload substitui só a própria
+// tabela. Compara o "atualizado_em" mais recente de cada uma e avisa, nas duas
+// abas, qual delas é a versão a ser consultada no momento — sem isso dava pra
+// alguém olhar a aba errada e usar dado de um mês atrás sem perceber.
+function compararFrescor(){
+  const elF = document.querySelector('#forecast-frescor-nota');
+  const elC = document.querySelector('#contingency-frescor-nota');
+  if(!elF || !elC) return;
+  const maxDe = lista => lista.reduce((max, r) => r.atualizado_em > max ? r.atualizado_em : max, '');
+  const maxForecast = maxDe(HIST_FORECAST);
+  const maxContingency = maxDe(HIST_CONTINGENCY);
+  const fmt = iso => new Date(iso).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  const OK = 'background:var(--cyan-lt);border:1px solid rgba(46,158,91,.35);color:#1b6b3a;';
+  const AVISO = 'background:#FFF4E5;border:1px solid rgba(232,131,58,.4);color:#8a4b0a;';
+
+  if(!maxForecast && !maxContingency){
+    elF.style.display = 'none'; elC.style.display = 'none';
+    return;
+  }
+  if(maxForecast && !maxContingency){
+    elF.style.cssText += OK; elF.textContent = '✅ Única versão disponível no momento (Contingency ainda não foi carregado) — pode ser consultada.';
+    elF.style.display = 'block';
+    elC.style.display = 'none';
+    return;
+  }
+  if(maxContingency && !maxForecast){
+    elC.style.cssText += OK; elC.textContent = '✅ Única versão disponível no momento (Forecast ainda não foi carregado) — pode ser consultada.';
+    elC.style.display = 'block';
+    elF.style.display = 'none';
+    return;
+  }
+  if(maxContingency > maxForecast){
+    elC.style.cssText += OK; elC.textContent = `✅ Esta é a versão mais recente (atualizada em ${fmt(maxContingency)}) — é a que deve ser consultada.`;
+    elF.style.cssText += AVISO; elF.innerHTML = `⚠️ Existe uma versão mais recente na aba <b>Contingency Atual</b> (atualizada em ${fmt(maxContingency)}). Consulte lá em vez desta.`;
+  } else if(maxForecast > maxContingency){
+    elF.style.cssText += OK; elF.textContent = `✅ Esta é a versão mais recente (atualizada em ${fmt(maxForecast)}) — é a que deve ser consultada.`;
+    elC.style.cssText += AVISO; elC.innerHTML = `⚠️ Existe uma versão mais recente na aba <b>Forecast Atual</b> (atualizada em ${fmt(maxForecast)}). Consulte lá em vez desta.`;
+  } else {
+    elF.style.display = 'none'; elC.style.display = 'none';
+    return;
+  }
+  elF.style.display = 'block';
+  elC.style.display = 'block';
 }
 
 function limparFiltrosContingency(){
