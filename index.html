@@ -193,6 +193,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <button class="tab-btn" id="tab-btn-valores" onclick="mudarAba('valores')">💲 Inserção de Valores</button>
   <button class="tab-btn" id="tab-btn-ia" onclick="mudarAba('ia')">🤖 Lançamento IA</button>
   <button class="tab-btn" id="tab-btn-forecast" onclick="mudarAba('forecast')">📊 Forecast Atual</button>
+  <button class="tab-btn" id="tab-btn-contingency" onclick="mudarAba('contingency')">🧾 Contingency Atual</button>
 </div>
 
 <div class="main">
@@ -1376,6 +1377,49 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
       <table class="sol-table" style="min-width:5200px;">
         <thead><tr id="forecast-thead-row"></tr></thead>
         <tbody id="forecast-tbody"><tr><td class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA 8: CONTINGENCY ATUAL ================= -->
+<div class="view" id="view-contingency">
+  <div class="dash-card">
+    <div class="dash-card-head">🧾 Contingency Atual</div>
+    <div class="dash-card-body">
+      <div class="info-box">ℹ️ Suba aqui o Contingency (.xlsx) mais recente enviado ao cliente — mesmo layout de colunas do Forecast, só que é o arquivo/base de Contingency. O sistema lê o processo, a fase, e os valores Histórico/Provisão/Accrual (coluna "Probable" do mês atual do arquivo) de cada caso. <b>Cada upload substitui completamente</b> o Contingency anterior — só existe o mais recente.</div>
+
+      <div id="contingency-dropzone" style="border:2px dashed var(--azul-pc);border-radius:var(--radius-lg);padding:22px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:14px;" onclick="document.getElementById('contingency-file').click()" ondragover="event.preventDefault();this.style.background='var(--cyan-lt)'" ondragleave="this.style.background='var(--surface2)'" ondrop="contingencyDropFile(event)">
+        <input id="contingency-file" type="file" accept=".xlsx,.xls" style="display:none" onchange="contingencyUploadFile(event.target.files[0])">
+        <div style="font-size:22px;">📤</div>
+        <div style="margin-top:6px;font-weight:600;color:var(--escuro-pc);">Clique ou arraste o Contingency (.xlsx) aqui</div>
+        <div class="hint">Precisa ter uma aba com as colunas Process, Plaintiff, Current Phase, Historical Amount - Probable, Total Amount - Probable e Accrual</div>
+      </div>
+      <div id="contingency-file-info" class="hint" style="margin-bottom:10px;"></div>
+
+      <div id="contingency-preview" style="display:none;background:var(--cyan-lt);border:1px solid rgba(0,169,224,.3);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;">
+        <div id="contingency-preview-texto" style="font-weight:600;color:var(--escuro-pc);margin-bottom:10px;"></div>
+        <button type="button" class="btn-cyan" style="width:auto;padding:9px 18px;background:var(--red);" onclick="contingencyConfirmarSubstituicao(this)">⚠️ Substituir Contingency Atual (apaga o anterior)</button>
+        <button type="button" class="row-btn" style="margin-left:8px;" onclick="document.getElementById('contingency-preview').style.display='none';">Cancelar</button>
+      </div>
+
+      <div class="kpi-row" style="margin-bottom:14px;">
+        <div class="kpi-card kpi-blue"><div class="kpi-icon">📁</div><div><div class="kpi-val" id="contingency-total">0</div><div class="kpi-label">Processos no Contingency</div></div></div>
+        <div class="kpi-card kpi-blue"><div class="kpi-icon">🕒</div><div><div class="kpi-val" id="contingency-atualizado" style="font-size:16px;">—</div><div class="kpi-label">Última substituição</div></div></div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input class="filter-input" type="search" id="contingency-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderContingency()">
+      <button class="action-btn" onclick="limparFiltrosContingency()" title="Limpa a busca e todos os filtros de coluna">🧹 Limpar filtros</button>
+      <button class="action-btn" onclick="document.getElementById('contingency-table-wrap').scrollBy({left:-600,behavior:'smooth'})" title="Rolar tabela pra esquerda">◀ Rolar</button>
+      <button class="action-btn" onclick="document.getElementById('contingency-table-wrap').scrollBy({left:600,behavior:'smooth'})" title="Rolar tabela pra direita">Rolar ▶</button>
+      <button class="export-btn" id="btn-exportar-contingency">⬇ Exportar Excel</button>
+    </div>
+    <div class="table-wrap" id="contingency-table-wrap">
+      <table class="sol-table" style="min-width:5200px;">
+        <thead><tr id="contingency-thead-row"></tr></thead>
+        <tbody id="contingency-tbody"><tr><td class="empty-state">Carregando…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -4105,6 +4149,167 @@ document.querySelector('#btn-exportar-forecast').addEventListener('click', () =>
   exportarExcel(HIST_FORECAST_FILTRADO, 'Forecast_Atual');
 });
 
+/* ===================== ABA 8: CONTINGENCY ATUAL =====================
+   Igual à aba Forecast Atual (mesmo layout de arquivo, mesmas ~85 colunas por
+   posição relativa a "Process" — reaproveita forecastAcharCabecalho/FORECAST_COLS/
+   FORECAST_DISPLAY_COLS/forecastFormatarCelula), só que grava numa tabela própria
+   (contingency_atual) pra não misturar com o snapshot do Forecast. */
+let HIST_CONTINGENCY = [];
+let HIST_CONTINGENCY_FILTRADO = [];
+let CONTINGENCY_PENDENTE = null;
+
+function contingencyDropFile(ev){
+  ev.preventDefault();
+  ev.currentTarget.style.background = 'var(--surface2)';
+  contingencyUploadFile(ev.dataTransfer.files[0]);
+}
+
+async function contingencyUploadFile(file){
+  if(!file) return;
+  const info = document.querySelector('#contingency-file-info');
+  info.textContent = 'Lendo: ' + file.name;
+  document.querySelector('#contingency-preview').style.display = 'none';
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array', cellDates:true});
+  const achado = forecastAcharCabecalho(wb);
+  if(!achado){
+    info.textContent = '⚠️ Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.';
+    return;
+  }
+  const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
+  const colProcesso = header.findIndex(h => h === 'Process');
+  if(colProcesso < 0){
+    info.textContent = `⚠️ Não encontrei a coluna "Process" na aba "${achado.nome}".`;
+    return;
+  }
+  const registros = [];
+  for(let i = achado.idx + 1; i < achado.linhas.length; i++){
+    const l = achado.linhas[i];
+    const processo = String(l[colProcesso] || '').trim();
+    if(!processo) continue; // fim dos dados da tabela
+    const registro = { processo };
+    FORECAST_COLS.forEach(([offset, campo, tipo]) => {
+      const bruto = l[colProcesso + offset];
+      registro[campo] = tipo === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
+    });
+    registros.push(registro);
+  }
+  if(!registros.length){
+    info.textContent = `⚠️ A aba "${achado.nome}" tem a coluna "Process", mas nenhuma linha com Processo preenchido.`;
+    return;
+  }
+  CONTINGENCY_PENDENTE = registros;
+  info.textContent = `✓ Arquivo lido: ${file.name} (aba "${achado.nome}")`;
+  document.querySelector('#contingency-preview-texto').textContent =
+    `${registros.length} processo(s) identificado(s), com todas as colunas do arquivo. Confirme para substituir o Contingency Atual (${HIST_CONTINGENCY.length} processo(s) hoje) por estes dados.`;
+  document.querySelector('#contingency-preview').style.display = 'block';
+}
+
+async function contingencyConfirmarSubstituicao(btn){
+  if(!CONTINGENCY_PENDENTE || !CONTINGENCY_PENDENTE.length) return;
+  btn.disabled = true; btn.textContent = 'Substituindo…';
+  let concluiu = false;
+  setTimeout(() => {
+    if(!concluiu){
+      btn.disabled = false; btn.textContent = '⚠️ Substituir Contingency Atual (apaga o anterior)';
+      alert('A substituição está demorando demais (mais de 60s) e foi liberada de novo. Confira sua conexão e tente de novo — se persistir, pode ser um problema no Supabase.');
+    }
+  }, 60000);
+  try{
+    const { error: errDel } = await sb.from('contingency_atual').delete().neq('processo', '');
+    if(errDel) throw errDel;
+    const LOTE = 200;
+    for(let i = 0; i < CONTINGENCY_PENDENTE.length; i += LOTE){
+      const pedaco = CONTINGENCY_PENDENTE.slice(i, i + LOTE);
+      const { error: errIns } = await sb.from('contingency_atual').insert(pedaco);
+      if(errIns) throw errIns;
+      btn.textContent = `Substituindo… (${Math.min(i + LOTE, CONTINGENCY_PENDENTE.length)}/${CONTINGENCY_PENDENTE.length})`;
+    }
+    concluiu = true;
+    document.querySelector('#contingency-preview').style.display = 'none';
+    document.querySelector('#contingency-file-info').textContent = `✅ Contingency Atual substituído: ${CONTINGENCY_PENDENTE.length} processo(s).`;
+    CONTINGENCY_PENDENTE = null;
+    toast('Contingency Atual substituído com sucesso.');
+    await carregarContingency();
+  }catch(e){
+    concluiu = true;
+    alert('Erro ao substituir o Contingency: ' + (e.message || JSON.stringify(e)));
+  }finally{
+    btn.disabled = false; btn.textContent = '⚠️ Substituir Contingency Atual (apaga o anterior)';
+  }
+}
+
+let CONTINGENCY_REQ_ID = 0;
+async function carregarContingency(){
+  const meuId = ++CONTINGENCY_REQ_ID;
+  let tudo = [];
+  let pagina = 0;
+  const TAMANHO_PAGINA = 1000;
+  while(true){
+    const { data, error } = await sb.from('contingency_atual').select('*').order('processo')
+      .range(pagina * TAMANHO_PAGINA, pagina * TAMANHO_PAGINA + TAMANHO_PAGINA - 1);
+    if(error){ console.error(error); break; }
+    tudo = tudo.concat(data || []);
+    if(!data || data.length < TAMANHO_PAGINA) break;
+    pagina++;
+  }
+  if(meuId !== CONTINGENCY_REQ_ID) return;
+  HIST_CONTINGENCY = tudo;
+  document.querySelector('#contingency-total').textContent = HIST_CONTINGENCY.length;
+  const maisRecente = HIST_CONTINGENCY.reduce((max, r) => r.atualizado_em > max ? r.atualizado_em : max, '');
+  document.querySelector('#contingency-atualizado').textContent = maisRecente
+    ? new Date(maisRecente).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+    : '—';
+  renderContingency();
+}
+
+function limparFiltrosContingency(){
+  document.querySelector('#contingency-busca').value = '';
+  document.querySelectorAll('#contingency-thead-row .col-filter').forEach(inp => inp.value = '');
+  renderContingency();
+}
+
+function renderContingency(){
+  const theadRow = document.querySelector('#contingency-thead-row');
+  if(!theadRow.children.length){
+    theadRow.innerHTML = FORECAST_DISPLAY_COLS.map(([campo,label]) => `
+      <th>
+        <div class="th-label">${esc(label)}</div>
+        <input class="col-filter" data-campo="${campo}" placeholder="Filtrar…" oninput="renderContingency()">
+      </th>`).join('');
+  }
+  const termo = document.querySelector('#contingency-busca').value.toLowerCase();
+  const filtrosColuna = [];
+  theadRow.querySelectorAll('.col-filter').forEach(inp => {
+    const v = inp.value.trim().toLowerCase();
+    if(v) filtrosColuna.push([inp.dataset.campo, v]);
+  });
+  const tipoPorCampo = {};
+  FORECAST_DISPLAY_COLS.forEach(([campo,,tipo]) => { tipoPorCampo[campo] = tipo; });
+  const rows = HIST_CONTINGENCY.filter(r => {
+    if(termo && !((r.processo||'').toLowerCase().includes(termo) || (r.reclamante||'').toLowerCase().includes(termo))) return false;
+    for(const [campo, valorFiltro] of filtrosColuna){
+      const texto = forecastFormatarCelula(r[campo], tipoPorCampo[campo]).toLowerCase();
+      if(!texto.includes(valorFiltro)) return false;
+    }
+    return true;
+  });
+  HIST_CONTINGENCY_FILTRADO = rows;
+  const tbody = document.querySelector('#contingency-tbody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="${FORECAST_DISPLAY_COLS.length}" class="empty-state">${HIST_CONTINGENCY.length ? 'Nenhum processo encontrado.' : 'Nenhum Contingency carregado ainda — suba um arquivo acima.'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>${FORECAST_DISPLAY_COLS.map(([campo,,tipo], i) =>
+      `<td${i===0 ? ' class="mono"' : ''}>${forecastFormatarCelula(r[campo], tipo)}</td>`).join('')}
+    </tr>`).join('');
+}
+
+document.querySelector('#btn-exportar-contingency').addEventListener('click', () => {
+  exportarExcel(HIST_CONTINGENCY_FILTRADO, 'Contingency_Atual');
+});
+
 // Busca o processo digitado em "Inserção de Valores" no Forecast Atual e preenche
 // os 3 campos "Valor Atual" (só se ainda estiverem vazios, pra não sobrescrever
 // algo que a pessoa já digitou na mão).
@@ -4156,6 +4361,7 @@ if(!sb){
   carregarHistoricoAcordos();
   carregarHistoricoValores();
   carregarForecast();
+  carregarContingency();
 
   assinarRealtime('comunicacoes_pericia', carregarHistoricoPericia);
   assinarRealtime('comunicacoes_calculos', carregarHistoricoCalculos);
@@ -4172,6 +4378,11 @@ if(!sb){
   assinarRealtime('forecast_atual', () => {
     clearTimeout(forecastDebounce);
     forecastDebounce = setTimeout(carregarForecast, 400);
+  });
+  let contingencyDebounce = null;
+  assinarRealtime('contingency_atual', () => {
+    clearTimeout(contingencyDebounce);
+    contingencyDebounce = setTimeout(carregarContingency, 400);
   });
 }
 </script>

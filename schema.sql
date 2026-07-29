@@ -438,6 +438,14 @@ create table forecast_atual (
 alter table forecast_atual enable row level security;
 create policy "anon all" on forecast_atual for all to anon using (true) with check (true);
 
+-- "Contingency Atual" — mesma estrutura da forecast_atual acima (mesmo layout de
+-- arquivo, só que a snapshot é a do Contingency em vez do Forecast). Ver
+-- add_contingency_atual.sql pra rodar isso num banco que já tenha forecast_atual.
+drop table if exists contingency_atual;
+create table contingency_atual (like forecast_atual including all);
+alter table contingency_atual enable row level security;
+create policy "anon all" on contingency_atual for all to anon using (true) with check (true);
+
 -- Realtime: cada aba assina mudanças na sua tabela pra atualizar sozinha sem F5.
 alter publication supabase_realtime add table comunicacoes_pericia;
 alter publication supabase_realtime add table comunicacoes_calculos;
@@ -446,6 +454,7 @@ alter publication supabase_realtime add table reportes_acordos;
 alter publication supabase_realtime add table kits_pagamento;
 alter publication supabase_realtime add table solicitacoes_insercao_valores;
 alter publication supabase_realtime add table forecast_atual;
+alter publication supabase_realtime add table contingency_atual;
 
 -- =====================================================================
 -- Migração: campos "Mudança de Fase" na aba Inserção de Valores (rodar só
