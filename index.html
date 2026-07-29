@@ -3882,87 +3882,186 @@ function forecastAcharCabecalho(wb){
   return melhor;
 }
 
-// O bloco de "Pedidos" (Root Cause / Risk Assessment por tipo de verba) no meio
-// do arquivo MUDA DE TAMANHO mês a mês, conforme os tipos de verba ativos —
-// então NÃO dá pra ler tudo por um offset fixo a partir da coluna "Process"
-// (era o bug antigo: Escritório/Status vinham vazios, e Provisão/Accrual vinham
-// de colunas erradas sempre que o bloco de Pedidos crescia/encolhia). Em vez
-// disso, acha cada bloco pelo NOME de uma coluna-âncora que é estável e não se
-// repete antes dela (Process 1ª/2ª ocorrência, Current Phase, Previous Phase,
-// os 3 rótulos de Depósito) e lê o resto por offset relativo a essa âncora —
-// só o próprio bloco de Pedidos (entre a 2ª "Process" e "Current Phase") pode
-// variar de tamanho, e nenhum campo é lido de dentro dele.
+// O relatório da MADI existe em pelo menos DUAS variantes de layout — a "Labor"
+// (mais completa: ~280 colunas, com um enorme bloco de Pedidos/Risk Assessment
+// no meio e detalhamento de Possible/Remote) e a "Forecast/Contingency" mais
+// enxuta (~85 colunas, sem bloco de Pedidos, sem detalhamento de Possible/
+// Remote). Colunas como Escritório/Status ou o resumo de Provisão/Accrual não
+// ficam no mesmo offset nas duas variantes — por isso o parser ancora tudo por
+// NOME de coluna dentro de janelas delimitadas por âncoras estáveis, em vez de
+// um deslocamento fixo. As únicas partes lidas por posição relativa são as que
+// se confirmaram idênticas nas duas variantes: o bloco de identificação
+// (Escritório...Tipo de Caso, sempre logo antes da coluna "Process" que
+// antecede "REVISED") e os 3 blocos de Depósito no fim do arquivo.
 function forecastResolverAncoras(header){
   const acharDepois = (nome, desde) => {
     for(let i = desde; i < header.length; i++){ if(header[i] === nome) return i; }
     return -1;
   };
-  const p1 = acharDepois('Process', 0);
-  const p2 = p1 < 0 ? -1 : acharDepois('Process', p1 + 1);
-  const cur = p2 < 0 ? -1 : acharDepois('Current Phase', p2 + 1);
+  // A coluna "Process" que interessa é sempre a que vem imediatamente antes de
+  // "REVISED" — isso vale tanto na variante com 1 coluna "Process" (Forecast/
+  // Contingency) quanto na variante com 2 (Labor, que tem uma "Process" extra
+  // bem no início, antes do bloco de identificação).
+  let pParty = -1;
+  for(let i = 0; i < header.length - 1; i++){
+    if(header[i] === 'Process' && header[i + 1] === 'REVISED'){ pParty = i; break; }
+  }
+  const cur = pParty < 0 ? -1 : acharDepois('Current Phase', pParty + 1);
   const prev = cur < 0 ? -1 : acharDepois('Previous Phase', cur + 1);
   const depG = prev < 0 ? -1 : acharDepois('Deposit Purpose - Guarantee', prev + 1);
   const depP = depG < 0 ? -1 : acharDepois('Deposit Purpose - Payment', depG + 1);
   const depR = depP < 0 ? -1 : acharDepois('Appeal Bond Deposit', depP + 1);
-  return { p1, p2, cur, prev, depG, depP, depR };
+  return { pParty, cur, prev, depG, depP, depR };
 }
 
-// [campo, tipo, âncora, offset relativo à âncora]. "num" tenta Number() (0 se
-// vazio/inválido); "txt" guarda texto ou null se vazio (ver forecastValorTexto).
-const FORECAST_COLS = [
-  ['escritorio','txt','p1',1], ['assessed_status','txt','p1',2], ['status_processo','txt','p1',3],
-  ['data_distribuicao','txt','p1',4], ['data_ajuizamento','txt','p1',5], ['data_encerramento','txt','p1',6],
-  ['rl','txt','p1',7], ['centro_custo','txt','p1',8], ['data_admissao','txt','p1',9], ['data_demissao','txt','p1',10],
-  ['cargo','txt','p1',11], ['tipo_salario','txt','p1',12], ['departamento_1','txt','p1',13], ['departamento_2','txt','p1',14],
-  ['business','txt','p1',15], ['tipo_caso','txt','p1',16],
+function acharPorNomeJanela(header, candidatos, desde, ate){
+  for(let i = desde; i < ate; i++){
+    if(candidatos.indexOf(header[i]) >= 0) return i;
+  }
+  return -1;
+}
+function acharPorPrefixoJanela(header, prefixo, desde, ate){
+  for(let i = desde; i < ate; i++){
+    if(typeof header[i] === 'string' && header[i].indexOf(prefixo) === 0) return i;
+  }
+  return -1;
+}
 
-  ['revised','txt','p2',1], ['cidade','txt','p2',2], ['uf','txt','p2',3], ['reclamante','txt','p2',4],
-  ['cpf_reclamante','txt','p2',5], ['advogado_reclamante','txt','p2',6], ['reclamada','txt','p2',7],
-  ['terceirizacao','txt','p2',8], ['empresa','txt','p2',9], ['empresa_status','txt','p2',10],
-  // "forecast_grupo" não tem mais coluna correspondente no relatório atual da MADI
-  // (o arquivo ganhou "City"/"UF" que não existiam quando esse campo foi mapeado
-  // originalmente) — fica sempre null em vez de arriscar gravar valor errado.
+// tipo de cada campo pra conversão (Number() pra "num", texto/null pra "txt" —
+// ver forecastValorTexto).
+const FORECAST_TIPOS = {
+  escritorio:'txt', assessed_status:'txt', status_processo:'txt', data_distribuicao:'txt', data_ajuizamento:'txt',
+  data_encerramento:'txt', rl:'txt', centro_custo:'txt', data_admissao:'txt', data_demissao:'txt', cargo:'txt',
+  tipo_salario:'txt', departamento_1:'txt', departamento_2:'txt', business:'txt', tipo_caso:'txt',
+  revised:'txt', cidade:'txt', uf:'txt', reclamante:'txt', cpf_reclamante:'txt', advogado_reclamante:'txt',
+  reclamada:'txt', terceirizacao:'txt', empresa:'txt', empresa_status:'txt', forecast_grupo:'txt',
+  fase_atual:'txt', fase_atual_divisao:'txt', historico_percentual_atual:'num', historico_atual:'num',
+  correcao_atual:'num', correcao_percentual_atual:'num', juros_atual:'num', juros_percentual_atual:'num',
+  provisao_atual:'num', correcao_juros_percentual_atual:'num', total_possivel_atual:'num', total_remoto_atual:'num',
+  accrual_atual:'num',
+  fase_anterior:'txt', fase_anterior_divisao:'txt', historico_percentual_anterior:'num', historico_anterior:'num',
+  correcao_anterior:'num', correcao_percentual_anterior:'num', juros_anterior:'num', juros_percentual_anterior:'num',
+  provisao_anterior:'num', correcao_juros_percentual_anterior:'num', total_possivel_anterior:'num',
+  total_remoto_anterior:'num', accrual_anterior:'num',
+  diferenca_accrual:'num', diferenca_juros_correcao:'num', diferenca_historico:'num', mudanca_fase:'txt',
+  mudanca_fase_detalhe:'txt', ajuste:'txt', pagamentos_liberacao_depositos:'num',
+  pagamento_historico_inss_honorarios_ir:'num', baixa_recursal_pagamento:'num',
+  deposito_garantia_valor:'num', deposito_garantia_data:'txt', deposito_garantia_disposicao_1:'txt',
+  deposito_garantia_disposicao_2:'txt', deposito_garantia_comparativo:'txt', deposito_garantia_reclamante:'num',
+  deposito_garantia_reclamada:'num',
+  deposito_pagamento_valor:'num', deposito_pagamento_data:'txt', deposito_pagamento_disposicao_1:'txt',
+  deposito_pagamento_disposicao_2:'txt', deposito_pagamento_comparativo:'txt', deposito_pagamento_reclamante:'num',
+  deposito_pagamento_reclamada:'num',
+  deposito_recursal_valor:'num', deposito_recursal_disposicao_1:'txt', deposito_recursal_disposicao_2:'txt',
+  deposito_recursal_comparativo:'txt', deposito_recursal_reclamante:'num', deposito_recursal_reclamada:'num',
+  apontamentos_depositos:'txt', observacoes:'txt',
+};
 
-  ['fase_atual','txt','cur',0], ['fase_atual_divisao','txt','cur',1],
-  ['historico_percentual_atual','num','cur',2], ['historico_atual','num','cur',3],
-  ['correcao_atual','num','cur',5], ['correcao_percentual_atual','num','cur',6],
-  ['juros_atual','num','cur',7], ['juros_percentual_atual','num','cur',8],
-  ['provisao_atual','num','cur',9], ['correcao_juros_percentual_atual','num','cur',10],
-  ['total_possivel_atual','num','cur',14], ['total_remoto_atual','num','cur',18], ['accrual_atual','num','cur',19],
+// Monta campo -> índice de coluna a partir do cabeçalho. Retorna {erro:[...]} se
+// alguma âncora essencial não for encontrada (layout mudou de verdade).
+function forecastResolverColunas(header){
+  const anc = forecastResolverAncoras(header);
+  const faltando = [];
+  if(anc.pParty < 0) faltando.push('coluna "Process" (seguida de "REVISED")');
+  if(anc.cur < 0) faltando.push('"Current Phase"');
+  if(anc.prev < 0) faltando.push('"Previous Phase"');
+  if(anc.depG < 0) faltando.push('"Deposit Purpose - Guarantee"');
+  if(anc.depP < 0) faltando.push('"Deposit Purpose - Payment"');
+  if(anc.depR < 0) faltando.push('"Appeal Bond Deposit"');
+  if(faltando.length) return { erro: faltando };
 
-  ['fase_anterior','txt','prev',0], ['fase_anterior_divisao','txt','prev',1],
-  ['historico_percentual_anterior','num','prev',2], ['historico_anterior','num','prev',3],
-  ['correcao_anterior','num','prev',4], ['correcao_percentual_anterior','num','prev',5],
-  ['juros_anterior','num','prev',6], ['juros_percentual_anterior','num','prev',7],
-  ['provisao_anterior','num','prev',8], ['correcao_juros_percentual_anterior','num','prev',9],
-  ['total_possivel_anterior','num','prev',10], ['total_remoto_anterior','num','prev',11], ['accrual_anterior','num','prev',12],
+  const idx = {};
 
-  // 9 colunas de largura fixa entre o resumo "Anterior" e o bloco de Depósitos
-  // (diferenças, mudança de fase, ajuste, pagamentos). Os nomes reais do
-  // cabeçalho não batem 1:1 com "pagamentos_liberacao_depositos" e
-  // "baixa_recursal_pagamento" (o arquivo atual não tem rótulo equivalente
-  // claro pra esses dois) — mantidos por posição relativa nesse trecho, que
-  // não varia de tamanho como o bloco de Pedidos. Vale conferir esses dois
-  // (e "diferenca_juros_correcao") depois do primeiro upload.
-  ['diferenca_juros_correcao','num','prev',14], ['diferenca_accrual','num','prev',15],
-  ['diferenca_historico','num','prev',16], ['baixa_recursal_pagamento','num','prev',17],
-  ['pagamento_historico_inss_honorarios_ir','num','prev',18],
-  ['mudanca_fase','txt','prev',19], ['mudanca_fase_detalhe','txt','prev',20], ['ajuste','txt','prev',21],
-  ['pagamentos_liberacao_depositos','num','prev',13],
+  // Bloco de identificação — sempre as 16 colunas imediatamente antes de "Process".
+  ['escritorio','assessed_status','status_processo','data_distribuicao','data_ajuizamento','data_encerramento',
+   'rl','centro_custo','data_admissao','data_demissao','cargo','tipo_salario','departamento_1','departamento_2',
+   'business','tipo_caso'].forEach((campo, i) => { idx[campo] = anc.pParty - 16 + i; });
 
-  ['deposito_garantia_valor','num','depG',0], ['deposito_garantia_data','txt','depG',1],
-  ['deposito_garantia_disposicao_1','txt','depG',2], ['deposito_garantia_disposicao_2','txt','depG',3],
-  ['deposito_garantia_comparativo','txt','depG',4], ['deposito_garantia_reclamante','num','depG',5], ['deposito_garantia_reclamada','num','depG',6],
+  // Bloco de identificação da parte — por nome, dentro da janela até "Current Phase"
+  // (evita depender de quantas colunas existem entre REVISED e Current Phase,
+  // que varia — a variante "Forecast/Contingency" tem uma coluna "Forecast" a
+  // mais aqui que a variante "Labor" não tem).
+  [['revised',['REVISED']], ['cidade',['City']], ['uf',['UF']], ['reclamante',['Plaintiff']], ['cpf_reclamante',['ID']],
+   // "Plantiff's Attorney" (sem o "i") é erro de digitação real no arquivo do
+   // cliente, não nosso — aceita as duas grafias.
+   ['advogado_reclamante',["Plaintiff's Attorney","Plantiff's Attorney"]], ['reclamada',['Defendant']],
+   ['terceirizacao',['Outsourcings']], ['empresa',['Company']], ['empresa_status',['Company Status']],
+   ['forecast_grupo',['Forecast']],
+  ].forEach(([campo, nomes]) => { idx[campo] = acharPorNomeJanela(header, nomes, anc.pParty + 1, anc.cur); });
 
-  ['deposito_pagamento_valor','num','depP',0], ['deposito_pagamento_data','txt','depP',1],
-  ['deposito_pagamento_disposicao_1','txt','depP',2], ['deposito_pagamento_disposicao_2','txt','depP',3],
-  ['deposito_pagamento_comparativo','txt','depP',4], ['deposito_pagamento_reclamante','num','depP',5], ['deposito_pagamento_reclamada','num','depP',6],
+  idx.fase_atual = anc.cur;
+  idx.fase_atual_divisao = anc.cur + 1;
+  idx.fase_anterior = anc.prev;
+  idx.fase_anterior_divisao = anc.prev + 1;
 
-  ['deposito_recursal_valor','num','depR',0],
-  ['deposito_recursal_disposicao_1','txt','depR',1], ['deposito_recursal_disposicao_2','txt','depR',2],
-  ['deposito_recursal_comparativo','txt','depR',3], ['deposito_recursal_reclamante','num','depR',4], ['deposito_recursal_reclamada','num','depR',5],
-  ['apontamentos_depositos','txt','depR',6], ['observacoes','txt','depR',7],
-];
+  // Resumo "Atual" — por nome dentro da janela [cur+2, prev). A variante "Labor"
+  // tem colunas extras de detalhamento (Possible/Remote quebrados em Historical/
+  // Monetary/Interest) que a "Forecast/Contingency" não tem — por isso nome, não
+  // offset fixo.
+  [['historico_percentual_atual', null, 'Historical Amount - Percentage'],
+   ['historico_atual', 'Historical Amount - Probable'],
+   ['correcao_atual', 'Monetary Adjustment - Probable'],
+   ['correcao_percentual_atual', 'Monetary Adjustment - Percentage'],
+   ['juros_atual', 'Interest - Probable'],
+   ['juros_percentual_atual', 'Interest - Percentage'],
+   ['provisao_atual', 'Total Amount - Probable'],
+   ['correcao_juros_percentual_atual', 'Monetary Adjustment and Interest - Percentage'],
+   ['total_possivel_atual', 'Total Amount - Possible'],
+   ['total_remoto_atual', 'Total Amount - Remote'],
+   ['accrual_atual', 'Accrual'],
+  ].forEach(entrada => {
+    const [campo, nome, prefixo] = entrada;
+    idx[campo] = prefixo
+      ? acharPorPrefixoJanela(header, prefixo, anc.cur + 2, anc.prev)
+      : acharPorNomeJanela(header, [nome], anc.cur + 2, anc.prev);
+  });
+
+  // Resumo "Anterior" + diferenças/mudança de fase/pagamentos — tudo dentro da
+  // janela [prev+2, depG). Os nomes de diferenças/pagamentos variam entre as
+  // duas variantes do arquivo (a "Forecast/Contingency" tem rótulos mais
+  // específicos em português; a "Labor" usa rótulos genéricos em inglês) — por
+  // isso cada campo tenta uma lista de nomes candidatos, na ordem de confiança.
+  [['historico_percentual_anterior', null, 'Historical Amount - Percentage'],
+   ['historico_anterior', ['Historical Amount - Probable']],
+   ['correcao_anterior', ['Monetary Adjustment - Probable']],
+   ['correcao_percentual_anterior', ['Monetary Adjustment - Percentage']],
+   ['juros_anterior', ['Interest - Probable']],
+   ['juros_percentual_anterior', ['Interest - Percentage']],
+   ['provisao_anterior', ['Total Amount - Probable']],
+   ['correcao_juros_percentual_anterior', ['Monetary Adjustment and Interest - Percentage']],
+   ['total_possivel_anterior', ['Total Amount - Possible']],
+   ['total_remoto_anterior', ['Total Amount - Remote']],
+   ['accrual_anterior', ['Accrual']],
+   ['diferenca_accrual', ['Difference Amount (Accrual)']],
+   ['diferenca_juros_correcao', ['Diferenças juros e correção', 'Difference Amount (Probable IFRS)']],
+   ['diferenca_historico', ['Diferenças histórico - Mês anterior x Mês atual']],
+   ['mudanca_fase', ['Phase Change']],
+   ['mudanca_fase_detalhe', ['To - For']],
+   ['ajuste', ['Adjustment']],
+   ['pagamentos_liberacao_depositos', ['Pagamentos (principal) + Liberação de depósitos', 'Difference Historical Amount Percentage']],
+   ['pagamento_historico_inss_honorarios_ir', ['Pagamento valor histórico, INSS, honorários pericias definitivos e IR', 'Parte histórica do Pagamento']],
+   ['baixa_recursal_pagamento', ['Baixa Recursal para pagamento do processo', 'Difference Amount (Forecast)']],
+  ].forEach(entrada => {
+    const [campo, candidatos, prefixo] = entrada;
+    idx[campo] = prefixo
+      ? acharPorPrefixoJanela(header, prefixo, anc.prev + 2, anc.depG)
+      : acharPorNomeJanela(header, candidatos, anc.prev + 2, anc.depG);
+  });
+
+  // Blocos de Depósito (Garantia/Pagamento/Recursal) — confirmados idênticos
+  // (mesmas 7/7/6 colunas, mesma ordem) nas duas variantes de arquivo.
+  ['deposito_garantia_valor','deposito_garantia_data','deposito_garantia_disposicao_1','deposito_garantia_disposicao_2',
+   'deposito_garantia_comparativo','deposito_garantia_reclamante','deposito_garantia_reclamada']
+    .forEach((campo, i) => { idx[campo] = anc.depG + i; });
+  ['deposito_pagamento_valor','deposito_pagamento_data','deposito_pagamento_disposicao_1','deposito_pagamento_disposicao_2',
+   'deposito_pagamento_comparativo','deposito_pagamento_reclamante','deposito_pagamento_reclamada']
+    .forEach((campo, i) => { idx[campo] = anc.depP + i; });
+  ['deposito_recursal_valor','deposito_recursal_disposicao_1','deposito_recursal_disposicao_2','deposito_recursal_comparativo',
+   'deposito_recursal_reclamante','deposito_recursal_reclamada','apontamentos_depositos','observacoes']
+    .forEach((campo, i) => { idx[campo] = anc.depR + i; });
+
+  return { idx, processoCol: anc.pParty };
+}
 
 function forecastValorTexto(v){
   if(v == null || v === '') return null;
@@ -3970,36 +4069,30 @@ function forecastValorTexto(v){
   return String(v).trim() || null;
 }
 
-// Lê o arquivo (Forecast ou Contingency — mesmo layout), acha o cabeçalho, resolve
-// as âncoras e monta um registro por processo. Lança erro (com mensagem pronta pra
-// mostrar na tela) se não achar "Process" ou alguma âncora essencial — isso evita
-// repetir silenciosamente o bug de colunas desalinhadas se o layout mudar de novo.
+// Lê o arquivo (Forecast ou Contingency — aceita as duas variantes de layout,
+// ver forecastResolverAncoras), acha o cabeçalho, resolve as colunas e monta um
+// registro por processo. Lança erro (com mensagem pronta pra mostrar na tela)
+// se não achar "Process" ou alguma âncora essencial.
 function forecastLerArquivo(wb){
   const achado = forecastAcharCabecalho(wb);
   if(!achado) throw new Error('Não encontrei nenhuma aba com uma coluna "Process" neste arquivo.');
   const header = achado.linhas[achado.idx].map(h => String(h||'').trim());
-  const anc = forecastResolverAncoras(header);
-  if(anc.p1 < 0) throw new Error(`Não encontrei a coluna "Process" na aba "${achado.nome}".`);
-  const faltando = [];
-  if(anc.p2 < 0) faltando.push('2ª coluna "Process"');
-  if(anc.cur < 0) faltando.push('"Current Phase"');
-  if(anc.prev < 0) faltando.push('"Previous Phase"');
-  if(anc.depG < 0) faltando.push('"Deposit Purpose - Guarantee"');
-  if(anc.depP < 0) faltando.push('"Deposit Purpose - Payment"');
-  if(anc.depR < 0) faltando.push('"Appeal Bond Deposit"');
-  if(faltando.length){
-    throw new Error(`A aba "${achado.nome}" não tem as colunas esperadas: ${faltando.join(', ')}. O layout do arquivo pode ter mudado — avise o suporte antes de confirmar a substituição.`);
+  const resolvido = forecastResolverColunas(header);
+  if(resolvido.erro){
+    throw new Error(`A aba "${achado.nome}" não tem as colunas esperadas: ${resolvido.erro.join(', ')}. O layout do arquivo pode ter mudado — avise o suporte antes de confirmar a substituição.`);
   }
+  const { idx, processoCol } = resolvido;
+  const campos = Object.keys(idx);
   const registros = [];
   for(let i = achado.idx + 1; i < achado.linhas.length; i++){
     const l = achado.linhas[i];
-    const processo = String(l[anc.p1] || '').trim();
+    const processo = String(l[processoCol] || '').trim();
     if(!processo) continue; // fim dos dados da tabela
     const registro = { processo };
-    FORECAST_COLS.forEach(([campo, tipo, ancora, offset]) => {
-      const base = anc[ancora];
-      const bruto = base < 0 ? undefined : l[base + offset];
-      registro[campo] = tipo === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
+    campos.forEach(campo => {
+      const colIdx = idx[campo];
+      const bruto = colIdx == null || colIdx < 0 ? undefined : l[colIdx];
+      registro[campo] = FORECAST_TIPOS[campo] === 'num' ? (Number(bruto) || 0) : forecastValorTexto(bruto);
     });
     registros.push(registro);
   }
