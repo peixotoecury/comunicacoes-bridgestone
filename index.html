@@ -1078,6 +1078,15 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   <div class="dash-card">
     <div class="dash-card-head">💲 Nova Solicitação de Inserção de Valores</div>
     <div class="dash-card-body">
+      <div class="mc-form-group" style="max-width:360px;margin-bottom:18px;">
+        <label>Quem está enviando? <span class="req">*</span></label>
+        <select id="v-quem-envia" onchange="alternarModoValores()">
+          <option value="advogado">Advogado (nova solicitação pra Gabi)</option>
+          <option value="gabi">Gabi (cobrança de pendência pro Grupo Bridgestone)</option>
+        </select>
+      </div>
+
+      <div id="v-modo-advogado">
       <div class="info-box"><span>ℹ️</span><span>O pedido é do advogado para a assistente — o e-mail vai para <b>Gabi</b>, com cópia para o Grupo Bridgestone, e abre direto ao salvar. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, aparece um botão pra abrir a nota extra pro <b>Nicolau</b>. Cada processo mantém <b>uma linha só</b> enquanto estiver Pendente — mandar primeiro o Cálculo e depois a Mudança de Fase (por exemplo) atualiza a mesma solicitação, em vez de criar outra desconectada. Quando a assistente confirmar a inserção (botão <b>✅ Concluir</b> no histórico), o sistema marca como Concluído e abre o e-mail de retorno pro advogado.</span></div>
       <form id="form-valores">
         <div class="section-title">Identificação</div>
@@ -1206,6 +1215,18 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
         <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
       </form>
+      </div>
+
+      <div id="v-modo-gabi" style="display:none;">
+      <div class="info-box"><span>ℹ️</span><span>Aqui é a <b>Gabi cobrando</b> uma inserção que já foi pedida há tempos e continua pendente — o e-mail sai <b>dela</b> direto pro <b>Grupo Bridgestone</b> (não é mais um pedido pra ela). Digite o processo pra puxar automaticamente os dados de quem pediu e há quantos dias está parado, se ele já estiver no histórico.</span></div>
+      <div class="mc-form-grid cols-3">
+        <div class="mc-form-group"><label>Processo <span class="req">*</span></label><input type="text" id="vg-processo" required placeholder="0000000-00.0000.0.00.0000" onblur="vgBuscarPendente()"></div>
+        <div class="mc-form-group"><label>Reclamante</label><input type="text" id="vg-reclamante" placeholder="Nome completo"></div>
+      </div>
+      <div class="hint" id="vg-hint" style="margin-bottom:14px;"></div>
+      <div class="mc-form-group"><label>Observação / Justificativa <span class="req">*</span></label><textarea id="vg-observacao" rows="3" placeholder="Por que está pendente / o que falta pra resolver / o que está sendo cobrado, especificamente."></textarea></div>
+      <button type="button" class="btn-cyan" onclick="enviarCobrancaGabi()">✉️ Enviar Cobrança pro Grupo Bridgestone</button>
+      </div>
     </div>
   </div>
 
@@ -3061,6 +3082,49 @@ async function salvarRetornoValores(){
   if(!emailAdvogado) toast(`Advogado Solicitante "${nn(r.advogado_solicitante)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
   abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
   carregarHistoricoValores();
+}
+
+/* Alterna entre "Advogado pede pra Gabi" (formulário completo de sempre) e
+   "Gabi cobra o Grupo Bridgestone" (processo + observação, e-mail sai dela). */
+function alternarModoValores(){
+  const modo = document.getElementById('v-quem-envia').value;
+  document.getElementById('v-modo-advogado').style.display = modo === 'advogado' ? '' : 'none';
+  document.getElementById('v-modo-gabi').style.display = modo === 'gabi' ? '' : 'none';
+}
+
+function vgBuscarPendente(){
+  const proc = document.getElementById('vg-processo').value.trim();
+  const hint = document.getElementById('vg-hint');
+  if(!proc){ hint.textContent = ''; return; }
+  const r = HIST_VALORES.find(x => x.numero_processo === proc && (x.status||'Pendente') !== 'Concluído');
+  if(r){
+    if(!document.getElementById('vg-reclamante').value.trim()) document.getElementById('vg-reclamante').value = r.nome_reclamante || '';
+    const dias = Math.floor((new Date() - new Date(r.criado_em)) / 86400000);
+    const tipo = r.tipo_calculo || VALORES_TIPO_LABEL[r.tipo_solicitacao] || 'N/A';
+    hint.textContent = `Encontrado no histórico — pendente há ${dias} dia(s), solicitado por ${nn(r.advogado_solicitante)}, tipo ${tipo}.`;
+  } else {
+    hint.textContent = 'Processo não encontrado entre os pendentes do histórico — pode preencher e enviar mesmo assim.';
+  }
+}
+
+function enviarCobrancaGabi(){
+  const processo = document.getElementById('vg-processo').value.trim();
+  const observacao = document.getElementById('vg-observacao').value.trim();
+  if(!processo){ toast('Preencha o Processo.', true); return; }
+  if(!observacao){ toast('Preencha a Observação/Justificativa.', true); return; }
+  const reclamante = document.getElementById('vg-reclamante').value.trim();
+  const r = HIST_VALORES.find(x => x.numero_processo === processo && (x.status||'Pendente') !== 'Concluído');
+  const dias = r ? Math.floor((new Date() - new Date(r.criado_em)) / 86400000) : null;
+  const tipo = r ? (r.tipo_calculo || VALORES_TIPO_LABEL[r.tipo_solicitacao] || 'N/A') : 'N/A';
+  const solicitante = r ? nn(r.advogado_solicitante) : 'N/A';
+  const assunto = `Inserção de Valores Pendente — Processo ${processo}`;
+  const corpo = `Prezados,\n\nO processo abaixo segue pendente de inserção de valores${dias != null ? ' há ' + dias + ' dia(s)' : ''}, sem retorno até o momento:\n\nProcesso: ${processo}\nReclamante: ${nn(reclamante)}\nTipo: ${tipo}\nSolicitado por: ${solicitante}\n\nObservação/Justificativa:\n${observacao}\n\nPedimos a gentileza de priorizar.\n\nAtenciosamente,\nGabi`;
+  abrirEmail('grupobridgestone@peixotoecury.com.br', '', assunto, corpo);
+  toast('E-mail de cobrança aberto.');
+  document.getElementById('vg-processo').value = '';
+  document.getElementById('vg-reclamante').value = '';
+  document.getElementById('vg-observacao').value = '';
+  document.getElementById('vg-hint').textContent = '';
 }
 
 /* Cobrança de inserções pendentes — a Gabi manda um e-mail pro Grupo Bridgestone
