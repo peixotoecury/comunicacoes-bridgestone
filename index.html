@@ -259,8 +259,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <textarea id="p-texto-email" rows="5" required placeholder="Corpo principal do e-mail"></textarea>
         </div>
         <div class="mc-form-group">
-          <label>Observações adicionais</label>
-          <textarea id="p-observacoes" rows="3" placeholder="Opcional"></textarea>
+          <label>Observações adicionais <span class="req">*</span></label>
+          <textarea id="p-observacoes" rows="3" placeholder="Opcional" required></textarea>
         </div>
         <div class="mc-form-group">
           <label>Advogado responsável pela comunicação <span class="req">*</span></label>
@@ -334,8 +334,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
         <div class="mc-form-group">
-          <label>Outros (maiores detalhamentos)</label>
-          <textarea id="c-outros" rows="4" placeholder="Opcional"></textarea>
+          <label>Outros (maiores detalhamentos) <span class="req">*</span></label>
+          <textarea id="c-outros" rows="4" placeholder="Opcional" required></textarea>
         </div>
         <div class="mc-form-group">
           <label>Responsável pela solicitação (sigla) <span class="req">*</span></label>
@@ -374,7 +374,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Advogado Responsável <span class="req">*</span></label><select id="d-advogado-responsavel" required><option value="">Selecione…</option></select></div>
-          <div class="mc-form-group"><label>Advogado da Parte Contrária</label><input type="text" id="d-advogado-contraria" placeholder="Nome completo"></div>
+          <div class="mc-form-group"><label>Advogado da Parte Contrária <span class="req">*</span></label><input type="text" id="d-advogado-contraria" placeholder="Nome completo" required></div>
         </div>
 
         <div class="section-title">Tipo de Reporte</div>
@@ -390,15 +390,15 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="d-grupo-laudo-campos" style="display:none;">
         <div class="section-title">Periculosidade — Perícia</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Perito</label><input type="text" id="d-perito-peri"></div>
-          <div class="mc-form-group"><label>Data da Perícia</label><input type="text" id="d-data-pericia-peri" placeholder="dd/mm/aaaa"></div>
-          <div class="mc-form-group"><label>Mais um dia de perícia (especificar)</label><input type="text" id="d-pericia-dia-adicional"></div>
+          <div class="mc-form-group"><label>Perito <span class="req">*</span></label><input type="text" id="d-perito-peri" required></div>
+          <div class="mc-form-group"><label>Data da Perícia <span class="req">*</span></label><input type="text" id="d-data-pericia-peri" placeholder="dd/mm/aaaa" required></div>
+          <div class="mc-form-group"><label>Mais um dia de perícia (especificar) <span class="req">*</span></label><input type="text" id="d-pericia-dia-adicional" required></div>
         </div>
 
         <div class="section-title">Periculosidade — Laudo</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado do Laudo</label>
-            <select id="d-laudo-peri-resultado">
+          <div class="mc-form-group"><label>Resultado do Laudo <span class="req">*</span></label>
+            <select id="d-laudo-peri-resultado" required>
               <option value="">—</option>
               <option>Aguardando Realização de Perícia</option>
               <option>Aguardando Resultado do Laudo</option>
@@ -408,8 +408,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Sem Pedido</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data Início (Imprescrito)</label><input type="date" id="d-laudo-peri-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final (Imprescrito)</label><input type="date" id="d-laudo-peri-data-final"></div>
+          <div class="mc-form-group"><label>Data Início (Imprescrito) <span class="req">*</span></label><input type="date" id="d-laudo-peri-data-inicio" required></div>
+          <div class="mc-form-group"><label>Data Final (Imprescrito) <span class="req">*</span></label><input type="date" id="d-laudo-peri-data-final" required></div>
         </div>
         <div class="mc-form-group"><label>Motivo da Periculosidade (Laudo)</label>
           <div class="chk-multi">
@@ -422,13 +422,13 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             <div class="check-row"><input type="checkbox" class="d-laudo-peri-motivo-chk" value="Galpão é uma única edificação" id="d-lpm-7"><label for="d-lpm-7">Galpão é uma única edificação</label></div>
           </div>
         </div>
-        <div class="mc-form-group"><label>Detalhamento da Periculosidade</label><textarea id="d-laudo-peri-detalhamento" rows="2" placeholder="Ex: qual área/atividade específica, distância do agente, etc."></textarea></div>
-        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-peri-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
+        <div class="mc-form-group"><label>Detalhamento da Periculosidade <span class="req">*</span></label><textarea id="d-laudo-peri-detalhamento" rows="2" placeholder="Ex: qual área/atividade específica, distância do agente, etc." required></textarea></div>
+        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável) <span class="req">*</span></label><textarea id="d-laudo-peri-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos" required></textarea></div>
 
         <div class="section-title">Insalubridade — Laudo</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado do Laudo</label>
-            <select id="d-laudo-insalu-resultado">
+          <div class="mc-form-group"><label>Resultado do Laudo <span class="req">*</span></label>
+            <select id="d-laudo-insalu-resultado" required>
               <option value="">—</option>
               <option>Aguardando Realização de Perícia</option>
               <option>Aguardando Resultado do Laudo</option>
@@ -438,8 +438,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Sem Pedido</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data Início (Imprescrito)</label><input type="date" id="d-laudo-insalu-data-inicio"></div>
-          <div class="mc-form-group"><label>Data Final (Imprescrito)</label><input type="date" id="d-laudo-insalu-data-final"></div>
+          <div class="mc-form-group"><label>Data Início (Imprescrito) <span class="req">*</span></label><input type="date" id="d-laudo-insalu-data-inicio" required></div>
+          <div class="mc-form-group"><label>Data Final (Imprescrito) <span class="req">*</span></label><input type="date" id="d-laudo-insalu-data-final" required></div>
         </div>
         <div class="mc-form-grid">
           <div class="mc-form-group"><label>Motivo da Insalubridade (Laudo)</label>
@@ -456,16 +456,16 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <div class="check-row"><input type="checkbox" class="d-laudo-insalu-motivo-chk" value="Ruído" id="d-lim-10"><label for="d-lim-10">Ruído</label></div>
             </div>
           </div>
-          <div class="mc-form-group"><label>Detalhamento da Insalubridade</label><textarea id="d-laudo-insalu-detalhamento" rows="2" placeholder="Ex: Ausência de EPI's, qual o agente químico, se é falta de creme, por que condenou (ex: hidrocarboneto)"></textarea></div>
+          <div class="mc-form-group"><label>Detalhamento da Insalubridade <span class="req">*</span></label><textarea id="d-laudo-insalu-detalhamento" rows="2" placeholder="Ex: Ausência de EPI's, qual o agente químico, se é falta de creme, por que condenou (ex: hidrocarboneto)" required></textarea></div>
         </div>
-        <div class="mc-form-group"><label>Outros</label><textarea id="d-laudo-insalu-outros" rows="2"></textarea></div>
-        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-laudo-insalu-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
+        <div class="mc-form-group"><label>Outros <span class="req">*</span></label><textarea id="d-laudo-insalu-outros" rows="2" required></textarea></div>
+        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável) <span class="req">*</span></label><textarea id="d-laudo-insalu-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos" required></textarea></div>
 
         <div class="section-title">Ergonômico / Perícia Médica</div>
-        <div class="mc-form-group"><label>Laudo Pericial Ergonômico</label><textarea id="d-laudo-ergonomico" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Laudo Pericial Ergonômico <span class="req">*</span></label><textarea id="d-laudo-ergonomico" rows="2" required></textarea></div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Perito</label><input type="text" id="d-perito-medica"></div>
-          <div class="mc-form-group"><label>Data da Perícia</label><input type="text" id="d-data-pericia-medica" placeholder="dd/mm/aaaa"></div>
+          <div class="mc-form-group"><label>Perito <span class="req">*</span></label><input type="text" id="d-perito-medica" required></div>
+          <div class="mc-form-group"><label>Data da Perícia <span class="req">*</span></label><input type="text" id="d-data-pericia-medica" placeholder="dd/mm/aaaa" required></div>
         </div>
         <div class="mc-form-group"><label>Doença (Padronizada)</label>
           <div class="chk-multi chk-multi-3">
@@ -544,21 +544,21 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           </div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Motivos</label><input type="text" id="d-medica-motivos"></div>
-          <div class="mc-form-group"><label>Fonte de Informação</label>
-            <select id="d-medica-fonte-informacao"><option value="">—</option><option>Petição Inicial</option><option>Laudo Pericial</option></select>
+          <div class="mc-form-group"><label>Motivos <span class="req">*</span></label><input type="text" id="d-medica-motivos" required></div>
+          <div class="mc-form-group"><label>Fonte de Informação <span class="req">*</span></label>
+            <select id="d-medica-fonte-informacao" required><option value="">—</option><option>Petição Inicial</option><option>Laudo Pericial</option></select>
           </div>
         </div>
-        <div class="mc-form-group"><label>Resultado do Laudo</label><textarea id="d-medica-laudo-resultado" rows="2"></textarea></div>
-        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável)</label><textarea id="d-medica-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos"></textarea></div>
+        <div class="mc-form-group"><label>Resultado do Laudo <span class="req">*</span></label><textarea id="d-medica-laudo-resultado" rows="2" required></textarea></div>
+        <div class="mc-form-group"><label>Fundamentação Técnica (se Laudo Favorável) <span class="req">*</span></label><textarea id="d-medica-fundamentacao" rows="2" placeholder="Por que o laudo foi favorável — pra reaproveitar em outros casos" required></textarea></div>
         </div>
 
         <div id="d-grupo-sentenca-campos" style="display:none;">
         <div class="section-title">Sentença</div>
         <div class="info-box">ℹ️ Os campos de Periculosidade e Insalubridade abaixo são o resultado da sentença sobre esses dois temas — compare com o "Resultado do Laudo" de cada um (lá em cima) pra ver se a sentença seguiu o laudo.</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado</label>
-            <select id="d-sentenca-resultado">
+          <div class="mc-form-group"><label>Resultado <span class="req">*</span></label>
+            <select id="d-sentenca-resultado" required>
               <option value="">—</option>
               <option>Procedente</option>
               <option>Improcedente</option>
@@ -569,38 +569,38 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Pendente</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data da Sentença</label><input type="date" id="d-sentenca-data"></div>
-          <div class="mc-form-group"><label>Juiz da Sentença</label><input type="text" id="d-sentenca-juiz"></div>
+          <div class="mc-form-group"><label>Data da Sentença <span class="req">*</span></label><input type="date" id="d-sentenca-data" required></div>
+          <div class="mc-form-group"><label>Juiz da Sentença <span class="req">*</span></label><input type="text" id="d-sentenca-juiz" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Pedidos deferidos em sentença</label><textarea id="d-sentenca-deferidos" rows="2"></textarea></div>
-          <div class="mc-form-group"><label>Pedidos indeferidos em sentença</label><textarea id="d-sentenca-indeferidos" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Pedidos deferidos em sentença <span class="req">*</span></label><textarea id="d-sentenca-deferidos" rows="2" required></textarea></div>
+          <div class="mc-form-group"><label>Pedidos indeferidos em sentença <span class="req">*</span></label><textarea id="d-sentenca-indeferidos" rows="2" required></textarea></div>
         </div>
-        <div class="mc-form-group"><label>Causa Raiz</label><textarea id="d-sentenca-causa-raiz" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Causa Raiz <span class="req">*</span></label><textarea id="d-sentenca-causa-raiz" rows="2" required></textarea></div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Principal Pedido Favorável</label><textarea id="d-sentenca-principal-favoravel" rows="2"></textarea></div>
-          <div class="mc-form-group"><label>Principal Pedido Desfavorável</label><textarea id="d-sentenca-principal-desfavoravel" rows="2"></textarea></div>
+          <div class="mc-form-group"><label>Principal Pedido Favorável <span class="req">*</span></label><textarea id="d-sentenca-principal-favoravel" rows="2" required></textarea></div>
+          <div class="mc-form-group"><label>Principal Pedido Desfavorável <span class="req">*</span></label><textarea id="d-sentenca-principal-desfavoravel" rows="2" required></textarea></div>
         </div>
-        <div class="mc-form-group"><label>Obrigação de Fazer</label><textarea id="d-sentenca-obrigacao-fazer" rows="2" placeholder="Ex: reintegração imediata, retificação de CTPS, fornecimento de documentos..."></textarea></div>
+        <div class="mc-form-group"><label>Obrigação de Fazer <span class="req">*</span></label><textarea id="d-sentenca-obrigacao-fazer" rows="2" placeholder="Ex: reintegração imediata, retificação de CTPS, fornecimento de documentos..." required></textarea></div>
 
         <div class="sub-title">Sentença — Reintegração</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Há Reintegração?</label>
-            <select id="d-sentenca-reintegracao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Há Reintegração? <span class="req">*</span></label>
+            <select id="d-sentenca-reintegracao" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Resultado da Reintegração</label>
-            <select id="d-sentenca-reintegracao-resultado"><option value="">—</option><option>Deferida</option><option>Indeferida</option><option>Parcialmente Deferida</option><option>Pendente</option></select>
+          <div class="mc-form-group"><label>Resultado da Reintegração <span class="req">*</span></label>
+            <select id="d-sentenca-reintegracao-resultado" required><option value="">—</option><option>Deferida</option><option>Indeferida</option><option>Parcialmente Deferida</option><option>Pendente</option></select>
           </div>
         </div>
-        <div class="mc-form-group"><label>Nota sobre a Reintegração</label><textarea id="d-sentenca-reintegracao-nota" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Nota sobre a Reintegração <span class="req">*</span></label><textarea id="d-sentenca-reintegracao-nota" rows="2" required></textarea></div>
 
         <div class="sub-title">Sentença — Coisa Julgada</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Há Coisa Julgada?</label>
-            <select id="d-coisa-julgada"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Há Coisa Julgada? <span class="req">*</span></label>
+            <select id="d-coisa-julgada" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Resultado da Coisa Julgada</label>
-            <select id="d-coisa-julgada-resultado">
+          <div class="mc-form-group"><label>Resultado da Coisa Julgada <span class="req">*</span></label>
+            <select id="d-coisa-julgada-resultado" required>
               <option value="">—</option>
               <option>Acolhida a Coisa Julgada</option>
               <option>Aguardando Decisão</option>
@@ -608,8 +608,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Não Discutida a Coisa Julgada</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Motivo da Coisa Julgada</label>
-            <select id="d-coisa-julgada-motivo">
+          <div class="mc-form-group"><label>Motivo da Coisa Julgada <span class="req">*</span></label>
+            <select id="d-coisa-julgada-motivo" required>
               <option value="">—</option>
               <option>Acordo beneficia o reclamante</option>
               <option>Ausência de legitimidade do Sindicato</option>
@@ -625,18 +625,18 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         </div>
 
         <div class="sub-title">Sentença — Periculosidade</div>
-        <div class="mc-form-group"><label>Periculosidade na Sentença foi igual ao Laudo?</label>
-          <select id="d-decisao-peri-igual-laudo"><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
+        <div class="mc-form-group"><label>Periculosidade na Sentença foi igual ao Laudo? <span class="req">*</span></label>
+          <select id="d-decisao-peri-igual-laudo" required><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
         </div>
 
         <div class="sub-title">Sentença — Insalubridade</div>
-        <div class="mc-form-group"><label>Insalubridade na Sentença foi igual ao Laudo?</label>
-          <select id="d-decisao-insalu-igual-laudo"><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
+        <div class="mc-form-group"><label>Insalubridade na Sentença foi igual ao Laudo? <span class="req">*</span></label>
+          <select id="d-decisao-insalu-igual-laudo" required><option value="">—</option><option>Sim</option><option>Não</option><option>Parcialmente</option></select>
         </div>
 
         <div class="sub-title">Sentença — Embargos e Recurso Ordinário</div>
-        <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
-          <select id="d-sentenca-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        <div class="mc-form-group"><label>É caso de Embargos de Declaração? <span class="req">*</span></label>
+          <select id="d-sentenca-embargos" required><option value="">—</option><option>Sim</option><option>Não</option></select>
         </div>
         <div class="info-box">ℹ️ Se precisar de guias (GDJ/GRU/Custas) do Recurso Ordinário, abra uma solicitação na aba <b>Kits</b>.</div>
         </div>
@@ -644,8 +644,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="d-grupo-acordao-campos" style="display:none;">
         <div class="section-title">Acórdão TRT</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado (Reclamada)</label>
-            <select id="d-acordao-trt-reclamada">
+          <div class="mc-form-group"><label>Resultado (Reclamada) <span class="req">*</span></label>
+            <select id="d-acordao-trt-reclamada" required>
               <option value="">—</option>
               <option>Manteve</option>
               <option>Reforma parcial em favor do Reclamante</option>
@@ -656,9 +656,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Não conhecido</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data do Acórdão</label><input type="date" id="d-acordao-trt-data"></div>
-          <div class="mc-form-group"><label>Turma</label>
-            <select id="d-acordao-trt-turma">
+          <div class="mc-form-group"><label>Data do Acórdão <span class="req">*</span></label><input type="date" id="d-acordao-trt-data" required></div>
+          <div class="mc-form-group"><label>Turma <span class="req">*</span></label>
+            <select id="d-acordao-trt-turma" required>
               <option value="">—</option>
               <option>1ª Turma de SP</option>
               <option>2ª Turma de SP</option>
@@ -681,23 +681,23 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             </select>
           </div>
         </div>
-        <div class="mc-form-group"><label>Relator</label><input type="text" id="d-acordao-trt-relator"></div>
-        <div class="mc-form-group"><label>Resumo do Acórdão TRT</label><textarea id="d-acordao-trt-resumo" rows="3" placeholder="Resumo em poucas linhas do que foi decidido e dos principais fundamentos — entra direto no corpo do e-mail."></textarea></div>
+        <div class="mc-form-group"><label>Relator <span class="req">*</span></label><input type="text" id="d-acordao-trt-relator" required></div>
+        <div class="mc-form-group"><label>Resumo do Acórdão TRT <span class="req">*</span></label><textarea id="d-acordao-trt-resumo" rows="3" placeholder="Resumo em poucas linhas do que foi decidido e dos principais fundamentos — entra direto no corpo do e-mail." required></textarea></div>
 
         <div class="sub-title">Acórdão TRT — Embargos e Recurso de Revista</div>
-        <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
-          <select id="d-trt-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        <div class="mc-form-group"><label>É caso de Embargos de Declaração? <span class="req">*</span></label>
+          <select id="d-trt-embargos" required><option value="">—</option><option>Sim</option><option>Não</option></select>
         </div>
         <div class="info-box">ℹ️ Se <b>Não</b> a Embargos, preencher o Recurso de Revista abaixo.</div>
-        <div class="mc-form-group"><label>Resultado do Recurso de Revista</label>
-          <select id="d-recurso-revista-resultado"><option value="">—</option><option>Admitido</option><option>Denegado Seguimento</option><option>Pendente</option></select>
+        <div class="mc-form-group"><label>Resultado do Recurso de Revista <span class="req">*</span></label>
+          <select id="d-recurso-revista-resultado" required><option value="">—</option><option>Admitido</option><option>Denegado Seguimento</option><option>Pendente</option></select>
         </div>
         <div class="info-box">ℹ️ Se precisar de guias (GDJ/GRU/Custas) do Recurso de Revista ou do Agravo de Instrumento, abra uma solicitação na aba <b>Kits</b>.</div>
 
         <div class="section-title">Acórdão TST</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Resultado</label>
-            <select id="d-acordao-tst">
+          <div class="mc-form-group"><label>Resultado <span class="req">*</span></label>
+            <select id="d-acordao-tst" required>
               <option value="">—</option>
               <option>Manteve</option>
               <option>Reforma parcial em favor do Reclamante</option>
@@ -708,9 +708,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Não conhecido</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data do Acórdão TST</label><input type="date" id="d-acordao-tst-data"></div>
-          <div class="mc-form-group"><label>Turma</label>
-            <select id="d-acordao-tst-camara">
+          <div class="mc-form-group"><label>Data do Acórdão TST <span class="req">*</span></label><input type="date" id="d-acordao-tst-data" required></div>
+          <div class="mc-form-group"><label>Turma <span class="req">*</span></label>
+            <select id="d-acordao-tst-camara" required>
               <option value="">—</option>
               <option>1ª Turma</option>
               <option>2ª Turma</option>
@@ -723,67 +723,67 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             </select>
           </div>
         </div>
-        <div class="mc-form-group"><label>Ministro</label><input type="text" id="d-acordao-tst-ministro"></div>
-        <div class="mc-form-group"><label>Resumo do Acórdão TST</label><textarea id="d-acordao-tst-resumo" rows="3" placeholder="Resumo em poucas linhas do que foi decidido e dos principais fundamentos — entra direto no corpo do e-mail."></textarea></div>
+        <div class="mc-form-group"><label>Ministro <span class="req">*</span></label><input type="text" id="d-acordao-tst-ministro" required></div>
+        <div class="mc-form-group"><label>Resumo do Acórdão TST <span class="req">*</span></label><textarea id="d-acordao-tst-resumo" rows="3" placeholder="Resumo em poucas linhas do que foi decidido e dos principais fundamentos — entra direto no corpo do e-mail." required></textarea></div>
 
         <div class="sub-title">Acórdão TST — Embargos de Declaração</div>
-        <div class="mc-form-group"><label>É caso de Embargos de Declaração?</label>
-          <select id="d-tst-embargos"><option value="">—</option><option>Sim</option><option>Não</option></select>
+        <div class="mc-form-group"><label>É caso de Embargos de Declaração? <span class="req">*</span></label>
+          <select id="d-tst-embargos" required><option value="">—</option><option>Sim</option><option>Não</option></select>
         </div>
         </div>
 
         <div id="d-grupo-execucao-campos" style="display:none;">
         <div class="section-title">Status</div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Execução</label>
-            <select id="d-execucao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Execução <span class="req">*</span></label>
+            <select id="d-execucao" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Última Movimentação Processual</label><input type="text" id="d-ultima-movimentacao"></div>
+          <div class="mc-form-group"><label>Última Movimentação Processual <span class="req">*</span></label><input type="text" id="d-ultima-movimentacao" required></div>
         </div>
-        <div class="mc-form-group"><label>Resumo da Execução</label><textarea id="d-execucao-resumo" rows="3" placeholder="Resumo em poucas linhas dos impactos e próximos passos da execução — entra direto no corpo do e-mail."></textarea></div>
+        <div class="mc-form-group"><label>Resumo da Execução <span class="req">*</span></label><textarea id="d-execucao-resumo" rows="3" placeholder="Resumo em poucas linhas dos impactos e próximos passos da execução — entra direto no corpo do e-mail." required></textarea></div>
 
         <div class="sub-title">Execução — Valores</div>
         <div class="info-box">ℹ️ Cada valor abaixo é independente e opcional, preencha só os que se aplicarem ao caso. Os que estiverem preenchidos entram no resumo do e-mail pra Gabi.</div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Cálculo do Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-calc-reclamante-valor"></div>
-          <div class="mc-form-group"><label>Cálculo do Reclamante — Data</label><input type="date" id="d-exec-calc-reclamante-data"></div>
+          <div class="mc-form-group"><label>Cálculo do Reclamante (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-calc-reclamante-valor" required></div>
+          <div class="mc-form-group"><label>Cálculo do Reclamante — Data <span class="req">*</span></label><input type="date" id="d-exec-calc-reclamante-data" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Cálculo da Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-calc-reclamada-valor"></div>
-          <div class="mc-form-group"><label>Cálculo da Reclamada — Data</label><input type="date" id="d-exec-calc-reclamada-data"></div>
+          <div class="mc-form-group"><label>Cálculo da Reclamada (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-calc-reclamada-valor" required></div>
+          <div class="mc-form-group"><label>Cálculo da Reclamada — Data <span class="req">*</span></label><input type="date" id="d-exec-calc-reclamada-data" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Pagamento do Processo (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-pagamento-valor"></div>
-          <div class="mc-form-group"><label>Pagamento do Processo — Data</label><input type="date" id="d-exec-pagamento-data"></div>
+          <div class="mc-form-group"><label>Pagamento do Processo (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-pagamento-valor" required></div>
+          <div class="mc-form-group"><label>Pagamento do Processo — Data <span class="req">*</span></label><input type="date" id="d-exec-pagamento-data" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>INSS (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-inss-valor"></div>
-          <div class="mc-form-group"><label>INSS — Data</label><input type="date" id="d-exec-inss-data"></div>
+          <div class="mc-form-group"><label>INSS (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-inss-valor" required></div>
+          <div class="mc-form-group"><label>INSS — Data <span class="req">*</span></label><input type="date" id="d-exec-inss-data" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Garantia da Execução (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-garantia-valor"></div>
-          <div class="mc-form-group"><label>Garantia da Execução — Data</label><input type="date" id="d-exec-garantia-data"></div>
+          <div class="mc-form-group"><label>Garantia da Execução (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-garantia-valor" required></div>
+          <div class="mc-form-group"><label>Garantia da Execução — Data <span class="req">*</span></label><input type="date" id="d-exec-garantia-data" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Custas (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-custas-valor"></div>
-          <div class="mc-form-group"><label>Custas — Data</label><input type="date" id="d-exec-custas-data"></div>
+          <div class="mc-form-group"><label>Custas (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-custas-valor" required></div>
+          <div class="mc-form-group"><label>Custas — Data <span class="req">*</span></label><input type="date" id="d-exec-custas-data" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>GRU (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-gru-valor"></div>
-          <div class="mc-form-group"><label>GRU — Data</label><input type="date" id="d-exec-gru-data"></div>
+          <div class="mc-form-group"><label>GRU (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-gru-valor" required></div>
+          <div class="mc-form-group"><label>GRU — Data <span class="req">*</span></label><input type="date" id="d-exec-gru-data" required></div>
         </div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Sentença de Liquidação / Homologação dos Cálculos</label>
-            <select id="d-exec-homologacao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Sentença de Liquidação / Homologação dos Cálculos <span class="req">*</span></label>
+            <select id="d-exec-homologacao" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Valor(es) Homologado(s) (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-valor-homologado"></div>
-          <div class="mc-form-group"><label>Data da Homologação</label><input type="date" id="d-exec-valor-homologado-data"></div>
+          <div class="mc-form-group"><label>Valor(es) Homologado(s) (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="d-exec-valor-homologado" required></div>
+          <div class="mc-form-group"><label>Data da Homologação <span class="req">*</span></label><input type="date" id="d-exec-valor-homologado-data" required></div>
         </div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Solicitação de Pagamento Inserida</label>
-            <select id="d-exec-solicitacao-pagamento"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Solicitação de Pagamento Inserida <span class="req">*</span></label>
+            <select id="d-exec-solicitacao-pagamento" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Data da Solicitação de Pagamento</label><input type="date" id="d-exec-solicitacao-pagamento-data"></div>
+          <div class="mc-form-group"><label>Data da Solicitação de Pagamento <span class="req">*</span></label><input type="date" id="d-exec-solicitacao-pagamento-data" required></div>
         </div>
         </div>
 
@@ -798,11 +798,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="check-row"><input type="checkbox" class="d-email-check" value="tecnico" id="d-email-tecnico"><label for="d-email-tecnico">Laudo Pericial Técnico (Insalu./Peric.)</label></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Envio para o Cliente?</label>
-            <select id="d-envio-cliente-laudo" onchange="atualizarInserirGerencia('laudo')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Envio para o Cliente? <span class="req">*</span></label>
+            <select id="d-envio-cliente-laudo" onchange="atualizarInserirGerencia('laudo')" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
-            <select id="d-inserir-gerencia-laudo" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)? <span class="req">*</span></label>
+            <select id="d-inserir-gerencia-laudo" disabled required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
         </div>
@@ -814,11 +814,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="check-row"><input type="checkbox" class="d-email-check" value="embargos" id="d-email-embargos"><label for="d-email-embargos">Embargos de Declaração</label></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Envio para o Cliente?</label>
-            <select id="d-envio-cliente-sentenca" onchange="atualizarInserirGerencia('sentenca')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Envio para o Cliente? <span class="req">*</span></label>
+            <select id="d-envio-cliente-sentenca" onchange="atualizarInserirGerencia('sentenca')" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
-            <select id="d-inserir-gerencia-sentenca" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)? <span class="req">*</span></label>
+            <select id="d-inserir-gerencia-sentenca" disabled required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
         </div>
@@ -830,11 +830,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="check-row"><input type="checkbox" class="d-email-check" value="tst" id="d-email-tst"><label for="d-email-tst">Acórdão do TST</label></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Envio para o Cliente?</label>
-            <select id="d-envio-cliente-acordao" onchange="atualizarInserirGerencia('acordao')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Envio para o Cliente? <span class="req">*</span></label>
+            <select id="d-envio-cliente-acordao" onchange="atualizarInserirGerencia('acordao')" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
-            <select id="d-inserir-gerencia-acordao" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)? <span class="req">*</span></label>
+            <select id="d-inserir-gerencia-acordao" disabled required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
         </div>
@@ -845,11 +845,11 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="check-row"><input type="checkbox" class="d-email-check" value="execucao" id="d-email-execucao"><label for="d-email-execucao">Execução</label></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Envio para o Cliente?</label>
-            <select id="d-envio-cliente-execucao" onchange="atualizarInserirGerencia('execucao')"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Envio para o Cliente? <span class="req">*</span></label>
+            <select id="d-envio-cliente-execucao" onchange="atualizarInserirGerencia('execucao')" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Inserir Gerência (Shana)?</label>
-            <select id="d-inserir-gerencia-execucao" disabled><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Inserir Gerência (Shana)? <span class="req">*</span></label>
+            <select id="d-inserir-gerencia-execucao" disabled required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
         </div>
@@ -918,18 +918,18 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
                 <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)" style="display:none;">🗑️</button>
               </div>
             </div>
-            <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento?</label>
-              <select class="k-convolado" onchange="atualizarCamposKit(this)"><option value="">—</option><option>Sim</option><option>Não</option></select>
+            <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento? <span class="req">*</span></label>
+              <select class="k-convolado" onchange="atualizarCamposKit(this)" required><option value="">—</option><option>Sim</option><option>Não</option></select>
             </div>
-            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Convolação Integral ou Parcial?</label>
-              <select class="k-convolacao-tipo"><option value="">—</option><option>Integral</option><option>Parcial</option></select>
+            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Convolação Integral ou Parcial? <span class="req">*</span></label>
+              <select class="k-convolacao-tipo" required><option value="">—</option><option>Integral</option><option>Parcial</option></select>
             </div>
-            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pro Reclamante (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamante"></div>
-            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pra Reclamada (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamada"></div>
+            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pro Reclamante (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamante" required></div>
+            <div class="mc-form-group k-split-wrap" style="display:none;"><label>Valor pra Reclamada (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="k-valor-reclamada" required></div>
           </div>
         </div>
         <div style="margin:-4px 0 14px;"><button type="button" class="row-btn" onclick="adicionarLinhaKit()">➕ Adicionar outro pagamento</button></div>
-        <div class="mc-form-group"><label>Resumo (vai pra Gabi)</label><textarea id="k-resumo" rows="3" placeholder="Resumo em poucas linhas do que está sendo solicitado — entra direto no corpo do e-mail."></textarea></div>
+        <div class="mc-form-group"><label>Resumo (vai pra Gabi) <span class="req">*</span></label><textarea id="k-resumo" rows="3" placeholder="Resumo em poucas linhas do que está sendo solicitado — entra direto no corpo do e-mail." required></textarea></div>
         <div style="display:flex;gap:10px;">
           <button type="submit" class="btn-cyan">✉️ Enviar Solicitação pra Gabi</button>
           <button type="button" class="row-btn" onclick="limparFormularioKits()" title="Use quando trocar de processo">🧹 Limpar tudo</button>
@@ -967,23 +967,23 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Número do Processo <span class="req">*</span></label><input type="text" id="a-processo" required></div>
-          <div class="mc-form-group"><label>Nome do Reclamante</label><input type="text" id="a-reclamante"></div>
-          <div class="mc-form-group"><label>Reclamada</label><input type="text" id="a-reclamada"></div>
+          <div class="mc-form-group"><label>Nome do Reclamante <span class="req">*</span></label><input type="text" id="a-reclamante" required></div>
+          <div class="mc-form-group"><label>Reclamada <span class="req">*</span></label><input type="text" id="a-reclamada" required></div>
         </div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Departamento</label><input type="text" id="a-departamento"></div>
-          <div class="mc-form-group"><label>Comarca</label><input type="text" id="a-comarca"></div>
-          <div class="mc-form-group"><label>Vara (VT)</label><input type="text" id="a-vara"></div>
+          <div class="mc-form-group"><label>Departamento <span class="req">*</span></label><input type="text" id="a-departamento" required></div>
+          <div class="mc-form-group"><label>Comarca <span class="req">*</span></label><input type="text" id="a-comarca" required></div>
+          <div class="mc-form-group"><label>Vara (VT) <span class="req">*</span></label><input type="text" id="a-vara" required></div>
         </div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Escritório</label><input type="text" id="a-escritorio"></div>
-          <div class="mc-form-group"><label>Advogado Responsável</label><select id="a-advogado"><option value="">Selecione…</option></select></div>
+          <div class="mc-form-group"><label>Escritório <span class="req">*</span></label><input type="text" id="a-escritorio" required></div>
+          <div class="mc-form-group"><label>Advogado Responsável <span class="req">*</span></label><select id="a-advogado" required><option value="">Selecione…</option></select></div>
         </div>
 
         <div class="section-title">Negociação</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Status Acordo</label>
-            <select id="a-status-acordo">
+          <div class="mc-form-group"><label>Status Acordo <span class="req">*</span></label>
+            <select id="a-status-acordo" required>
               <option value="">—</option>
               <option>Settled</option>
               <option>Settlement pending</option>
@@ -993,36 +993,36 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Settlement reached in another lawsuit</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Status Homologação</label>
-            <select id="a-status-homologacao">
+          <div class="mc-form-group"><label>Status Homologação <span class="req">*</span></label>
+            <select id="a-status-homologacao" required>
               <option value="">—</option>
               <option>Aguardando Homologação</option>
               <option>Homologado</option>
               <option>Não Homologado</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Tem contraproposta?</label>
-            <select id="a-tem-contraproposta"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Tem contraproposta? <span class="req">*</span></label>
+            <select id="a-tem-contraproposta" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
         </div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Proposta (R$)</label><input type="number" step="0.01" id="a-proposta"></div>
-          <div class="mc-form-group"><label>Negociação em</label><input type="text" id="a-negociacao-em" placeholder="Ex: 2ª instância"></div>
-          <div class="mc-form-group"><label>PAUTÃO</label><input type="text" id="a-pautao"></div>
+          <div class="mc-form-group"><label>Proposta (R$) <span class="req">*</span></label><input type="number" step="0.01" id="a-proposta" required></div>
+          <div class="mc-form-group"><label>Negociação em <span class="req">*</span></label><input type="text" id="a-negociacao-em" placeholder="Ex: 2ª instância" required></div>
+          <div class="mc-form-group"><label>PAUTÃO <span class="req">*</span></label><input type="text" id="a-pautao" required></div>
         </div>
-        <div class="mc-form-group"><label>Justificativa</label><textarea id="a-justificativa" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Justificativa <span class="req">*</span></label><textarea id="a-justificativa" rows="2" required></textarea></div>
 
         <div class="section-title">Valores</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Total Provável (R$)</label><input type="number" step="0.01" id="a-total-provavel" oninput="recalcularEconomiaAcordo()"></div>
-          <div class="mc-form-group"><label>Total Accrual (R$)</label><input type="number" step="0.01" id="a-total-accrual" oninput="recalcularEconomiaAcordo()"></div>
-          <div class="mc-form-group"><label>Valor Pago no Acordo (R$)</label><input type="number" step="0.01" id="a-valor-pago" oninput="recalcularEconomiaAcordo()"></div>
+          <div class="mc-form-group"><label>Total Provável (R$) <span class="req">*</span></label><input type="number" step="0.01" id="a-total-provavel" oninput="recalcularEconomiaAcordo()" required></div>
+          <div class="mc-form-group"><label>Total Accrual (R$) <span class="req">*</span></label><input type="number" step="0.01" id="a-total-accrual" oninput="recalcularEconomiaAcordo()" required></div>
+          <div class="mc-form-group"><label>Valor Pago no Acordo (R$) <span class="req">*</span></label><input type="number" step="0.01" id="a-valor-pago" oninput="recalcularEconomiaAcordo()" required></div>
         </div>
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Economia (R$)</label><input type="number" step="0.01" id="a-economia" readonly></div>
           <div class="mc-form-group"><label>% Economia</label><input type="text" id="a-percentual-economia" readonly></div>
-          <div class="mc-form-group"><label>Classificação da Economia</label>
-            <select id="a-classificacao-economia">
+          <div class="mc-form-group"><label>Classificação da Economia <span class="req">*</span></label>
+            <select id="a-classificacao-economia" required>
               <option value="">—</option>
               <option>Acima de 10%</option>
               <option>Acima de 0 até 10%</option>
@@ -1033,20 +1033,20 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
         <div class="section-title">Datas</div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Data do Protocolo do Acordo</label><input type="date" id="a-data-protocolo"></div>
-          <div class="mc-form-group"><label>Data Pagamento</label><input type="date" id="a-data-pagamento"></div>
+          <div class="mc-form-group"><label>Data do Protocolo do Acordo <span class="req">*</span></label><input type="date" id="a-data-protocolo" required></div>
+          <div class="mc-form-group"><label>Data Pagamento <span class="req">*</span></label><input type="date" id="a-data-pagamento" required></div>
         </div>
 
         <div class="section-title">Aprovações</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Solicitamos autorização?</label>
-            <select id="a-solicitamos-autorizacao"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Solicitamos autorização? <span class="req">*</span></label>
+            <select id="a-solicitamos-autorizacao" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Aprovação para acordo</label>
-            <select id="a-aprovacao-acordo"><option value="">—</option><option>Sim</option><option>Não</option><option>Pendente</option></select>
+          <div class="mc-form-group"><label>Aprovação para acordo <span class="req">*</span></label>
+            <select id="a-aprovacao-acordo" required><option value="">—</option><option>Sim</option><option>Não</option><option>Pendente</option></select>
           </div>
         </div>
-        <div class="mc-form-group"><label>Informações adicionais</label><textarea id="a-informacoes-adicionais" rows="2"></textarea></div>
+        <div class="mc-form-group"><label>Informações adicionais <span class="req">*</span></label><textarea id="a-informacoes-adicionais" rows="2" required></textarea></div>
 
         <button type="submit" class="btn-cyan">💾 Salvar reporte de acordo</button>
       </form>
@@ -1125,8 +1125,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 
         <div id="v-grupo-decisao-calculo" style="display:none;">
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Tipo de Decisão</label>
-            <select id="v-tipo-decisao">
+          <div class="mc-form-group"><label>Tipo de Decisão <span class="req">*</span></label>
+            <select id="v-tipo-decisao" required>
               <option value="">—</option>
               <option>Procedente</option>
               <option>Procedente em Parte</option>
@@ -1140,8 +1140,8 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Outro</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Tipo de Cálculo</label>
-            <select id="v-tipo-calculo">
+          <div class="mc-form-group"><label>Tipo de Cálculo <span class="req">*</span></label>
+            <select id="v-tipo-calculo" required>
               <option value="">N/A</option>
               <option>Inicial</option>
               <option>Cálculo Inicial de Casos Novos</option>
@@ -1159,39 +1159,39 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
               <option>Outro</option>
             </select>
           </div>
-          <div class="mc-form-group"><label>Data do Cálculo</label><input type="date" id="v-data-calculo"></div>
+          <div class="mc-form-group"><label>Data do Cálculo <span class="req">*</span></label><input type="date" id="v-data-calculo" required></div>
         </div>
         </div>
 
         <div id="v-grupo-calculo" style="display:none;">
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Revisado</label>
-            <select id="v-revisado"><option value="">—</option><option>Sim</option><option>Não</option></select>
+          <div class="mc-form-group"><label>Revisado <span class="req">*</span></label>
+            <select id="v-revisado" required><option value="">—</option><option>Sim</option><option>Não</option></select>
           </div>
-          <div class="mc-form-group"><label>Justificativa Revisão</label><textarea id="v-justificativa-revisao" rows="2" placeholder="O que foi observado na revisão: cálculo ok ou precisa voltar para a MADI ajustar?"></textarea></div>
+          <div class="mc-form-group"><label>Justificativa Revisão <span class="req">*</span></label><textarea id="v-justificativa-revisao" rows="2" placeholder="O que foi observado na revisão: cálculo ok ou precisa voltar para a MADI ajustar?" required></textarea></div>
         </div>
-        <div class="mc-form-group"><label>Link do Cálculo (PDF)</label><input type="text" id="v-link-calculo" placeholder="https://..."></div>
+        <div class="mc-form-group"><label>Link do Cálculo (PDF) <span class="req">*</span></label><input type="text" id="v-link-calculo" placeholder="https://..." required></div>
         </div>
 
         <div id="v-grupo-valores" style="display:none;">
         <div class="sub-title">Valores — Histórico</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores();"></div>
-          <div class="mc-form-group"><label>Novo Valor do Histórico (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-historico" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Valor Atual do Histórico (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-historico" oninput="recalcularDiferencasValores();" required></div>
+          <div class="mc-form-group"><label>Novo Valor do Histórico (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-historico" oninput="recalcularDiferencasValores()" required></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-historico" readonly></div>
         </div>
 
         <div class="sub-title">Valores — Provisão</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-provisao" oninput="recalcularDiferencasValores()"></div>
-          <div class="mc-form-group"><label>Novo Valor da Provisão (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-provisao" oninput="recalcularDiferencasValores(); vRecalcularAccrualPorFase();"></div>
+          <div class="mc-form-group"><label>Valor Atual da Provisão (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-provisao" oninput="recalcularDiferencasValores()" required></div>
+          <div class="mc-form-group"><label>Novo Valor da Provisão (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-provisao" oninput="recalcularDiferencasValores(); vRecalcularAccrualPorFase();" required></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-provisao" readonly></div>
         </div>
 
         <div class="sub-title">Valores — Accrual</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Valor Atual do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-accrual" oninput="recalcularDiferencasValores()"></div>
-          <div class="mc-form-group"><label>Novo Valor do Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-accrual" oninput="recalcularDiferencasValores()"></div>
+          <div class="mc-form-group"><label>Valor Atual do Accrual (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-atual-accrual" oninput="recalcularDiferencasValores()" required></div>
+          <div class="mc-form-group"><label>Novo Valor do Accrual (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-accrual" oninput="recalcularDiferencasValores()" required></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-accrual" readonly></div>
         </div>
         <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
@@ -1200,9 +1200,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
         <div id="v-grupo-fase" style="display:none;">
         <div class="info-box">ℹ️ Preencha quando a decisão muda a fase do processo. Mesmo que a Provisão não mude, a mudança de fase recalcula o "Novo Valor do Accrual" automaticamente (Novo Valor da Provisão × % da nova fase) — confira antes de salvar.</div>
         <div class="mc-form-grid">
-          <div class="mc-form-group"><label>Fase Atual</label><input type="text" id="v-fase-atual" placeholder="Ex.: Instrução, Recursal, Execução…"></div>
-          <div class="mc-form-group"><label>Nova Fase</label>
-            <select id="v-nova-fase" onchange="vRecalcularAccrualPorFase()">
+          <div class="mc-form-group"><label>Fase Atual <span class="req">*</span></label><input type="text" id="v-fase-atual" placeholder="Ex.: Instrução, Recursal, Execução…" required></div>
+          <div class="mc-form-group"><label>Nova Fase <span class="req">*</span></label>
+            <select id="v-nova-fase" onchange="vRecalcularAccrualPorFase()" required>
               <option value="">— Não recalcular Accrual —</option>
               <option value="1">Fase 1 — Conhecimento e Instrução (40,5% do provável)</option>
               <option value="2">Fase 2 — Recursal (TRT/TST) (54% do provável)</option>
@@ -1868,6 +1868,20 @@ function renderHistoricoCalculos(){
 
 /* ===================== ABA 3: REPORTE DE DECISÃO ===================== */
 const DECISAO_SECOES = ['laudo', 'sentenca', 'acordao', 'execucao'];
+/* Campo obrigatório dentro de um bloco escondido (display:none) TRAVA o
+   submit do formulário mesmo assim — o navegador só isenta da validação
+   quem está com `disabled`, não quem só está invisível. Por isso, toda vez
+   que um bloco condicional é escondido/mostrado, sincroniza `required` com
+   a visibilidade dele (mantém `readOnly` de fora, que nunca deve ser obrigatório). */
+function sincronizarRequiredContainer(id){
+  const container = document.getElementById(id);
+  if(!container) return;
+  const visivel = container.style.display !== 'none';
+  container.querySelectorAll('input, select, textarea').forEach(el => {
+    if(el.readOnly || el.type === 'checkbox' || el.type === 'radio') return;
+    el.required = visivel;
+  });
+}
 /* "Tipo de Reporte" no topo do formulário — mostra só os campos (e o bloco de
    envio de e-mail correspondente) dos tipos marcados, pra não obrigar o
    advogado a rolar o formulário inteiro pra reportar só uma sentença, por
@@ -1879,9 +1893,12 @@ function atualizarGruposDecisao(){
     if(marcado) algumMarcado = true;
     document.getElementById('d-grupo-' + secao + '-campos').style.display = marcado ? '' : 'none';
     document.getElementById('d-grupo-' + secao + '-envio').style.display = marcado ? '' : 'none';
+    sincronizarRequiredContainer('d-grupo-' + secao + '-campos');
+    sincronizarRequiredContainer('d-grupo-' + secao + '-envio');
   });
   document.getElementById('d-grupo-vazio-hint').style.display = algumMarcado ? 'none' : '';
 }
+atualizarGruposDecisao();
 function atualizarInserirGerencia(secao){
   const envio = document.getElementById('d-envio-cliente-' + secao).value;
   const sel = document.getElementById('d-inserir-gerencia-' + secao);
@@ -2395,6 +2412,7 @@ function atualizarCamposKit(el){
   const mostrarConvolado = tipo === 'Garantia da Execução';
   convoladoWrap.style.display = mostrarConvolado ? '' : 'none';
   if(!mostrarConvolado) convoladoSelect.value = '';
+  convoladoSelect.required = mostrarConvolado; // campo obrigatório escondido trava o submit — sincroniza com a visibilidade
 
   const mostrarSplit = tipo === 'Convolação de Depósitos' || (tipo === 'Garantia da Execução' && convoladoSelect.value === 'Sim');
   row.querySelectorAll('.k-split-wrap').forEach(w => { w.style.display = mostrarSplit ? '' : 'none'; });
@@ -2403,11 +2421,13 @@ function atualizarCamposKit(el){
     row.querySelector('.k-valor-reclamante').value = '';
     row.querySelector('.k-valor-reclamada').value = '';
   }
+  row.querySelectorAll('.k-split-wrap input, .k-split-wrap select').forEach(el => { el.required = mostrarSplit; });
 }
 function atualizarBotoesRemoverKit(){
   const rows = document.querySelectorAll('#k-pagamentos-list .k-pagamento-row');
   rows.forEach(r => { r.querySelector('.k-remove-row').style.display = rows.length > 1 ? '' : 'none'; });
 }
+document.querySelectorAll('#k-pagamentos-list .k-tipo').forEach(atualizarCamposKit);
 function adicionarLinhaKit(){
   document.getElementById('k-pagamentos-list').insertAdjacentHTML('beforeend', novaLinhaKitHTML());
   atualizarBotoesRemoverKit();
@@ -2804,7 +2824,9 @@ function atualizarTipoValores(){
   document.getElementById('v-grupo-valores').style.display = tipo === 'valores' ? '' : 'none';
   document.getElementById('v-grupo-fase').style.display = tipo === 'fase' ? '' : 'none';
   document.getElementById('v-tipo-vazio-hint').style.display = tipo ? 'none' : '';
+  ['v-grupo-decisao-calculo', 'v-grupo-calculo', 'v-grupo-valores', 'v-grupo-fase'].forEach(sincronizarRequiredContainer);
 }
+atualizarTipoValores();
 
 const VALORES_TIPO_LABEL = { calculo: 'Cálculo', valores: 'Inserção de Valores/Requantificação', fase: 'Mudança de Fase' };
 document.getElementById('form-valores').addEventListener('submit', async function(ev){
