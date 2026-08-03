@@ -1076,9 +1076,9 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 <!-- ================= ABA 4B: ENCERRAMENTOS ================= -->
 <div class="view" id="view-encerramentos">
   <div class="dash-card">
-    <div class="dash-card-head">🏁 Novo Encerramento</div>
+    <div class="dash-card-head">🏁 Nova Consulta de Encerramento</div>
     <div class="dash-card-body">
-      <div class="info-box"><span>ℹ️</span><span>O advogado preenche e o e-mail vai pra <b>Gabi</b> (cópia Grupo Bridgestone) verificar o encerramento — fica <b>Pendente</b> até ela confirmar. Quando ela clicar em <b>✅ Concluir</b> no histórico, o sistema marca como <b>Concluído</b> e abre o e-mail final pro <b>Grupo Bridgestone</b>.</span></div>
+      <div class="info-box"><span>ℹ️</span><span>O advogado pergunta pra <b>Gabi</b> se um processo pode ser encerrado — o e-mail vai pra ela, com cópia pro Grupo Bridgestone, e fica <b>Pendente</b> até ela responder. No histórico, ela clica em <b>↩️ Responder</b>, informa se pode encerrar e, se sim, os dados da convolação — o sistema marca <b>Concluído</b> e abre o e-mail final pro <b>Grupo Bridgestone</b>. Se ela responder que ainda não pode, o retorno vai só pro advogado que perguntou.</span></div>
       <form id="form-encerramentos">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
@@ -1086,17 +1086,58 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
           <div class="mc-form-group"><label>Nome do Reclamante <span class="req">*</span></label><input type="text" id="enc-reclamante" required></div>
           <div class="mc-form-group"><label>Advogado Responsável <span class="req">*</span></label><select id="enc-advogado" required><option value="">Selecione…</option></select></div>
         </div>
+        <div class="mc-form-group"><label>Observação / Contexto da Pergunta <span class="req">*</span></label><textarea id="enc-pergunta" rows="3" placeholder="Ex: Já foi feito o pagamento total? Podemos encerrar este processo?" required></textarea></div>
 
+        <button type="submit" class="btn-cyan">✉️ Perguntar pra Gabi</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="dash-card">
+    <div class="dash-card-head">📜 Encerramentos Registrados <button class="export-btn" onclick="exportarExcel(HIST_ENCERRAMENTOS_FILTRADO, 'Encerramentos_Bridgestone')">⬇ Exportar Excel</button></div>
+    <div class="filters">
+      <input class="filter-input" id="enc-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoEncerramentos()">
+      <select class="filter-select" id="enc-flt-status" onchange="renderHistoricoEncerramentos()">
+        <option value="">Status: todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Concluído">Concluído</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Pode Encerrar?</th><th>Convolação DR/DJ</th><th>Status</th><th>Atualizado em</th><th>Ações</th></tr></thead>
+        <tbody id="enc-tbody"><tr><td colspan="7" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="vd-overlay" id="enc-overlay" onclick="if(event.target===this) fecharRetornoEncerramento()">
+  <div class="vd-modal" style="max-width:560px;">
+    <div class="vd-modal-head">
+      <h3 id="enc-ret-titulo">Retorno da Gabi</h3>
+      <button type="button" class="vd-close-btn" onclick="fecharRetornoEncerramento()" title="Fechar">✕</button>
+    </div>
+    <div class="vd-modal-body">
+      <input type="hidden" id="enc-ret-id">
+      <div class="mc-form-group"><label>Pode Encerrar? <span class="req">*</span></label>
+        <select id="enc-ret-pode-encerrar" required onchange="alternarConvolacaoEncerramento()">
+          <option value="">Selecione…</option>
+          <option>Sim</option>
+          <option>Não</option>
+        </select>
+      </div>
+      <div id="enc-ret-convolacao-campos" style="display:none;">
         <div class="section-title">Convolação</div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Convolação do DR/DJ Principal (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="enc-dr-dj-principal" required></div>
-          <div class="mc-form-group"><label>Convolação do DR/DJ Juros (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="enc-dr-dj-juros" required></div>
-          <div class="mc-form-group"><label>Convolação do DR/DJ (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="enc-dr-dj" required></div>
+          <div class="mc-form-group"><label>Convolação do DR/DJ Principal (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="enc-ret-dr-dj-principal"></div>
+          <div class="mc-form-group"><label>Convolação do DR/DJ Juros (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="enc-ret-dr-dj-juros"></div>
+          <div class="mc-form-group"><label>Convolação do DR/DJ (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="enc-ret-dr-dj"></div>
         </div>
         <div class="mc-form-grid cols-3">
-          <div class="mc-form-group"><label>Data <span class="req">*</span></label><input type="date" id="enc-data" required></div>
+          <div class="mc-form-group"><label>Data <span class="req">*</span></label><input type="date" id="enc-ret-data"></div>
           <div class="mc-form-group"><label>Tipo <span class="req">*</span></label>
-            <select id="enc-tipo" required>
+            <select id="enc-ret-tipo">
               <option value="">Selecione…</option>
               <option>Depósito de Garantia</option>
               <option>Depósito Judicial</option>
@@ -1105,7 +1146,7 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             </select>
           </div>
           <div class="mc-form-group"><label>Tipo de Pagamento <span class="req">*</span></label>
-            <select id="enc-tipo-pagamento" required>
+            <select id="enc-ret-tipo-pagamento">
               <option value="">Selecione…</option>
               <option>Acordo</option>
               <option>GDJ</option>
@@ -1123,38 +1164,10 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
             </select>
           </div>
         </div>
-
-        <div class="section-title">Informações</div>
-        <div class="mc-form-group"><label>Informações Sobre Depósitos <span class="req">*</span></label><textarea id="enc-info-depositos" rows="2" placeholder="Ex: Depósitos parcialmente convolados e remanescente levantado pela BSBR." required></textarea></div>
-        <div class="mc-form-group"><label>Obs. Assistentes <span class="req">*</span></label><textarea id="enc-obs-assistentes" rows="2" placeholder="Ex: convolado 18.806,89 / voltou para BSBR 31.484,91" required></textarea></div>
-
-        <button type="submit" class="btn-cyan">✉️ Enviar pra Gabi verificar</button>
-      </form>
-    </div>
-  </div>
-
-  <div class="dash-card">
-    <div class="dash-card-head">📜 Encerramentos Registrados <button class="export-btn" onclick="exportarExcel(HIST_ENCERRAMENTOS_FILTRADO, 'Encerramentos_Bridgestone')">⬇ Exportar Excel</button></div>
-    <div class="filters">
-      <input class="filter-input" id="enc-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoEncerramentos()">
-      <select class="filter-select" id="enc-flt-status" onchange="renderHistoricoEncerramentos()">
-        <option value="">Status: todos</option>
-        <option value="Pendente">Pendente</option>
-        <option value="Concluído">Concluído</option>
-      </select>
-      <select class="filter-select" id="enc-flt-tipo" onchange="renderHistoricoEncerramentos()">
-        <option value="">Tipo: todos</option>
-        <option>Depósito de Garantia</option>
-        <option>Depósito Judicial</option>
-        <option>Execução</option>
-        <option>Pagamento</option>
-      </select>
-    </div>
-    <div class="table-wrap">
-      <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Convolação DR/DJ</th><th>Data</th><th>Tipo</th><th>Tipo de Pagamento</th><th>Status</th><th>Atualizado em</th><th>Ações</th></tr></thead>
-        <tbody id="enc-tbody"><tr><td colspan="9" class="empty-state">Carregando…</td></tr></tbody>
-      </table>
+        <div class="mc-form-group"><label>Informações Sobre Depósitos <span class="req">*</span></label><textarea id="enc-ret-info-depositos" rows="2" placeholder="Ex: Depósitos parcialmente convolados e remanescente levantado pela BSBR."></textarea></div>
+        <div class="mc-form-group"><label>Obs. Assistentes</label><textarea id="enc-ret-obs-assistentes" rows="2" placeholder="Ex: convolado 18.806,89 / voltou para BSBR 31.484,91"></textarea></div>
+      </div>
+      <button type="button" class="btn-cyan" onclick="salvarRetornoEncerramento()">💾 Salvar retorno</button>
     </div>
   </div>
 </div>
@@ -2854,7 +2867,12 @@ async function salvarConclusaoAcordo(){
   carregarHistoricoAcordos();
 }
 
-/* ===================== ABA 4B: ENCERRAMENTOS ===================== */
+/* ===================== ABA 4B: ENCERRAMENTOS =====================
+   Fluxo em 2 etapas: (1) advogado pergunta pra Gabi se dá pra encerrar um
+   processo — vira 'Pendente'; (2) Gabi responde no modal ("↩️ Responder"):
+   se "Sim", entra com os dados da convolação e o sistema marca 'Concluído'
+   e manda pro Grupo Bridgestone; se "Não", o retorno vai só pro advogado
+   que perguntou (e continua 'Pendente' pra ela poder voltar depois). */
 document.getElementById('form-encerramentos').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
@@ -2862,24 +2880,17 @@ document.getElementById('form-encerramentos').addEventListener('submit', async f
     numero_processo: g('enc-processo'),
     nome_reclamante: g('enc-reclamante'),
     advogado_responsavel: g('enc-advogado'),
-    convolacao_dr_dj_principal: parseMoedaBR(document.getElementById('enc-dr-dj-principal').value),
-    convolacao_dr_dj_juros: parseMoedaBR(document.getElementById('enc-dr-dj-juros').value),
-    convolacao_dr_dj: parseMoedaBR(document.getElementById('enc-dr-dj').value),
-    data_convolacao: g('enc-data'),
-    tipo: g('enc-tipo'),
-    tipo_pagamento: g('enc-tipo-pagamento'),
-    informacoes_depositos: g('enc-info-depositos'),
-    obs_assistentes: g('enc-obs-assistentes'),
+    pergunta: g('enc-pergunta'),
+    status: 'Pendente',
     atualizado_em: new Date().toISOString(),
   };
   try{
     registro.criado_em = registro.atualizado_em;
-    registro.status = 'Pendente';
     const { error } = await sb.from('reportes_encerramentos').insert(registro);
     if(error) throw error;
-    toast('Encerramento registrado. Abrindo e-mail pra Gabi…');
-    const assunto = `Verificação de Encerramento — Processo ${nn(registro.numero_processo)}`;
-    const corpo = `Prezada Gabi,\n\nSolicitamos a verificação do encerramento abaixo:\n\nProcesso: ${nn(registro.numero_processo)}\nReclamante: ${nn(registro.nome_reclamante)}\nAdvogado Responsável: ${nn(registro.advogado_responsavel)}\n\nConvolação do DR/DJ Principal: ${registro.convolacao_dr_dj_principal != null ? fmtMoeda(registro.convolacao_dr_dj_principal) : 'N/A'}\nConvolação do DR/DJ Juros: ${registro.convolacao_dr_dj_juros != null ? fmtMoeda(registro.convolacao_dr_dj_juros) : 'N/A'}\nConvolação do DR/DJ: ${registro.convolacao_dr_dj != null ? fmtMoeda(registro.convolacao_dr_dj) : 'N/A'}\nData: ${registro.data_convolacao ? dataBR(registro.data_convolacao) : 'N/A'}\nTipo: ${nn(registro.tipo)}\nTipo de Pagamento: ${nn(registro.tipo_pagamento)}\n\nInformações Sobre Depósitos:\n${nn(registro.informacoes_depositos)}\n\nObs. Assistentes:\n${nn(registro.obs_assistentes)}`;
+    toast('Consulta registrada. Abrindo e-mail pra Gabi…');
+    const assunto = `Pode Encerrar? — Processo ${nn(registro.numero_processo)}`;
+    const corpo = `Prezada Gabi,\n\nPodemos encerrar o processo abaixo?\n\nProcesso: ${nn(registro.numero_processo)}\nReclamante: ${nn(registro.nome_reclamante)}\nAdvogado Responsável: ${nn(registro.advogado_responsavel)}\n\n${nn(registro.pergunta)}`;
     abrirEmail('cicera.vicente@peixotoecury.com.br', 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
     this.reset();
     carregarHistoricoEncerramentos();
@@ -2889,20 +2900,80 @@ document.getElementById('form-encerramentos').addEventListener('submit', async f
   }
 });
 
-async function concluirEncerramento(id){
+function alternarConvolacaoEncerramento(){
+  const podeEncerrar = document.getElementById('enc-ret-pode-encerrar').value;
+  document.getElementById('enc-ret-convolacao-campos').style.display = podeEncerrar === 'Sim' ? '' : 'none';
+}
+
+function abrirRetornoEncerramento(id){
   const r = HIST_ENCERRAMENTOS.find(x => x.id === id);
   if(!r) return;
+  document.getElementById('enc-ret-id').value = id;
+  document.getElementById('enc-ret-pode-encerrar').value = r.pode_encerrar || '';
+  document.getElementById('enc-ret-dr-dj-principal').value = r.convolacao_dr_dj_principal != null ? String(r.convolacao_dr_dj_principal).replace('.',',') : '';
+  document.getElementById('enc-ret-dr-dj-juros').value = r.convolacao_dr_dj_juros != null ? String(r.convolacao_dr_dj_juros).replace('.',',') : '';
+  document.getElementById('enc-ret-dr-dj').value = r.convolacao_dr_dj != null ? String(r.convolacao_dr_dj).replace('.',',') : '';
+  document.getElementById('enc-ret-data').value = r.data_convolacao || '';
+  document.getElementById('enc-ret-tipo').value = r.tipo || '';
+  document.getElementById('enc-ret-tipo-pagamento').value = r.tipo_pagamento || '';
+  document.getElementById('enc-ret-info-depositos').value = r.informacoes_depositos || '';
+  document.getElementById('enc-ret-obs-assistentes').value = r.obs_assistentes || '';
+  document.getElementById('enc-ret-titulo').textContent = `Retorno da Gabi — ${r.numero_processo || ''}`;
+  alternarConvolacaoEncerramento();
+  document.getElementById('enc-overlay').classList.add('show');
+}
+function fecharRetornoEncerramento(){
+  document.getElementById('enc-overlay').classList.remove('show');
+}
+
+async function salvarRetornoEncerramento(){
+  const id = Number(document.getElementById('enc-ret-id').value);
+  const r = HIST_ENCERRAMENTOS.find(x => x.id === id);
+  if(!r) return;
+  const podeEncerrar = document.getElementById('enc-ret-pode-encerrar').value;
+  if(!podeEncerrar){ toast('Escolha se pode encerrar (Sim ou Não).', true); return; }
+  if(podeEncerrar === 'Sim'){
+    const camposObrigatorios = ['enc-ret-dr-dj-principal','enc-ret-dr-dj-juros','enc-ret-dr-dj','enc-ret-data','enc-ret-tipo','enc-ret-tipo-pagamento','enc-ret-info-depositos'];
+    const faltando = camposObrigatorios.some(cid => !document.getElementById(cid).value.trim());
+    if(faltando){ toast('Preencha todos os campos da convolação — são obrigatórios quando "Pode Encerrar" é Sim.', true); return; }
+  }
   const agora = new Date().toISOString();
-  const { error } = await sb.from('reportes_encerramentos').update({ status: 'Concluído', concluido_em: agora, atualizado_em: agora }).eq('id', id);
+  const atualizacao = { pode_encerrar: podeEncerrar, atualizado_em: agora };
+  if(podeEncerrar === 'Sim'){
+    Object.assign(atualizacao, {
+      convolacao_dr_dj_principal: parseMoedaBR(document.getElementById('enc-ret-dr-dj-principal').value),
+      convolacao_dr_dj_juros: parseMoedaBR(document.getElementById('enc-ret-dr-dj-juros').value),
+      convolacao_dr_dj: parseMoedaBR(document.getElementById('enc-ret-dr-dj').value),
+      data_convolacao: document.getElementById('enc-ret-data').value || null,
+      tipo: document.getElementById('enc-ret-tipo').value || null,
+      tipo_pagamento: document.getElementById('enc-ret-tipo-pagamento').value || null,
+      informacoes_depositos: document.getElementById('enc-ret-info-depositos').value.trim() || null,
+      obs_assistentes: document.getElementById('enc-ret-obs-assistentes').value.trim() || null,
+      status: 'Concluído',
+      concluido_em: agora,
+    });
+  }
+  const { error } = await sb.from('reportes_encerramentos').update(atualizacao).eq('id', id);
   if(error){
     console.error(error);
-    toast('Erro ao concluir: ' + error.message, true);
+    toast('Erro ao salvar retorno: ' + error.message, true);
     return;
   }
-  toast('Encerramento confirmado. Abrindo e-mail pro Grupo Bridgestone…');
-  const assunto = `Encerramento — Processo ${nn(r.numero_processo)}`;
-  const corpo = `Prezados,\n\nSegue o encerramento abaixo:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nAdvogado Responsável: ${nn(r.advogado_responsavel)}\n\nConvolação do DR/DJ Principal: ${r.convolacao_dr_dj_principal != null ? fmtMoeda(r.convolacao_dr_dj_principal) : 'N/A'}\nConvolação do DR/DJ Juros: ${r.convolacao_dr_dj_juros != null ? fmtMoeda(r.convolacao_dr_dj_juros) : 'N/A'}\nConvolação do DR/DJ: ${r.convolacao_dr_dj != null ? fmtMoeda(r.convolacao_dr_dj) : 'N/A'}\nData: ${r.data_convolacao ? dataBR(r.data_convolacao) : 'N/A'}\nTipo: ${nn(r.tipo)}\nTipo de Pagamento: ${nn(r.tipo_pagamento)}\n\nInformações Sobre Depósitos:\n${nn(r.informacoes_depositos)}\n\nObs. Assistentes:\n${nn(r.obs_assistentes)}\n\nAtenciosamente,\nGrupo Bridgestone`;
-  abrirEmail('grupobridgestone@peixotoecury.com.br', '', assunto, corpo);
+  fecharRetornoEncerramento();
+  const registroFinal = { ...r, ...atualizacao };
+  if(podeEncerrar === 'Sim'){
+    toast('Encerramento confirmado. Abrindo e-mail pro Grupo Bridgestone…');
+    const assunto = `Encerramento — Processo ${nn(registroFinal.numero_processo)}`;
+    const corpo = `Prezados,\n\nSegue o encerramento abaixo:\n\nProcesso: ${nn(registroFinal.numero_processo)}\nReclamante: ${nn(registroFinal.nome_reclamante)}\nAdvogado Responsável: ${nn(registroFinal.advogado_responsavel)}\n\nConvolação do DR/DJ Principal: ${registroFinal.convolacao_dr_dj_principal != null ? fmtMoeda(registroFinal.convolacao_dr_dj_principal) : 'N/A'}\nConvolação do DR/DJ Juros: ${registroFinal.convolacao_dr_dj_juros != null ? fmtMoeda(registroFinal.convolacao_dr_dj_juros) : 'N/A'}\nConvolação do DR/DJ: ${registroFinal.convolacao_dr_dj != null ? fmtMoeda(registroFinal.convolacao_dr_dj) : 'N/A'}\nData: ${registroFinal.data_convolacao ? dataBR(registroFinal.data_convolacao) : 'N/A'}\nTipo: ${nn(registroFinal.tipo)}\nTipo de Pagamento: ${nn(registroFinal.tipo_pagamento)}\n\nInformações Sobre Depósitos:\n${nn(registroFinal.informacoes_depositos)}\n\nObs. Assistentes:\n${nn(registroFinal.obs_assistentes)}\n\nAtenciosamente,\nGrupo Bridgestone`;
+    abrirEmail('grupobridgestone@peixotoecury.com.br', '', assunto, corpo);
+  } else {
+    toast('Retorno salvo. Abrindo e-mail pro advogado…');
+    const emailAdvogado = emailPorNome(registroFinal.advogado_responsavel);
+    const assunto = `Ainda não pode encerrar — Processo ${nn(registroFinal.numero_processo)}`;
+    const corpo = `Prezado(a) ${nn(registroFinal.advogado_responsavel)},\n\nSobre a consulta de encerramento do processo abaixo, ainda não é possível encerrar:\n\nProcesso: ${nn(registroFinal.numero_processo)}\nReclamante: ${nn(registroFinal.nome_reclamante)}\n\nPergunta original: ${nn(registroFinal.pergunta)}\n\nAtenciosamente,\nGabi`;
+    if(!emailAdvogado) toast(`Advogado Responsável "${nn(registroFinal.advogado_responsavel)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
+    abrirEmail(emailAdvogado, '', assunto, corpo);
+  }
   carregarHistoricoEncerramentos();
 }
 
@@ -2916,32 +2987,28 @@ async function carregarHistoricoEncerramentos(){
     renderHistoricoEncerramentos();
   }catch(err){
     console.error(err);
-    document.getElementById('enc-tbody').innerHTML = `<tr><td colspan="8" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+    document.getElementById('enc-tbody').innerHTML = `<tr><td colspan="7" class="empty-state">Erro ao carregar histórico.</td></tr>`;
   }
 }
 function renderHistoricoEncerramentos(){
   const termo = document.getElementById('enc-busca').value.toLowerCase();
   const status = document.getElementById('enc-flt-status').value;
-  const tipo = document.getElementById('enc-flt-tipo').value;
   const rows = HIST_ENCERRAMENTOS.filter(r =>
     (!termo || (r.numero_processo||'').toLowerCase().includes(termo) || (r.nome_reclamante||'').toLowerCase().includes(termo)) &&
-    (!status || (r.status||'Pendente') === status) &&
-    (!tipo || r.tipo === tipo)
+    (!status || (r.status||'Pendente') === status)
   );
   HIST_ENCERRAMENTOS_FILTRADO = rows;
   const tbody = document.getElementById('enc-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Nenhum encerramento encontrado.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum encerramento encontrado.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
+    <td>${r.pode_encerrar ? `<span class="badge ${r.pode_encerrar==='Sim'?'badge-green':'badge-orange'}">${esc(r.pode_encerrar)}</span>` : ''}</td>
     <td class="mono">${r.convolacao_dr_dj != null ? fmtMoeda(r.convolacao_dr_dj) : ''}</td>
-    <td class="mono">${r.data_convolacao ? dataBR(r.data_convolacao) : ''}</td>
-    <td><span class="badge badge-blue">${esc(r.tipo)}</span></td>
-    <td>${esc(r.tipo_pagamento)}</td>
     <td><span class="badge ${r.status==='Concluído'?'badge-green':'badge-orange'}">${esc(r.status||'Pendente')}</span></td>
     <td class="mono">${fmtDataHora(r.atualizado_em)}</td>
     <td>
-      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="concluirEncerramento(${r.id})">✅ Concluir</button>` : ''}
+      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="abrirRetornoEncerramento(${r.id})">↩️ Responder</button>` : ''}
       <button class="row-btn" onclick="verDetalhesEncerramento(${r.id})" title="Ver todos os campos salvos">👁️ Ver</button>
       <button class="row-btn" onclick="excluirRegistro('reportes_encerramentos', ${r.id})" title="Excluir">🗑️ Excluir</button>
     </td>
@@ -2952,6 +3019,7 @@ function verDetalhesEncerramento(id){
   if(!r) return;
   const linhas = [
     ['Processo', r.numero_processo], ['Reclamante', r.nome_reclamante], ['Advogado Responsável', r.advogado_responsavel],
+    ['Pergunta', r.pergunta], ['Pode Encerrar?', r.pode_encerrar],
     ['Convolação do DR/DJ Principal', r.convolacao_dr_dj_principal != null ? fmtMoeda(r.convolacao_dr_dj_principal) : null],
     ['Convolação do DR/DJ Juros', r.convolacao_dr_dj_juros != null ? fmtMoeda(r.convolacao_dr_dj_juros) : null],
     ['Convolação do DR/DJ', r.convolacao_dr_dj != null ? fmtMoeda(r.convolacao_dr_dj) : null],
