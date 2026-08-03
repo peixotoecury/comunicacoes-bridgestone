@@ -1210,7 +1210,12 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
   </div>
 
   <div class="dash-card">
-    <div class="dash-card-head">📜 Histórico de Solicitações de Inserção de Valores <button class="export-btn" onclick="exportarExcel(HIST_VALORES_FILTRADO, 'Solicitacoes_Insercao_Valores')">⬇ Exportar Excel</button></div>
+    <div class="dash-card-head">📜 Histórico de Solicitações de Inserção de Valores
+      <div style="display:flex;gap:8px;">
+        <button class="export-btn" style="background:var(--orange);" onclick="cobrarPendentesValores()" title="Envia um e-mail da Gabi pro Grupo Bridgestone listando as inserções pendentes há mais tempo">📣 Cobrar Pendentes</button>
+        <button class="export-btn" onclick="exportarExcel(HIST_VALORES_FILTRADO, 'Solicitacoes_Insercao_Valores')">⬇ Exportar Excel</button>
+      </div>
+    </div>
     <div class="filters">
       <input class="filter-input" id="v-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoValores()">
       <select class="filter-select" id="v-flt-status" onchange="renderHistoricoValores()">
@@ -1658,7 +1663,11 @@ const PROFISSIONAIS = [
   {n:'Vitoria Araujo Carvalho', g:'Equipe B', email:'vitoria.carvalho@peixotoecury.com.br', cargo:'Assistente'},
   {n:'Washington Soares Silva Filho', g:'Equipe E', email:'washington.soares@peixotoecury.com.br', cargo:'Advogado'}
 ];
-function emailPorNome(nome){ const p = PROFISSIONAIS.find(x => x.n === nome); return p ? p.email : ''; }
+/* Casamento tolerante a acento/maiúscula/espaço extra — nome salvo no registro às vezes
+   diverge por detalhes assim do nome cadastrado em PROFISSIONAIS, e antes disso fazia o
+   e-mail de retorno simplesmente não abrir (comparação exata `x.n === nome`). */
+function normNome(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').trim().replace(/\s+/g,' ').toLowerCase(); }
+function emailPorNome(nome){ const alvo = normNome(nome); const p = PROFISSIONAIS.find(x => normNome(x.n) === alvo); return p ? p.email : ''; }
 function popularSelectProfissionais(select, cargo){
   const grupos = {};
   PROFISSIONAIS.filter(p => !cargo || p.cargo === cargo).forEach(p => { (grupos[p.g] = grupos[p.g] || []).push(p.n); });
@@ -2055,8 +2064,8 @@ async function concluirDecisao(id){
   const emailAdvogado = emailPorNome(r.advogado_responsavel);
   const assunto = `Reporte de Decisão Concluído — Processo ${nn(r.numero_processo)}`;
   const corpo = `Prezado(a) ${nn(r.advogado_responsavel)},\n\nConfirmamos que o reporte de decisão referente ao processo abaixo foi processado:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\n\nAtenciosamente,\nGrupo Bridgestone`;
-  if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
-  else toast('Advogado Responsável sem e-mail cadastrado — abra o retorno manualmente.', true);
+  if(!emailAdvogado) toast(`Advogado Responsável "${nn(r.advogado_responsavel)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
+  abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
   carregarHistoricoDecisao();
 }
 function verDetalhesDecisao(id){
@@ -2547,7 +2556,8 @@ async function concluirKit(id){
   const emailAdvogado = emailPorNome(r.advogado_solicitante);
   const assunto = `Kit Concluído — ${nn(r.tipo_solicitacao)} — Processo ${nn(r.numero_processo)}`;
   const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos que o kit abaixo foi processado:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Solicitação: ${nn(r.tipo_solicitacao)}\nValor: ${r.valor != null ? fmtMoeda(r.valor) : 'N/A'}\nData (vencimento/depósito): ${r.data_referencia ? dataBR(r.data_referencia) : 'N/A'}\n\nResumo:\n${nn(r.resumo)}\n\nAtenciosamente,\nGabi`;
-  if(emailAdvogado) abrirEmail(emailAdvogado, '', assunto, corpo);
+  if(!emailAdvogado) toast(`Advogado Solicitante "${nn(r.advogado_solicitante)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
+  abrirEmail(emailAdvogado, '', assunto, corpo);
   carregarHistoricoKits();
 }
 
@@ -2710,8 +2720,8 @@ async function salvarConclusaoAcordo(){
   const emailAdvogado = emailPorNome(r.advogado_responsavel);
   const assunto = `Aprovação do Acordo — ${aprovacao} — Processo ${nn(r.numero_processo)}`;
   const corpo = `Prezado(a) ${nn(r.advogado_responsavel)},\n\nInformamos que a aprovação do acordo referente ao processo abaixo foi concluída:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nAprovação para Acordo: ${aprovacao}\nValor Pago: ${r.valor_pago != null ? fmtMoeda(r.valor_pago) : PH}\n\nAtenciosamente,\nGrupo Bridgestone`;
-  if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
-  else toast('Advogado Responsável sem e-mail cadastrado — abra o retorno manualmente.', true);
+  if(!emailAdvogado) toast(`Advogado Responsável "${nn(r.advogado_responsavel)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
+  abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
   carregarHistoricoAcordos();
 }
 
@@ -3048,9 +3058,31 @@ async function salvarRetornoValores(){
   const resumoValores = `Histórico — Atual: ${fmtMoeda(r.valor_atual_historico)} | Novo: ${fmtMoeda(r.valor_novo_historico ?? r.valor_atual_historico)} | Diferença: ${fmtMoeda(r.diff_historico)}\nProvisão — Atual: ${fmtMoeda(r.valor_atual_provisao)} | Novo: ${fmtMoeda(r.valor_novo_provisao ?? r.valor_atual_provisao)} | Diferença: ${fmtMoeda(r.diff_provisao)}\nAccrual — Atual: ${fmtMoeda(r.valor_atual_accrual)} | Novo: ${fmtMoeda(r.valor_novo_accrual ?? r.valor_atual_accrual)} | Diferença: ${fmtMoeda(r.diff_accrual)}`;
   const assunto = `Valores Inseridos — Processo ${nn(r.numero_processo)} — ${nn(r.nome_reclamante)}`;
   const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos a inserção/atualização referente ao processo abaixo:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Cálculo: ${r.tipo_calculo || 'N/A'}\n\n${resumoValores}\n${(r.fase_atual || r.nova_fase) ? '\nMudança de Fase: ' + nn(r.fase_atual) + ' → ' + nn(r.nova_fase) : ''}\n\nInserido no LM: ${nn(atualizacao.inserido_lm)}${atualizacao.data_insercao_lm ? ' (' + dataBR(atualizacao.data_insercao_lm) + ')' : ''}\nInserido no Elaw: ${nn(atualizacao.inserido_sistema)}${atualizacao.data_insercao_sistema ? ' (' + dataBR(atualizacao.data_insercao_sistema) + ')' : ''}\n${r.link_calculo ? '\nLink do Cálculo (PDF): ' + r.link_calculo : ''}\n\nResponsável pela inserção: ${nn(r.assistente_responsavel)}`;
-  if(emailAdvogado) abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
-  else toast('Advogado sem e-mail cadastrado (nome não bate com a lista de profissionais) — abra o e-mail de retorno manualmente.', true);
+  if(!emailAdvogado) toast(`Advogado Solicitante "${nn(r.advogado_solicitante)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
+  abrirEmail(emailAdvogado, 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
   carregarHistoricoValores();
+}
+
+/* Cobrança de inserções pendentes — a Gabi manda um e-mail pro Grupo Bridgestone
+   listando as solicitações de Inserção de Valores que ainda estão "Pendente",
+   ordenadas da mais antiga pra mais nova, com quantos dias cada uma já espera. */
+function cobrarPendentesValores(){
+  const pendentes = HIST_VALORES
+    .filter(r => (r.status || 'Pendente') !== 'Concluído')
+    .slice()
+    .sort((a, b) => new Date(a.criado_em) - new Date(b.criado_em));
+  if(!pendentes.length){ alert('Não há solicitações de Inserção de Valores pendentes no momento.'); return; }
+
+  const hoje = new Date();
+  const linhas = pendentes.map(r => {
+    const dias = Math.floor((hoje - new Date(r.criado_em)) / 86400000);
+    const tipo = r.tipo_calculo || VALORES_TIPO_LABEL[r.tipo_solicitacao] || 'N/A';
+    return `- Processo ${nn(r.numero_processo)} | Reclamante ${nn(r.nome_reclamante)} | Tipo: ${tipo} | Solicitado por: ${nn(r.advogado_solicitante)} | Pendente há ${dias} dia(s) (desde ${dataBR(r.criado_em.slice(0,10))})`;
+  }).join('\n');
+
+  const assunto = `Inserção de Valores Pendentes — ${pendentes.length} processo(s)`;
+  const corpo = `Prezados,\n\nSeguem as solicitações de inserção de valores/requantificação que permanecem pendentes há algum tempo, sem retorno até o momento:\n\n${linhas}\n\nPedimos a gentileza de priorizar a inserção desses valores.\n\nAtenciosamente,\nGabi`;
+  abrirEmail('grupobridgestone@peixotoecury.com.br', '', assunto, corpo);
 }
 
 /* ===================== EXPORTAR EXCEL (todas as abas) ===================== */
