@@ -2570,6 +2570,18 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
     return;
   }
 
+  // Aviso de possível duplicidade: já existe solicitação Pendente igual (mesmo processo+tipo+valor)?
+  const duplicados = pagamentos.filter(p => HIST_KITS.some(h =>
+    h.status === 'Pendente' &&
+    (h.numero_processo || '').trim() === (processo || '') &&
+    (h.tipo_solicitacao || '') === (p.tipo_solicitacao || '') &&
+    Math.abs((h.valor || 0) - (p.valor || 0)) < 0.01
+  ));
+  if(duplicados.length){
+    const lista = duplicados.map(p => `- ${nn(p.tipo_solicitacao)} (${p.valor != null ? fmtMoeda(p.valor) : 'N/A'})`).join('\n');
+    if(!confirm(`Já existe solicitação Pendente igual pra este processo:\n\n${lista}\n\nEnviar mesmo assim?`)) return;
+  }
+
   const registros = pagamentos.map(p => ({
     numero_processo: processo,
     nome_reclamante: reclamante,
