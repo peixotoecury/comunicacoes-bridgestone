@@ -171,9 +171,76 @@ td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:no
 .vd-close-btn:hover{color:var(--escuro-pc);}
 .vd-kv{padding:6px 0;border-bottom:1px solid var(--border2);}
 .vd-kv b{color:var(--escuro-pc);}
+
+/* ── GATE DE SENHA ──────────────────────────────────────────────────────── */
+#pwGate{
+  position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(90deg,var(--escuro-pc),#00557B 72%,var(--azul-pc));
+}
+html.gate-open #pwGate{display:none;}
+.gate-card{
+  background:var(--surface);border-radius:var(--radius-lg);padding:34px 36px;width:min(340px,88vw);
+  box-shadow:0 20px 50px rgba(0,0,0,.35);text-align:center;
+}
+.gate-card .tb-lawgico{position:static;display:inline-block;margin-bottom:4px;}
+.gate-card .tb-law,.gate-card .tb-gico{font-size:22px;color:var(--escuro-pc);}
+.gate-card .tb-gico{font-weight:300;color:var(--azul-pc);}
+.gate-card h2{font-size:15px;font-weight:700;color:var(--escuro-pc);margin:8px 0 2px;font-family:var(--font);}
+.gate-card p{font-size:12px;color:var(--muted);margin-bottom:18px;}
+.gate-card input{
+  width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius);
+  font-size:14px;margin-bottom:10px;text-align:center;letter-spacing:2px;font-family:var(--font);
+}
+.gate-card input:focus{outline:none;border-color:var(--azul-pc);}
+.gate-card button{
+  width:100%;padding:10px;border:none;border-radius:var(--radius);background:var(--azul-pc);
+  color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font);
+}
+.gate-card button:hover{background:var(--escuro-pc);}
+.gate-err{color:var(--red);font-size:11.5px;margin-top:10px;display:none;}
+.gate-err.show{display:block;}
 </style>
+<script>
+try{
+  if(localStorage.getItem('voeGateOk')==='1'){document.documentElement.classList.add('gate-open');}
+}catch(e){}
+</script>
 </head>
 <body>
+
+<div id="pwGate">
+  <div class="gate-card">
+    <div class="tb-lawgico"><span class="tb-law">LAW</span><span class="tb-gico">gico</span></div>
+    <h2>Comunicações Bridgestone</h2>
+    <p>Acesso restrito. Digite a senha para continuar.</p>
+    <input type="password" id="gatePass" placeholder="Senha" autocomplete="off">
+    <button id="gateBtn" type="button">Entrar</button>
+    <div class="gate-err" id="gateErr">Senha incorreta.</div>
+  </div>
+</div>
+<script>
+(function(){
+  var HASH='e839fc779b442d5393727d7af62bb94e3d892e44906d0f7d603702d01215f0c1';
+  async function sha256(msg){
+    var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+  async function tentar(){
+    var pass=document.getElementById('gatePass').value;
+    var h=await sha256(pass);
+    if(h===HASH){
+      try{localStorage.setItem('voeGateOk','1');}catch(e){}
+      document.documentElement.classList.add('gate-open');
+    }else{
+      document.getElementById('gateErr').classList.add('show');
+    }
+  }
+  document.getElementById('gateBtn').addEventListener('click',tentar);
+  document.getElementById('gatePass').addEventListener('keydown',function(ev){
+    if(ev.key==='Enter'){tentar();}
+  });
+})();
+</script>
 
 <div class="topbar">
   <div class="topbar-left">
