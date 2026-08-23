@@ -66,6 +66,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 .section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--azul-pc);margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--cyan-lt);}
 .section-title:first-child{margin-top:0;}
+.enc-deposito-row + .enc-deposito-row{border-top:1px dashed var(--border2);margin-top:14px;padding-top:14px;}
 .sub-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 6px;}
 
 .mc-form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
@@ -256,6 +257,7 @@ try{
   <button class="tab-btn" id="tab-btn-calculos" onclick="mudarAba('calculos')">🧮 Solicitação de Cálculos</button>
   <button class="tab-btn" id="tab-btn-decisao" onclick="mudarAba('decisao')">📑 Reporte de Decisão</button>
   <button class="tab-btn" id="tab-btn-kits" onclick="mudarAba('kits')">📦 Kits</button>
+  <button class="tab-btn" id="tab-btn-paymentcontrol" onclick="mudarAba('paymentcontrol')">🧾 Payment Control</button>
   <button class="tab-btn" id="tab-btn-acordos" onclick="mudarAba('acordos')">💰 Reporte de Acordos</button>
   <button class="tab-btn" id="tab-btn-encerramentos" onclick="mudarAba('encerramentos')">🏁 Encerramentos</button>
   <button class="tab-btn" id="tab-btn-valores" onclick="mudarAba('valores')">💲 Inserção de Valores</button>
@@ -987,6 +989,14 @@ try{
                 <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)" style="display:none;">🗑️</button>
               </div>
             </div>
+            <div class="mc-form-group"><label>Data da Solicitação <span class="req">*</span></label><input type="date" class="k-data-solicitacao" required></div>
+            <div class="mc-form-group"><label>Contingency ou Forecast? <span class="req">*</span></label>
+              <select class="k-contingency-forecast" required>
+                <option value="">Selecione…</option>
+                <option>Contingency</option>
+                <option>Forecast</option>
+              </select>
+            </div>
             <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento? <span class="req">*</span></label>
               <select class="k-convolado" onchange="atualizarCamposKit(this)" required><option value="">—</option><option>Sim</option><option>Não</option></select>
             </div>
@@ -1020,9 +1030,54 @@ try{
     </div>
     <div class="table-wrap">
       <table class="sol-table">
-        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Valor</th><th>Data</th><th>Resumo</th><th>Advogado</th><th>Status</th><th>Criado em</th><th>Concluído em</th><th>Ações</th></tr></thead>
-        <tbody id="k-tbody"><tr><td colspan="11" class="empty-state">Carregando…</td></tr></tbody>
+        <thead><tr><th>Processo</th><th>Reclamante</th><th>Tipo</th><th>Valor</th><th>Data</th><th>Data Solicitação</th><th>Contingency/Forecast</th><th>Resumo</th><th>Advogado</th><th>Status</th><th>Criado em</th><th>Concluído em</th><th>Ações</th></tr></thead>
+        <tbody id="k-tbody"><tr><td colspan="13" class="empty-state">Carregando…</td></tr></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ABA PAYMENT CONTROL ================= -->
+<div class="view" id="view-paymentcontrol">
+  <div class="dash-card">
+    <div class="dash-card-head">🧾 Payment Control <button class="export-btn" onclick="exportarExcel(HIST_PAYMENT_CONTROL_FILTRADO, 'Payment_Control_Bridgestone')">⬇ Exportar Excel</button></div>
+    <div class="dash-card-body">
+      <div class="info-box"><span>ℹ️</span><span>Alimentada automaticamente quando um Kit é concluído na aba <b>Kits</b> — cada linha aqui espelha o modelo real <b>PAYMENT CONTROL.xlsx</b> usado pela Bridgestone. Campos de acompanhamento posterior (SAP Voucher, Seguro, Enviado/Recebido pelo Escritório, Elaw) ficam em branco até você preencher em <b>✏️ Editar</b>.</span></div>
+    </div>
+    <div class="filters">
+      <input class="filter-input" id="pc-busca" placeholder="Buscar por processo ou reclamante…" oninput="renderHistoricoPaymentControl()">
+      <select class="filter-select" id="pc-flt-status" onchange="renderHistoricoPaymentControl()">
+        <option value="">Status: todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Concluído">Concluído</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="sol-table">
+        <thead><tr><th>Law Firm</th><th>Payment Request Date</th><th>Plaintiff</th><th>Court Number</th><th>Location</th><th>Claim Number</th><th>Cost Center</th><th>Accrual</th><th>Type of Payment</th><th>Payment Date</th><th>Value</th><th>Reference Number</th><th>Guarantee/Payment</th><th>Account Number</th><th>Status</th><th>SAP Voucher</th><th>Seguro</th><th>Env./Receb. Escritório</th><th>Elaw</th><th>Ações</th></tr></thead>
+        <tbody id="pc-tbody"><tr><td colspan="20" class="empty-state">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="vd-overlay" id="pc-overlay" onclick="if(event.target===this) fecharEditarPaymentControl()">
+  <div class="vd-modal" style="max-width:480px;">
+    <div class="vd-modal-head">
+      <h3 id="pc-titulo">Editar Payment Control</h3>
+      <button type="button" class="vd-close-btn" onclick="fecharEditarPaymentControl()" title="Fechar">✕</button>
+    </div>
+    <div class="vd-modal-body">
+      <input type="hidden" id="pc-id">
+      <div class="mc-form-group"><label>Status</label>
+        <select id="pc-status"><option>Pendente</option><option>Concluído</option></select>
+      </div>
+      <div class="mc-form-group"><label>Deadline</label><input type="date" id="pc-deadline"></div>
+      <div class="mc-form-group"><label>SAP Voucher Number</label><input type="text" id="pc-sap"></div>
+      <div class="mc-form-group"><label>Seguro</label><input type="text" id="pc-seguro"></div>
+      <div class="mc-form-group"><label>Enviado/Recebido pelo Escritório</label><input type="text" id="pc-enviado-recebido"></div>
+      <div class="mc-form-group"><label>Elaw</label><input type="text" id="pc-elaw"></div>
+      <button type="button" class="btn-cyan" onclick="salvarEdicaoPaymentControl()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -1144,9 +1199,9 @@ try{
 <!-- ================= ABA 4B: ENCERRAMENTOS ================= -->
 <div class="view" id="view-encerramentos">
   <div class="dash-card">
-    <div class="dash-card-head">🏁 Nova Consulta de Encerramento</div>
+    <div class="dash-card-head">🏁 Novo Encerramento</div>
     <div class="dash-card-body">
-      <div class="info-box"><span>ℹ️</span><span>O advogado pergunta pra <b>Gabi</b> se um processo pode ser encerrado — o e-mail vai pra ela, com cópia pro Grupo Bridgestone, e fica <b>Pendente</b> até ela responder. No histórico, ela clica em <b>↩️ Responder</b>, informa se pode encerrar e, se sim, os dados da convolação — o sistema marca <b>Concluído</b> e abre o e-mail final pro <b>Grupo Bridgestone</b>. Se ela responder que ainda não pode, o retorno vai só pro advogado que perguntou.</span></div>
+      <div class="info-box"><span>ℹ️</span><span>A decisão é do <b>advogado</b> — ele já fez a análise e informa se o processo pode ser encerrado, incluindo (quando "Sim") os dados da convolação: garantia da execução e/ou depósitos recursais que foram convolados, e se retornaram pra empresa ou ficaram em pagamento. O registro entra direto como <b>Concluído</b> e o sistema abre o e-mail orientando a <b>Gabi</b> a executar o encerramento, com cópia pro Grupo Bridgestone.</span></div>
       <form id="form-encerramentos">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
@@ -1154,9 +1209,67 @@ try{
           <div class="mc-form-group"><label>Nome do Reclamante <span class="req">*</span></label><input type="text" id="enc-reclamante" required></div>
           <div class="mc-form-group"><label>Advogado Responsável <span class="req">*</span></label><select id="enc-advogado" required><option value="">Selecione…</option></select></div>
         </div>
-        <div class="mc-form-group"><label>Observação / Contexto da Pergunta <span class="req">*</span></label><textarea id="enc-pergunta" rows="3" placeholder="Ex: Já foi feito o pagamento total? Podemos encerrar este processo?" required></textarea></div>
+        <div class="mc-form-group"><label>Pode Encerrar? <span class="req">*</span></label>
+          <select id="enc-pode-encerrar" required onchange="alternarConvolacaoNovoEncerramento()">
+            <option value="">Selecione…</option>
+            <option>Sim</option>
+            <option>Não</option>
+          </select>
+        </div>
+        <div id="enc-convolacao-campos" style="display:none;">
+          <div class="section-title">Convolação</div>
+          <div class="info-box" style="margin-bottom:10px;">💡 Se o processo tiver mais de um depósito convolado (ex: Garantia da Execução e Depósito Recursal juntos), use <b>➕ Adicionar outro depósito</b> pra incluir todos no mesmo encerramento.</div>
+          <div id="enc-depositos-list">
+            <div class="enc-deposito-row">
+              <div class="mc-form-grid cols-3">
+                <div class="mc-form-group"><label>Convolação do DR/DJ Principal (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="enc-dr-dj-principal"></div>
+                <div class="mc-form-group"><label>Convolação do DR/DJ Juros (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="enc-dr-dj-juros"></div>
+                <div class="mc-form-group"><label>Convolação do DR/DJ (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="enc-dr-dj"></div>
+              </div>
+              <div class="mc-form-grid cols-3">
+                <div class="mc-form-group"><label>Data <span class="req">*</span></label>
+                  <div style="display:flex;gap:8px;">
+                    <input type="date" class="enc-data" style="flex:1;">
+                    <button type="button" class="row-btn enc-remove-row" title="Remover este depósito" onclick="removerLinhaEncDeposito(this)" style="display:none;">🗑️</button>
+                  </div>
+                </div>
+                <div class="mc-form-group"><label>Tipo <span class="req">*</span></label>
+                  <select class="enc-tipo">
+                    <option value="">Selecione…</option>
+                    <option>Depósito de Garantia</option>
+                    <option>Depósito Judicial</option>
+                    <option>Execução</option>
+                    <option>Pagamento</option>
+                  </select>
+                </div>
+                <div class="mc-form-group"><label>Tipo de Pagamento <span class="req">*</span></label>
+                  <select class="enc-tipo-pagamento">
+                    <option value="">Selecione…</option>
+                    <option>Acordo</option>
+                    <option>GDJ</option>
+                    <option>INSS</option>
+                    <option>Honorários Periciais</option>
+                    <option>Recurso Ordinário</option>
+                    <option>Recurso de Revista</option>
+                    <option>Agravo de Instrumento</option>
+                    <option>Embargos à Execução</option>
+                    <option>Depósito de Recurso Ordinário</option>
+                    <option>Depósito de Recurso de Revista</option>
+                    <option>Garantia da Execução</option>
+                    <option>Convolação de Depósitos</option>
+                    <option>Outro</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mc-form-group"><label>Informações Sobre Depósitos <span class="req">*</span></label><textarea class="enc-info-depositos" rows="2" placeholder="Ex: Garantia da execução convolada; remanescente retornou pra empresa. / Depósitos recursais convolados em pagamento."></textarea></div>
+              <div class="mc-form-group"><label>Obs. Assistentes</label><textarea class="enc-obs-assistentes" rows="2" placeholder="Ex: convolado 18.806,89 / voltou para BSBR 31.484,91"></textarea></div>
+            </div>
+          </div>
+          <div style="margin:-4px 0 14px;"><button type="button" class="row-btn" onclick="adicionarLinhaEncDeposito()">➕ Adicionar outro depósito</button></div>
+        </div>
+        <div class="mc-form-group"><label>Observação Adicional</label><textarea id="enc-pergunta" rows="3" placeholder="Contexto adicional, se houver."></textarea></div>
 
-        <button type="submit" class="btn-cyan">✉️ Perguntar pra Gabi</button>
+        <button type="submit" class="btn-cyan">✉️ Orientar Gabi</button>
       </form>
     </div>
   </div>
@@ -1627,6 +1740,29 @@ try{
 <div class="toast" id="toast"></div>
 <div class="email-pendentes" id="email-pendentes"></div>
 
+<div class="vd-overlay" id="kc-overlay" onclick="if(event.target===this) fecharConcluirKit()">
+  <div class="vd-modal" style="max-width:680px;">
+    <div class="vd-modal-head">
+      <h3 id="kc-titulo">Concluir Kit — E-mail de Validação</h3>
+      <button type="button" class="vd-close-btn" onclick="fecharConcluirKit()" title="Fechar">✕</button>
+    </div>
+    <div class="vd-modal-body">
+      <input type="hidden" id="kc-processo">
+      <div class="info-box">💡 Preencha os dados do modelo BSBR — Conta e Reference Number já vêm sugeridos quando o tipo é reconhecido (Execução, Acordo, Garantia da Execução, RO, RR, AIRR, Custas, Honorários Periciais, Saldo Remanescente); pros demais tipos, preencha na mão.</div>
+      <div class="section-title">Complaint Identification</div>
+      <div class="mc-form-grid cols-3">
+        <div class="mc-form-group"><label>Cost Center <span class="req">*</span></label><input type="text" id="kc-cost-center"></div>
+        <div class="mc-form-group"><label>Court Number (Vara) <span class="req">*</span></label><input type="text" id="kc-court-number" placeholder="Ex: 5ª VT"></div>
+        <div class="mc-form-group"><label>Location (Comarca) <span class="req">*</span></label><input type="text" id="kc-location" placeholder="Ex: SANTO ANDRÉ"></div>
+      </div>
+      <div class="mc-form-group"><label>Accrual (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="kc-accrual"></div>
+      <div class="section-title">Payment Information</div>
+      <div id="kc-linhas-list"></div>
+      <button type="button" class="btn-cyan" onclick="salvarConclusaoKit()">💾 Concluir e Abrir E-mail de Validação</button>
+    </div>
+  </div>
+</div>
+
 <div class="vd-overlay" id="vd-overlay" onclick="if(event.target===this) fecharVerDetalhes()">
   <div class="vd-modal">
     <div class="vd-modal-head">
@@ -1722,6 +1858,7 @@ const RECARREGAR_POR_TABELA = {
   reportes_decisao: () => carregarHistoricoDecisao(),
   reportes_acordos: () => carregarHistoricoAcordos(),
   kits_pagamento: () => carregarHistoricoKits(),
+  payment_control_bsbr: () => carregarHistoricoPaymentControl(),
   solicitacoes_insercao_valores: () => carregarHistoricoValores(),
   reportes_encerramentos: () => carregarHistoricoEncerramentos(),
 };
@@ -2555,6 +2692,14 @@ function novaLinhaKitHTML(){
         <button type="button" class="row-btn k-remove-row" title="Remover este pagamento" onclick="removerLinhaKit(this)">🗑️</button>
       </div>
     </div>
+    <div class="mc-form-group"><label>Data da Solicitação <span class="req">*</span></label><input type="date" class="k-data-solicitacao" required></div>
+    <div class="mc-form-group"><label>Contingency ou Forecast? <span class="req">*</span></label>
+      <select class="k-contingency-forecast" required>
+        <option value="">Selecione…</option>
+        <option>Contingency</option>
+        <option>Forecast</option>
+      </select>
+    </div>
     <div class="mc-form-group k-convolado-wrap" style="display:none;"><label>Convolado em pagamento?</label>
       <select class="k-convolado" onchange="atualizarCamposKit(this)"><option value="">—</option><option>Sim</option><option>Não</option></select>
     </div>
@@ -2596,10 +2741,15 @@ function atualizarBotoesRemoverKit(){
   const rows = document.querySelectorAll('#k-pagamentos-list .k-pagamento-row');
   rows.forEach(r => { r.querySelector('.k-remove-row').style.display = rows.length > 1 ? '' : 'none'; });
 }
+function preencherDataSolicitacaoPadrao(escopo){
+  escopo.querySelectorAll('.k-data-solicitacao').forEach(el => { if(!el.value) el.value = new Date().toISOString().slice(0,10); });
+}
 document.querySelectorAll('#k-pagamentos-list .k-tipo').forEach(atualizarCamposKit);
+preencherDataSolicitacaoPadrao(document.getElementById('k-pagamentos-list'));
 function adicionarLinhaKit(){
   document.getElementById('k-pagamentos-list').insertAdjacentHTML('beforeend', novaLinhaKitHTML());
   atualizarBotoesRemoverKit();
+  preencherDataSolicitacaoPadrao(document.getElementById('k-pagamentos-list'));
 }
 function removerLinhaKit(btn){
   btn.closest('.k-pagamento-row').remove();
@@ -2608,6 +2758,7 @@ function removerLinhaKit(btn){
 function resetLinhasKit(){
   document.getElementById('k-pagamentos-list').innerHTML = novaLinhaKitHTML();
   atualizarBotoesRemoverKit();
+  preencherDataSolicitacaoPadrao(document.getElementById('k-pagamentos-list'));
 }
 
 document.getElementById('form-kits').addEventListener('submit', async function(ev){
@@ -2626,6 +2777,8 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
       tipo_solicitacao: tipo,
       valor: parseMoedaBR(row.querySelector('.k-valor').value),
       data_referencia: row.querySelector('.k-data').value || null,
+      data_solicitacao: row.querySelector('.k-data-solicitacao').value || null,
+      contingency_forecast: row.querySelector('.k-contingency-forecast').value.trim() || null,
       valor_reclamante: parseMoedaBR(row.querySelector('.k-valor-reclamante').value),
       valor_reclamada: parseMoedaBR(row.querySelector('.k-valor-reclamada').value),
       convolado: (convoladoSelect && convoladoSelect.value) ? convoladoSelect.value : null,
@@ -2657,6 +2810,8 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
     tipo_solicitacao: p.tipo_solicitacao,
     valor: p.valor,
     data_referencia: p.data_referencia,
+    data_solicitacao: p.data_solicitacao,
+    contingency_forecast: p.contingency_forecast,
     valor_reclamante: p.valor_reclamante,
     valor_reclamada: p.valor_reclamada,
     convolado: p.convolado,
@@ -2674,7 +2829,7 @@ document.getElementById('form-kits').addEventListener('submit', async function(e
       extra += ` | Reclamante: ${p.valor_reclamante != null ? fmtMoeda(p.valor_reclamante) : 'N/A'} | Reclamada: ${p.valor_reclamada != null ? fmtMoeda(p.valor_reclamada) : 'N/A'}`;
     }
     if(p.convolado) extra += ` | Convolado em pagamento: ${p.convolado}`;
-    return `- ${nn(p.tipo_solicitacao)} | Valor: ${p.valor != null ? fmtMoeda(p.valor) : 'N/A'} | Data: ${p.data_referencia ? dataBR(p.data_referencia) : 'N/A'}${extra}`;
+    return `- ${nn(p.tipo_solicitacao)} | Valor: ${p.valor != null ? fmtMoeda(p.valor) : 'N/A'} | Data: ${p.data_referencia ? dataBR(p.data_referencia) : 'N/A'} | Data da Solicitação: ${p.data_solicitacao ? dataBR(p.data_solicitacao) : 'N/A'} | ${nn(p.contingency_forecast)}${extra}`;
   }).join('\n');
   const corpo = `Prezada Gabi,\n\nSolicitamos o(s) kit(s) abaixo referente ao processo:\n\nProcesso: ${nn(processo)}\nReclamante: ${nn(reclamante)}\n\nPagamentos:\n${linhasPagamento}\n\nResumo:\n${nn(resumo)}\n\nAdvogado Solicitante: ${nn(advogado)}`;
 
@@ -2710,7 +2865,7 @@ async function carregarHistoricoKits(){
     renderHistoricoKits();
   }catch(err){
     console.error(err);
-    document.getElementById('k-tbody').innerHTML = `<tr><td colspan="11" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+    document.getElementById('k-tbody').innerHTML = `<tr><td colspan="13" class="empty-state">Erro ao carregar histórico.</td></tr>`;
   }
 }
 function renderHistoricoKits(){
@@ -2722,20 +2877,22 @@ function renderHistoricoKits(){
   );
   HIST_KITS_FILTRADO = rows;
   const tbody = document.getElementById('k-tbody');
-  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="11" class="empty-state">Nenhuma solicitação de kit encontrada.</td></tr>`; return; }
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="13" class="empty-state">Nenhuma solicitação de kit encontrada.</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => `<tr>
     <td class="mono">${esc(r.numero_processo)}</td>
     <td>${esc(r.nome_reclamante)}</td>
     <td>${esc(r.tipo_solicitacao)}</td>
     <td>${r.valor != null ? fmtMoeda(r.valor) : ''}</td>
     <td>${r.data_referencia ? dataBR(r.data_referencia) : ''}</td>
+    <td>${r.data_solicitacao ? dataBR(r.data_solicitacao) : ''}</td>
+    <td>${esc(r.contingency_forecast)}</td>
     <td>${esc(r.resumo)}</td>
     <td>${esc(r.advogado_solicitante)}</td>
     <td>${esc(r.status)}</td>
     <td>${fmtDataHora(r.criado_em)}</td>
     <td>${r.concluido_em ? fmtDataHora(r.concluido_em) : ''}</td>
     <td>
-      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="concluirKit(${r.id})">✅ Concluir</button>` : ''}
+      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="abrirConcluirKit(${r.id})">✅ Concluir</button>` : ''}
       <button class="row-btn" onclick="verDetalhesKit(${r.id})" title="Ver todos os campos salvos">👁️ Ver</button>
       <button class="row-btn" onclick="excluirRegistro('kits_pagamento', ${r.id})" title="Excluir">🗑️ Excluir</button>
     </td>
@@ -2755,6 +2912,8 @@ function verDetalhesKit(id){
     ['Valor pra Reclamada', r.valor_reclamada != null ? fmtMoeda(r.valor_reclamada) : null],
     ['Convolado em pagamento?', r.convolado],
     ['Data (vencimento/depósito)', r.data_referencia ? dataBR(r.data_referencia) : null],
+    ['Data da Solicitação', r.data_solicitacao ? dataBR(r.data_solicitacao) : null],
+    ['Contingency ou Forecast?', r.contingency_forecast],
     ['Status', r.status],
     ['Criado em', fmtDataHora(r.criado_em)],
     ['Concluído em', r.concluido_em ? fmtDataHora(r.concluido_em) : null],
@@ -2765,22 +2924,318 @@ function verDetalhesKit(id){
 }
 document.getElementById('k-flt-status').addEventListener('change', renderHistoricoKits);
 
-async function concluirKit(id){
+/* ===================== CONCLUSÃO DE KIT — E-mail de validação modelo BSBR =====================
+   Ao concluir, a Gabi preenche os dados do modelo BSBR (Complaint identification +
+   Payment information por linha) e o sistema monta o e-mail exatamente no formato
+   real já usado hoje (ver Email - Execução/Acordo/RO/etc. em CONTROLE DE PAGAMENTOS).
+   Reference Number, Guarantee/Payment e Account Number são sugeridos automaticamente
+   só quando o tipo é reconhecido (regra confirmada em exemplos reais); os demais tipos
+   ficam em branco pra preenchimento manual — nunca chutamos código de referência
+   bancária sem confirmação. */
+const KC_CC = 'anacarolina.martini@peixotoecury.com.br,evandro.vessoni@peixotoecury.com.br,jennifer.nogueira@peixotoecury.com.br,raica.kwok@peixotoecury.com.br';
+
+function sugerirCamposBSBR(desc){
+  const d = (desc||'').toLowerCase();
+  let codigo = null, guarantee = null;
+  if(d.includes('acordo')){ codigo='ARCO'; guarantee='PAYMENT'; }
+  else if(d.includes('garantia')){ codigo='PAGA'; guarantee='GUARANTEE'; }
+  else if(d.includes('recurso ordinário') || d.includes('recurso ordinario')){ codigo='RORD'; guarantee='GUARANTEE'; }
+  else if(d.includes('recurso de revista')){ codigo='RREV'; guarantee='GUARANTEE'; }
+  else if(d.includes('agravo')){ codigo='AIRR'; guarantee='GUARANTEE'; }
+  else if(d.includes('custas')){ codigo='CUST'; guarantee='PAYMENT'; }
+  else if(d.includes('honorários') || d.includes('honorarios')){ codigo='HNDF'; guarantee='PAYMENT'; }
+  else if(d.includes('saldo remanescente')){ codigo='PEXR'; guarantee='PAYMENT'; }
+  else if(d.includes('execução') || d.includes('execucao')){ codigo='PAEX'; guarantee='PAYMENT'; }
+
+  let conta = null;
+  if(d.includes('juros') || d.includes('correção') || d.includes('correcao')) conta = '71000130';
+  else if(guarantee === 'GUARANTEE') conta = '19150010';
+  else if(guarantee === 'PAYMENT') conta = '64250500';
+
+  return { codigo, guarantee, conta };
+}
+function gerarReferenceNumberBSBR(numeroProcesso, codigo){
+  if(!codigo || !numeroProcesso) return '';
+  const m = numeroProcesso.trim().match(/^(\d{7})-(\d{2})\.(\d{4})\.(\d)\.(\d{2})\.(\d{4})$/);
+  if(!m) return '';
+  return `2${codigo}${m[1].slice(-4)}${m[3]}${m[6].slice(-3)}`;
+}
+
+let KC_GRUPO = [];
+function linhaKcHTML(r){
+  const sugestao = sugerirCamposBSBR(r.tipo_solicitacao);
+  const refSugerida = sugestao.codigo ? gerarReferenceNumberBSBR(r.numero_processo, sugestao.codigo) : '';
+  return `<div class="enc-deposito-row" data-kit-id="${r.id}">
+    <div class="mc-form-group"><b>${esc(r.tipo_solicitacao)}</b> — ${r.valor != null ? fmtMoeda(r.valor) : 'N/A'} — ${r.data_referencia ? dataBR(r.data_referencia) : 'N/A'}</div>
+    <div class="mc-form-group"><label>Tipo de Pagamento (descrição pro e-mail) <span class="req">*</span></label><input type="text" class="kc-tipo-desc" value="${esc(r.tipo_solicitacao || '')}" placeholder="Ex: Pagamento execução / ACORDO JUDICIAL / Garantia da Execução - controverso"></div>
+    <div class="mc-form-grid cols-3">
+      <div class="mc-form-group"><label>Reference Number</label><input type="text" class="kc-reference" value="${esc(refSugerida)}"></div>
+      <div class="mc-form-group"><label>Guarantee/Payment</label>
+        <select class="kc-guarantee">
+          <option value="">Selecione…</option>
+          <option ${sugestao.guarantee==='GUARANTEE'?'selected':''}>GUARANTEE</option>
+          <option ${sugestao.guarantee==='PAYMENT'?'selected':''}>PAYMENT</option>
+        </select>
+      </div>
+      <div class="mc-form-group"><label>Account Number</label><input type="text" class="kc-conta" value="${esc(sugestao.conta || '')}"></div>
+    </div>
+    <div class="mc-form-group"><label>Deposit/Paymento Slip</label>
+      <select class="kc-slip">
+        <option value="">Selecione…</option>
+        <option selected>PAYMENTO SLIP</option>
+        <option>DEPOSIT</option>
+      </select>
+    </div>
+  </div>`;
+}
+
+function abrirConcluirKit(id){
   const r = HIST_KITS.find(x => x.id === id);
   if(!r) return;
-  const { error } = await sb.from('kits_pagamento').update({ status: 'Concluído', concluido_em: new Date().toISOString() }).eq('id', id);
-  if(error){
-    console.error(error);
-    toast('Erro ao concluir: ' + error.message, true);
+  KC_GRUPO = HIST_KITS.filter(x => x.status !== 'Concluído' && (x.numero_processo||'').trim() === (r.numero_processo||'').trim());
+  document.getElementById('kc-processo').value = id;
+  document.getElementById('kc-titulo').textContent = `Concluir Kit — ${r.numero_processo || ''} — ${r.nome_reclamante || ''}`;
+  document.getElementById('kc-cost-center').value = '';
+  document.getElementById('kc-court-number').value = '';
+  document.getElementById('kc-location').value = '';
+  document.getElementById('kc-accrual').value = '';
+  document.getElementById('kc-linhas-list').innerHTML = KC_GRUPO.map(linhaKcHTML).join('');
+  document.getElementById('kc-overlay').classList.add('show');
+}
+function fecharConcluirKit(){
+  document.getElementById('kc-overlay').classList.remove('show');
+}
+
+/* Campos fixos do voucher BSBR "Brazil Form" — NUNCA mudam de processo pra
+   processo, confirmados comparando vários anexos reais (Execução, Acordo).
+   Tudo que é específico de cada caso (Reference Number, Conta, Valor, Cost
+   Center, Reclamante, Processo, Vencimento, e-mail do advogado) é parâmetro. */
+const BSBR_VOUCHER_FIXO = {
+  empresa: 3130,
+  localNegocio: '0001- BFBR Santo André',
+  tipoVoucher: 'Débito',
+  moeda: 'BRL',
+  fornecedor: 1000052977,
+  emailSolicitante: 'vialihigor@la-bridgestone.com',
+  profitCenter: 'PNSA',
+};
+
+function gerarExcelBrazilForm(grupoLinhas, dadosProcesso){
+  const AOA = Array.from({length: 12 + grupoLinhas.length + 10}, () => []);
+  const set = (r, c, v) => { AOA[r-1][c-1] = v; };
+
+  set(1,2,'Formulario para voucher de multiples contas contabeis- BORDERÔ E TRANSMISSÃO ELETRÔNICA DE DADOS');
+
+  set(4,2,'EMPRESA (Company Code)'); set(4,3, BSBR_VOUCHER_FIXO.empresa); set(4,4,'*');
+  set(4,6,'TIPO DE VOUCHER (Debit/Credit)'); set(4,7, BSBR_VOUCHER_FIXO.tipoVoucher); set(4,8,'*');
+  set(5,2,'LOCAL DE NEGÓCIO (Bus Place/sectn)'); set(5,3, BSBR_VOUCHER_FIXO.localNegocio); set(5,4,'*');
+  set(5,6,'DATA EMISSÃO DA NF (Invoice Date)'); set(5,7, dataBR(new Date().toISOString().slice(0,10))); set(5,8,'*');
+  set(6,2,'CODIGO DE FORNECEDOR (Vendor)'); set(6,3, BSBR_VOUCHER_FIXO.fornecedor); set(6,4,'*');
+  set(6,6,'MOEDA (Currency)'); set(6,7, BSBR_VOUCHER_FIXO.moeda); set(6,8,'*');
+  set(7,2,'EMAIL SOLICITANTE (Req Email)'); set(7,3, BSBR_VOUCHER_FIXO.emailSolicitante); set(7,4,'*');
+  set(8,2,'Email ADICIONAL (CC Email)'); set(8,3, dadosProcesso.emailCC || '');
+  set(9,2,'REFERÊNCIA NF (Reference)'); set(9,3, grupoLinhas[0].reference_number || ''); set(9,4,'*');
+
+  set(11,2,'CONTA CONTÁBIL (G/L)'); set(11,3,'VALOR R$ (Line item Amount)'); set(11,4,'C.CUSTO (Cost Center)'); set(11,5,'Profit Center'); set(11,6,'Ordem(Order)'); set(11,7,'TEXTO (Text)');
+  let total = 0;
+  grupoLinhas.forEach((l, i) => {
+    const r = 12 + i;
+    set(r,2, l.account_number || '');
+    set(r,3, l.row.valor != null ? l.row.valor : '');
+    set(r,4, dadosProcesso.costCenter || '');
+    set(r,5, BSBR_VOUCHER_FIXO.profitCenter);
+    set(r,7, dadosProcesso.nomeReclamante);
+    total += (l.row.valor || 0);
+  });
+
+  const rTotal = 12 + grupoLinhas.length + 1;
+  set(rTotal,2,'Total Fatura (Invoice Total)'); set(rTotal,3, total);
+  set(rTotal+2,2,'* DESCRIÇÃO DO SERVIÇO / JUSTIFICATIVA');
+  set(rTotal+3,2, dadosProcesso.numeroProcesso);
+  set(rTotal+4,2,'VENCIMENTO: ' + (grupoLinhas[0].row.data_referencia ? dataBR(grupoLinhas[0].row.data_referencia) : ''));
+
+  const ws = XLSX.utils.aoa_to_sheet(AOA);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Brazil Form');
+  const nomeArquivo = `${nn(grupoLinhas[0].type_of_payment_desc)} - ${dadosProcesso.nomeReclamante} - ${fmtMoeda(total)}`.replace(/[\\/:*?"<>|]/g, '');
+  XLSX.writeFile(wb, `${nomeArquivo}.xlsx`);
+}
+
+async function salvarConclusaoKit(){
+  const costCenter = document.getElementById('kc-cost-center').value.trim() || null;
+  const courtNumber = document.getElementById('kc-court-number').value.trim() || null;
+  const location = document.getElementById('kc-location').value.trim() || null;
+  const accrual = parseMoedaBR(document.getElementById('kc-accrual').value);
+
+  const linhasEl = Array.from(document.querySelectorAll('#kc-linhas-list .enc-deposito-row'));
+  const linhas = linhasEl.map(el => {
+    const r = KC_GRUPO.find(x => x.id === Number(el.dataset.kitId));
+    return {
+      row: r,
+      type_of_payment_desc: el.querySelector('.kc-tipo-desc').value.trim() || null,
+      reference_number: el.querySelector('.kc-reference').value.trim() || null,
+      guarantee_payment: el.querySelector('.kc-guarantee').value || null,
+      account_number: el.querySelector('.kc-conta').value.trim() || null,
+      deposit_slip: el.querySelector('.kc-slip').value || null,
+    };
+  });
+
+  const agora = new Date().toISOString();
+  try{
+    for(const l of linhas){
+      const { error } = await sb.from('kits_pagamento').update({
+        cost_center: costCenter,
+        court_number: courtNumber,
+        location: location,
+        accrual: accrual,
+        type_of_payment_desc: l.type_of_payment_desc,
+        reference_number: l.reference_number,
+        guarantee_payment: l.guarantee_payment,
+        account_number: l.account_number,
+        deposit_slip: l.deposit_slip,
+        status: 'Concluído',
+        concluido_em: agora,
+      }).eq('id', l.row.id);
+      if(error) throw error;
+    }
+  }catch(err){
+    console.error(err);
+    toast('Erro ao concluir: ' + (err.message||err), true);
     return;
   }
-  toast('Solicitação marcada como concluída. Abrindo e-mail de retorno…');
-  const emailAdvogado = emailPorNome(r.advogado_solicitante);
-  const assunto = `Kit Concluído — ${nn(r.tipo_solicitacao)} — Processo ${nn(r.numero_processo)}`;
-  const corpo = `Prezado(a) ${nn(r.advogado_solicitante)},\n\nConfirmamos que o kit abaixo foi processado:\n\nProcesso: ${nn(r.numero_processo)}\nReclamante: ${nn(r.nome_reclamante)}\nTipo de Solicitação: ${nn(r.tipo_solicitacao)}\nValor: ${r.valor != null ? fmtMoeda(r.valor) : 'N/A'}\nData (vencimento/depósito): ${r.data_referencia ? dataBR(r.data_referencia) : 'N/A'}\n\nResumo:\n${nn(r.resumo)}\n\nAtenciosamente,\nGabi`;
-  if(!emailAdvogado) toast(`Advogado Solicitante "${nn(r.advogado_solicitante)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
-  abrirEmail(emailAdvogado, '', assunto, corpo);
+
+  const primeira = linhas[0].row;
+  toast('Kit concluído. Abrindo e-mail de validação…');
+  const linhasEmail = linhas.map((l, i) => `Payment information\n\n${i+1}-TYPE OF PAYMENT\n${nn(l.type_of_payment_desc)}\n${i+1}-VALUE\n${l.row.valor != null ? fmtMoeda(l.row.valor) : 'N/A'}\n${i+1}-REFERENCE NUMBER\n${nn(l.reference_number)}\n${i+1}-GUARANTEE/PAYMENT\n${nn(l.guarantee_payment)}\n${i+1}-ACCOUNT NUMBER\n${nn(l.account_number)}\n${i+1}-DEPOSIT/PAYMENTO SLIP\n${nn(l.deposit_slip)}\n${i+1}-PAYMENT DATE (D-3)\n${l.row.data_referencia ? dataBR(l.row.data_referencia) : 'N/A'}`).join('\n\n');
+  const corpo = `Segue kit para validação:\n\nComplaint identification\n\nLAW FIRM\nPeixoto e Cury\nPLAINTIFF\n${nn(primeira.nome_reclamante)}\nCOST CENTER\n${nn(costCenter)}\nCLAIM NUMBER\n${nn(primeira.numero_processo)}\nCOURT NUMBER\n${nn(courtNumber)}\nLOCATION\n${nn(location)}\nACCRUAL\n${accrual != null ? fmtMoeda(accrual) : 'R$-'}\n\n${linhasEmail}\n\nAtenciosamente,\nGabi`;
+  const assunto = `KIT ${nn(primeira.tipo_solicitacao).toUpperCase()} — ${nn(primeira.numero_processo)} — ${nn(primeira.nome_reclamante)}`;
+  const emailAdvogado = emailPorNome(primeira.advogado_solicitante);
+  if(!emailAdvogado) toast(`Advogado Solicitante "${nn(primeira.advogado_solicitante)}" sem e-mail cadastrado — preencha o destinatário no e-mail que vai abrir.`, true);
+  abrirEmail(emailAdvogado, KC_CC, assunto, corpo);
+
+  // Um arquivo por Reference Number distinto — nos exemplos reais, tipos com código
+  // diferente (ex: RO e Custas) sempre viram vouchers separados, nunca a mesma planilha.
+  const gruposVoucher = {};
+  linhas.forEach(l => {
+    const chave = l.reference_number || l.type_of_payment_desc || String(l.row.id);
+    (gruposVoucher[chave] = gruposVoucher[chave] || []).push(l);
+  });
+  Object.values(gruposVoucher).forEach(grupo => gerarExcelBrazilForm(grupo, {
+    costCenter, numeroProcesso: primeira.numero_processo, nomeReclamante: primeira.nome_reclamante, emailCC: emailAdvogado,
+  }));
+
+  const registrosPC = linhas.map(l => ({
+    kit_id: l.row.id,
+    law_firm: 'PEIXOTO',
+    payment_request_date: (l.row.criado_em || agora).slice(0, 10),
+    plaintiff: l.row.nome_reclamante,
+    court_number: courtNumber,
+    location: location,
+    claim_number: l.row.numero_processo,
+    cost_center: costCenter,
+    accrual: accrual,
+    type_of_payment: l.type_of_payment_desc,
+    payment_date: l.row.data_referencia,
+    value: l.row.valor,
+    reference_number: l.reference_number,
+    guarantee_payment: l.guarantee_payment,
+    account_number: l.account_number,
+    status: 'Concluído',
+    status_date: agora,
+  }));
+  const { error: erroPC } = await sb.from('payment_control_bsbr').insert(registrosPC);
+  if(erroPC){
+    console.error(erroPC);
+    toast('Kit concluído, mas houve erro ao alimentar o Payment Control: ' + erroPC.message, true);
+  }
+
+  fecharConcluirKit();
   carregarHistoricoKits();
+  carregarHistoricoPaymentControl();
+}
+
+/* ===================== PAYMENT CONTROL ===================== */
+let HIST_PAYMENT_CONTROL = [];
+let HIST_PAYMENT_CONTROL_FILTRADO = [];
+async function carregarHistoricoPaymentControl(){
+  try{
+    const { data, error } = await sb.from('payment_control_bsbr').select('*').order('criado_em', {ascending:false}).limit(500);
+    if(error) throw error;
+    HIST_PAYMENT_CONTROL = data || [];
+    renderHistoricoPaymentControl();
+  }catch(err){
+    console.error(err);
+    document.getElementById('pc-tbody').innerHTML = `<tr><td colspan="20" class="empty-state">Erro ao carregar histórico.</td></tr>`;
+  }
+}
+function renderHistoricoPaymentControl(){
+  const termo = document.getElementById('pc-busca').value.toLowerCase();
+  const status = document.getElementById('pc-flt-status').value;
+  const rows = HIST_PAYMENT_CONTROL.filter(r =>
+    (!termo || (r.claim_number||'').toLowerCase().includes(termo) || (r.plaintiff||'').toLowerCase().includes(termo)) &&
+    (!status || r.status === status)
+  );
+  HIST_PAYMENT_CONTROL_FILTRADO = rows;
+  const tbody = document.getElementById('pc-tbody');
+  if(!rows.length){ tbody.innerHTML = `<tr><td colspan="20" class="empty-state">Nenhum registro encontrado.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td>${esc(r.law_firm)}</td>
+    <td>${r.payment_request_date ? dataBR(r.payment_request_date) : ''}</td>
+    <td>${esc(r.plaintiff)}</td>
+    <td>${esc(r.court_number)}</td>
+    <td>${esc(r.location)}</td>
+    <td class="mono">${esc(r.claim_number)}</td>
+    <td>${esc(r.cost_center)}</td>
+    <td>${r.accrual != null ? fmtMoeda(r.accrual) : ''}</td>
+    <td>${esc(r.type_of_payment)}</td>
+    <td>${r.payment_date ? dataBR(r.payment_date) : ''}</td>
+    <td>${r.value != null ? fmtMoeda(r.value) : ''}</td>
+    <td>${esc(r.reference_number)}</td>
+    <td>${esc(r.guarantee_payment)}</td>
+    <td>${esc(r.account_number)}</td>
+    <td>${esc(r.status)}</td>
+    <td>${esc(r.sap_voucher_number)}</td>
+    <td>${esc(r.seguro)}</td>
+    <td>${esc(r.enviado_recebido_escritorio)}</td>
+    <td>${esc(r.elaw)}</td>
+    <td><button class="row-btn" onclick="abrirEditarPaymentControl(${r.id})">✏️ Editar</button></td>
+  </tr>`).join('');
+}
+function abrirEditarPaymentControl(id){
+  const r = HIST_PAYMENT_CONTROL.find(x => x.id === id);
+  if(!r) return;
+  document.getElementById('pc-id').value = id;
+  document.getElementById('pc-titulo').textContent = `Editar Payment Control — ${r.claim_number || ''}`;
+  document.getElementById('pc-status').value = r.status || 'Pendente';
+  document.getElementById('pc-deadline').value = r.deadline || '';
+  document.getElementById('pc-sap').value = r.sap_voucher_number || '';
+  document.getElementById('pc-seguro').value = r.seguro || '';
+  document.getElementById('pc-enviado-recebido').value = r.enviado_recebido_escritorio || '';
+  document.getElementById('pc-elaw').value = r.elaw || '';
+  document.getElementById('pc-overlay').classList.add('show');
+}
+function fecharEditarPaymentControl(){
+  document.getElementById('pc-overlay').classList.remove('show');
+}
+async function salvarEdicaoPaymentControl(){
+  const id = Number(document.getElementById('pc-id').value);
+  const atualizacao = {
+    status: document.getElementById('pc-status').value,
+    deadline: document.getElementById('pc-deadline').value || null,
+    sap_voucher_number: document.getElementById('pc-sap').value.trim() || null,
+    seguro: document.getElementById('pc-seguro').value.trim() || null,
+    enviado_recebido_escritorio: document.getElementById('pc-enviado-recebido').value.trim() || null,
+    elaw: document.getElementById('pc-elaw').value.trim() || null,
+  };
+  const { error } = await sb.from('payment_control_bsbr').update(atualizacao).eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao salvar: ' + error.message, true);
+    return;
+  }
+  toast('Payment Control atualizado.');
+  fecharEditarPaymentControl();
+  carregarHistoricoPaymentControl();
 }
 
 /* ===================== ABA 4: REPORTE DE ACORDOS ===================== */
@@ -2948,31 +3403,136 @@ async function salvarConclusaoAcordo(){
 }
 
 /* ===================== ABA 4B: ENCERRAMENTOS =====================
-   Fluxo em 2 etapas: (1) advogado pergunta pra Gabi se dá pra encerrar um
-   processo — vira 'Pendente'; (2) Gabi responde no modal ("↩️ Responder"):
-   se "Sim", entra com os dados da convolação e o sistema marca 'Concluído'
-   e manda pro Grupo Bridgestone; se "Não", o retorno vai só pro advogado
-   que perguntou (e continua 'Pendente' pra ela poder voltar depois). */
+   Fluxo em 1 etapa: a decisão é do advogado — ele já fez a análise e informa
+   se o processo pode ser encerrado, incluindo (se "Sim") os dados da
+   convolação. O registro entra direto como 'Concluído' e o e-mail orienta a
+   Gabi a executar o encerramento, com cópia pro Grupo Bridgestone. O modal
+   "↩️ Responder" logo abaixo (fluxo antigo, advogado pergunta/Gabi responde)
+   fica só pra fechar registros antigos que ainda estão 'Pendente'. */
+function alternarConvolacaoNovoEncerramento(){
+  const podeEncerrar = document.getElementById('enc-pode-encerrar').value;
+  document.getElementById('enc-convolacao-campos').style.display = podeEncerrar === 'Sim' ? '' : 'none';
+}
+
+function novaLinhaEncDepositoHTML(){
+  return `<div class="enc-deposito-row">
+    <div class="mc-form-grid cols-3">
+      <div class="mc-form-group"><label>Convolação do DR/DJ Principal (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="enc-dr-dj-principal"></div>
+      <div class="mc-form-group"><label>Convolação do DR/DJ Juros (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="enc-dr-dj-juros"></div>
+      <div class="mc-form-group"><label>Convolação do DR/DJ (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" class="enc-dr-dj"></div>
+    </div>
+    <div class="mc-form-grid cols-3">
+      <div class="mc-form-group"><label>Data <span class="req">*</span></label>
+        <div style="display:flex;gap:8px;">
+          <input type="date" class="enc-data" style="flex:1;">
+          <button type="button" class="row-btn enc-remove-row" title="Remover este depósito" onclick="removerLinhaEncDeposito(this)">🗑️</button>
+        </div>
+      </div>
+      <div class="mc-form-group"><label>Tipo <span class="req">*</span></label>
+        <select class="enc-tipo">
+          <option value="">Selecione…</option>
+          <option>Depósito de Garantia</option>
+          <option>Depósito Judicial</option>
+          <option>Execução</option>
+          <option>Pagamento</option>
+        </select>
+      </div>
+      <div class="mc-form-group"><label>Tipo de Pagamento <span class="req">*</span></label>
+        <select class="enc-tipo-pagamento">
+          <option value="">Selecione…</option>
+          <option>Acordo</option>
+          <option>GDJ</option>
+          <option>INSS</option>
+          <option>Honorários Periciais</option>
+          <option>Recurso Ordinário</option>
+          <option>Recurso de Revista</option>
+          <option>Agravo de Instrumento</option>
+          <option>Embargos à Execução</option>
+          <option>Depósito de Recurso Ordinário</option>
+          <option>Depósito de Recurso de Revista</option>
+          <option>Garantia da Execução</option>
+          <option>Convolação de Depósitos</option>
+          <option>Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="mc-form-group"><label>Informações Sobre Depósitos <span class="req">*</span></label><textarea class="enc-info-depositos" rows="2" placeholder="Ex: Garantia da execução convolada; remanescente retornou pra empresa. / Depósitos recursais convolados em pagamento."></textarea></div>
+    <div class="mc-form-group"><label>Obs. Assistentes</label><textarea class="enc-obs-assistentes" rows="2" placeholder="Ex: convolado 18.806,89 / voltou para BSBR 31.484,91"></textarea></div>
+  </div>`;
+}
+function atualizarBotoesRemoverEncDeposito(){
+  const rows = document.querySelectorAll('#enc-depositos-list .enc-deposito-row');
+  rows.forEach(r => { r.querySelector('.enc-remove-row').style.display = rows.length > 1 ? '' : 'none'; });
+}
+function adicionarLinhaEncDeposito(){
+  document.getElementById('enc-depositos-list').insertAdjacentHTML('beforeend', novaLinhaEncDepositoHTML());
+  atualizarBotoesRemoverEncDeposito();
+}
+function removerLinhaEncDeposito(btn){
+  btn.closest('.enc-deposito-row').remove();
+  atualizarBotoesRemoverEncDeposito();
+}
+function resetLinhasEncDeposito(){
+  document.getElementById('enc-depositos-list').innerHTML = novaLinhaEncDepositoHTML();
+  atualizarBotoesRemoverEncDeposito();
+}
+
 document.getElementById('form-encerramentos').addEventListener('submit', async function(ev){
   ev.preventDefault();
   const g = id => document.getElementById(id).value.trim() || null;
-  const registro = {
+  const podeEncerrar = g('enc-pode-encerrar');
+  if(!podeEncerrar){ toast('Escolha se pode encerrar (Sim ou Não).', true); return; }
+
+  const comum = {
     numero_processo: g('enc-processo'),
     nome_reclamante: g('enc-reclamante'),
     advogado_responsavel: g('enc-advogado'),
     pergunta: g('enc-pergunta'),
-    status: 'Pendente',
-    atualizado_em: new Date().toISOString(),
+    pode_encerrar: podeEncerrar,
   };
+
+  let depositos = [];
+  if(podeEncerrar === 'Sim'){
+    depositos = Array.from(document.querySelectorAll('#enc-depositos-list .enc-deposito-row')).map(row => ({
+      convolacao_dr_dj_principal: parseMoedaBR(row.querySelector('.enc-dr-dj-principal').value),
+      convolacao_dr_dj_juros: parseMoedaBR(row.querySelector('.enc-dr-dj-juros').value),
+      convolacao_dr_dj: parseMoedaBR(row.querySelector('.enc-dr-dj').value),
+      data_convolacao: row.querySelector('.enc-data').value || null,
+      tipo: row.querySelector('.enc-tipo').value || null,
+      tipo_pagamento: row.querySelector('.enc-tipo-pagamento').value || null,
+      informacoes_depositos: row.querySelector('.enc-info-depositos').value.trim() || null,
+      obs_assistentes: row.querySelector('.enc-obs-assistentes').value.trim() || null,
+    }));
+    const faltando = depositos.some(d => d.convolacao_dr_dj_principal == null || d.convolacao_dr_dj_juros == null || d.convolacao_dr_dj == null || !d.data_convolacao || !d.tipo || !d.tipo_pagamento || !d.informacoes_depositos);
+    if(faltando){ toast('Preencha todos os campos de cada depósito — são obrigatórios quando "Pode Encerrar" é Sim.', true); return; }
+  }
+
+  const agora = new Date().toISOString();
+  const registros = (podeEncerrar === 'Sim' ? depositos : [{}]).map(dep => ({
+    ...comum,
+    ...dep,
+    status: 'Concluído',
+    criado_em: agora,
+    atualizado_em: agora,
+    concluido_em: agora,
+  }));
+
   try{
-    registro.criado_em = registro.atualizado_em;
-    const { error } = await sb.from('reportes_encerramentos').insert(registro);
+    const { error } = await sb.from('reportes_encerramentos').insert(registros);
     if(error) throw error;
-    toast('Consulta registrada. Abrindo e-mail pra Gabi…');
-    const assunto = `Pode Encerrar? — Processo ${nn(registro.numero_processo)}`;
-    const corpo = `Prezada Gabi,\n\nPodemos encerrar o processo abaixo?\n\nProcesso: ${nn(registro.numero_processo)}\nReclamante: ${nn(registro.nome_reclamante)}\nAdvogado Responsável: ${nn(registro.advogado_responsavel)}\n\n${nn(registro.pergunta)}`;
+    toast('Encerramento registrado. Abrindo e-mail orientando a Gabi…');
+    let corpo;
+    if(podeEncerrar === 'Sim'){
+      const linhasDepositos = depositos.map(d => `- Tipo: ${nn(d.tipo)} | Tipo de Pagamento: ${nn(d.tipo_pagamento)} | Convolação do DR/DJ Principal: ${fmtMoeda(d.convolacao_dr_dj_principal)} | Convolação do DR/DJ Juros: ${fmtMoeda(d.convolacao_dr_dj_juros)} | Convolação do DR/DJ: ${fmtMoeda(d.convolacao_dr_dj)} | Data: ${dataBR(d.data_convolacao)}\n  Informações Sobre Depósitos: ${nn(d.informacoes_depositos)}${d.obs_assistentes ? '\n  Obs. Assistentes: ' + d.obs_assistentes : ''}`).join('\n\n');
+      corpo = `Prezada Gabi,\n\nInformo que o processo abaixo pode ser encerrado, conforme análise já realizada. Seguem os dados da convolação para registro e providências:\n\nProcesso: ${nn(comum.numero_processo)}\nReclamante: ${nn(comum.nome_reclamante)}\nAdvogado Responsável: ${nn(comum.advogado_responsavel)}\n\nDepósitos:\n${linhasDepositos}\n\n${comum.pergunta ? 'Observação: ' + comum.pergunta + '\n\n' : ''}Por favor, providencie o encerramento.\n\nAtenciosamente,\n${nn(comum.advogado_responsavel)}`;
+    } else {
+      corpo = `Prezada Gabi,\n\nInformo que, após análise, o processo abaixo ainda NÃO pode ser encerrado:\n\nProcesso: ${nn(comum.numero_processo)}\nReclamante: ${nn(comum.nome_reclamante)}\n\n${comum.pergunta ? nn(comum.pergunta) : ''}\n\nAtenciosamente,\n${nn(comum.advogado_responsavel)}`;
+    }
+    const assunto = `Encerramento — Processo ${nn(comum.numero_processo)}`;
     abrirEmail('cicera.vicente@peixotoecury.com.br', 'grupobridgestone@peixotoecury.com.br', assunto, corpo);
     this.reset();
+    document.getElementById('enc-convolacao-campos').style.display = 'none';
+    resetLinhasEncDeposito();
     carregarHistoricoEncerramentos();
   }catch(err){
     console.error(err);
@@ -5008,6 +5568,7 @@ if(!sb){
   carregarHistoricoCalculos();
   carregarHistoricoDecisao();
   carregarHistoricoKits();
+  carregarHistoricoPaymentControl();
   carregarHistoricoAcordos();
   carregarHistoricoEncerramentos();
   carregarHistoricoValores();
@@ -5018,6 +5579,7 @@ if(!sb){
   assinarRealtime('comunicacoes_calculos', carregarHistoricoCalculos);
   assinarRealtime('reportes_decisao', carregarHistoricoDecisao);
   assinarRealtime('kits_pagamento', carregarHistoricoKits);
+  assinarRealtime('payment_control_bsbr', carregarHistoricoPaymentControl);
   assinarRealtime('reportes_acordos', carregarHistoricoAcordos);
   assinarRealtime('reportes_encerramentos', carregarHistoricoEncerramentos);
   assinarRealtime('solicitacoes_insercao_valores', carregarHistoricoValores);
