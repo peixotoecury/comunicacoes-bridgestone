@@ -208,11 +208,6 @@ html.gate-open #pwGate{display:none;}
 .gate-err{color:var(--red);font-size:11.5px;margin-top:10px;display:none;}
 .gate-err.show{display:block;}
 </style>
-<script>
-try{
-  if(localStorage.getItem('voeGateOk')==='1'){document.documentElement.classList.add('gate-open');}
-}catch(e){}
-</script>
 </head>
 <body>
 
@@ -237,7 +232,6 @@ try{
     var pass=document.getElementById('gatePass').value;
     var h=await sha256(pass);
     if(h===HASH){
-      try{localStorage.setItem('voeGateOk','1');}catch(e){}
       document.documentElement.classList.add('gate-open');
     }else{
       document.getElementById('gateErr').classList.add('show');
