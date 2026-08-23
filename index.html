@@ -116,6 +116,9 @@ table.sol-table tbody td{padding:10px 12px;border-bottom:1px solid #E5EEF4;color
    o corte de texto com ellipsis da regra acima escondia os botões de baixo. */
 table.sol-table tbody td:has(.row-btn){white-space:normal;overflow:visible;text-overflow:clip;max-width:none;}
 table.sol-table tbody tr:hover td{background:#F8FCFF;}
+table.sol-table thead th:last-child{position:sticky;right:0;z-index:3;}
+table.sol-table tbody td:has(.row-btn){position:sticky;right:0;background:#fff;box-shadow:-4px 0 6px -4px rgba(0,0,0,.2);}
+table.sol-table tbody tr:hover td:has(.row-btn){background:#F8FCFF;}
 td.mono{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
 
 #forecast-thead-row th{padding:8px 10px;vertical-align:top;}
