@@ -109,6 +109,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .filter-select:focus{border-color:var(--azul-pc);box-shadow:0 0 0 3px rgba(0,169,224,.14);}
 
 .table-wrap{overflow-x:auto;}
+.table-wrap::-webkit-scrollbar{height:10px;}
+.table-wrap::-webkit-scrollbar-thumb{background:rgba(0,169,224,.55);border-radius:6px;}
+.table-wrap::-webkit-scrollbar-track{background:#E5EEF4;}
+.scroll-hint{font-size:10.5px;color:var(--muted);padding:6px 20px 0;}
 table.sol-table{width:100%;border-collapse:collapse;min-width:900px;background:#fff;}
 table.sol-table thead th{position:sticky;top:0;background:var(--escuro-pc);color:#fff;padding:10px 12px;text-transform:uppercase;font-size:10px;letter-spacing:.6px;text-align:left;white-space:nowrap;}
 table.sol-table tbody td{padding:10px 12px;border-bottom:1px solid #E5EEF4;color:var(--preto-pc);font-size:12px;vertical-align:middle;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -957,7 +961,7 @@ try{
   <div class="dash-card">
     <div class="dash-card-head">📦 Nova Solicitação de Kit</div>
     <div class="dash-card-body">
-      <div class="info-box"><span>ℹ️</span><span>O advogado solicita o(s) kit(s) (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos ou Convolação de Depósitos) e a Gabi recebe o pedido por e-mail. Se o processo tiver vários pagamentos, use <b>➕ Adicionar outro pagamento</b> pra incluir todos na mesma solicitação (ex: GDJ e GRU juntos). Quando ela concluir, a solicitação fica marcada como <b>Concluído</b> no sistema e um e-mail de retorno é aberto pra você automaticamente.</span></div>
+      <div class="info-box"><span>ℹ️</span><span>O advogado solicita o(s) kit(s) (GDJ/GRU/Custas de Acordo, RO, RR, AI, Embargos à Execução, Depósitos ou Convolação de Depósitos) e a Gabi recebe o pedido por e-mail. Se o processo tiver vários pagamentos, use <b>➕ Adicionar outro pagamento</b> pra incluir todos na mesma solicitação (ex: GDJ e GRU juntos). Quando ela concluir, a solicitação fica <b>Concluído</b> e um e-mail de validação (com o Excel BSBR preenchido) é aberto automaticamente pro advogado. Depois de conferir, o advogado clica em <b>✔️ Validar</b> no histórico — o status vira <b>Validado</b> e o trâmite se encerra.</span></div>
       <form id="form-kits">
         <div class="mc-form-grid cols-3">
           <div class="mc-form-group"><label>Número do Processo <span class="req">*</span></label><input type="text" id="k-processo" required placeholder="0000000-00.0000.0.00.0000"></div>
@@ -1029,6 +1033,7 @@ try{
         <option value="">Status: todos</option>
         <option value="Pendente">Pendente</option>
         <option value="Concluído">Concluído</option>
+        <option value="Validado">Validado</option>
       </select>
     </div>
     <div class="table-wrap">
@@ -2895,7 +2900,8 @@ function renderHistoricoKits(){
     <td>${fmtDataHora(r.criado_em)}</td>
     <td>${r.concluido_em ? fmtDataHora(r.concluido_em) : ''}</td>
     <td>
-      ${r.status !== 'Concluído' ? `<button class="row-btn" onclick="abrirConcluirKit(${r.id})">✅ Concluir</button>` : ''}
+      ${r.status === 'Pendente' ? `<button class="row-btn" onclick="abrirConcluirKit(${r.id})">✅ Concluir</button>` : ''}
+      ${r.status === 'Concluído' ? `<button class="row-btn" onclick="validarKit(${r.id})">✔️ Validar</button>` : ''}
       <button class="row-btn" onclick="verDetalhesKit(${r.id})" title="Ver todos os campos salvos">👁️ Ver</button>
       <button class="row-btn" onclick="excluirRegistro('kits_pagamento', ${r.id})" title="Excluir">🗑️ Excluir</button>
     </td>
@@ -2920,6 +2926,7 @@ function verDetalhesKit(id){
     ['Status', r.status],
     ['Criado em', fmtDataHora(r.criado_em)],
     ['Concluído em', r.concluido_em ? fmtDataHora(r.concluido_em) : null],
+    ['Validado em', r.validado_em ? fmtDataHora(r.validado_em) : null],
   ];
   const html = linhas.map(([label, val]) => `<div class="vd-kv"><b>${esc(label)}:</b> ${esc(val == null ? '—' : val)}</div>`).join('')
     + `<div class="vd-kv"><b>Resumo:</b><br>${esc(r.resumo || '—').replace(/\n/g,'<br>')}</div>`;
@@ -3155,6 +3162,21 @@ async function salvarConclusaoKit(){
   fecharConcluirKit();
   carregarHistoricoKits();
   carregarHistoricoPaymentControl();
+}
+
+/* O advogado confirma que conferiu o e-mail de validação + Excel da Gabi —
+   fecha o trâmite do kit (Pendente → Concluído → Validado). */
+async function validarKit(id){
+  const r = HIST_KITS.find(x => x.id === id);
+  if(!r) return;
+  const { error } = await sb.from('kits_pagamento').update({ status: 'Validado', validado_em: new Date().toISOString() }).eq('id', id);
+  if(error){
+    console.error(error);
+    toast('Erro ao validar: ' + error.message, true);
+    return;
+  }
+  toast('Kit validado — trâmite encerrado.');
+  carregarHistoricoKits();
 }
 
 /* ===================== PAYMENT CONTROL ===================== */
@@ -5567,6 +5589,14 @@ function vBuscarForecastAtual(){
 if(!sb){
   document.getElementById('erro-conexao').innerHTML = `<div class="error-banner"><strong>Erro:</strong> não foi possível conectar ao Supabase.</div>`;
 } else {
+  document.querySelectorAll('.table-wrap').forEach(w => {
+    const hint = document.createElement('div');
+    hint.className = 'scroll-hint';
+    hint.textContent = '↔ Role a tabela para o lado pra ver todas as colunas';
+    w.parentNode.insertBefore(hint, w);
+    w.scrollLeft = 0;
+  });
+
   carregarHistoricoPericia();
   carregarHistoricoCalculos();
   carregarHistoricoDecisao();
