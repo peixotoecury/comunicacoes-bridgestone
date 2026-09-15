@@ -4119,7 +4119,7 @@ function assinarRealtime(tabela, recarregar){
    é extração client-side por regex + leitura de posição real do PDF (pdf.js) + calculadora
    de correção monetária (Tema 1191 STF, IPCA-E/SELIC). Nada aqui é salvo no Supabase. */
 let IA_VERBAS = [];
-let IA_DEBITOS = []; // honorários/contribuições pagos a terceiros (perito, patrono, INSS) — NÃO soma no Histórico do reclamante
+let IA_DEBITOS = []; // honorários/contribuições pagos a terceiros (perito, patrono, INSS) — somam no Histórico/Provisão, EXCETO o item de FGTS (duplica o valor do pedido "FGTS 8%"/FGTS já lido na tabela Resumo)
 let IA_PAGINAS_ITENS = null; // posição (x,y) de cada texto do último PDF lido, por página
 
 const IA_PADROES = [
@@ -4414,10 +4414,13 @@ function iaProcessarTexto(){
     usouPosicao = true;
     verbas = verbasResumo;
     // "Descrição de Débitos do Reclamado por Credor" traz o que o reclamado paga a
-    // OUTROS credores (perito, patrono do reclamante, INSS/contribuição social) —
-    // não é devido ao reclamante, então não pode entrar no total do Histórico (senão
-    // infla o valor e, em casos com FGTS, ainda duplica um valor que a Resumo já conta).
-    // Mostramos como referência separada, só pra leitura, sem somar em nada.
+    // OUTROS credores (perito, patrono do reclamante, INSS/contribuição social) — a
+    // pedido da usuária (2026-09-15), esses valores agora somam no Total Principal
+    // (Histórico) e Total Corrigido (Provisão) junto com as verbas da tabela Resumo,
+    // EXCETO o item de FGTS: esse duplica o valor do pedido "FGTS 8%"/FGTS que a
+    // tabela Resumo já traz (mesmo total), então é filtrado da soma em
+    // iaItensSomaveisDebitos() pra não contar o FGTS duas vezes. Continuam listados
+    // à parte (iaDrawDebitos) só pra facilitar a conferência de quem é cada credor.
     IA_DEBITOS = iaReconstruirTabelaDebitos(IA_PAGINAS_ITENS) || [];
   } else {
     // Fallback: sem posição disponível (colou texto, XLSX, ou PDF sem essa estrutura) —
@@ -4443,7 +4446,7 @@ function iaProcessarTexto(){
   const avisoDuplicacao = isCalculoTabular
     ? ' ⚠️ Este texto parece vir de um cálculo/planilha já pronta (com colunas de Juros/Total/Valor Corrigido) — o "Principal" extraído pode já estar corrigido. NÃO preencha a Data de Origem dessas verbas antes de conferir, senão o recálculo soma a correção em dobro.'
     : '';
-  const debitosMsg = IA_DEBITOS.length ? ` 📎 Também identificamos ${IA_DEBITOS.length} débito(s) com terceiros (honorários, contribuição social) — listados à parte, não somam no Histórico.` : '';
+  const debitosMsg = IA_DEBITOS.length ? ` 📎 Também identificamos ${IA_DEBITOS.length} débito(s) com terceiros (honorários, contribuição social) — listados à parte, e já somados no Histórico/Provisão (exceto FGTS, pra não duplicar o "FGTS 8%" já lido acima).` : '';
   const origemMsg = usouPosicao
     ? `✅ ${IA_VERBAS.length} verba(s) lida(s) diretamente da tabela do PDF (por posição na página — mais confiável que busca por palavra-chave).`
     : `✅ ${IA_VERBAS.length} verba(s) identificada(s) por reconhecimento de texto. Confira e ajuste os valores antes de usar.`;
@@ -4561,26 +4564,40 @@ function iaLimpar(){
   iaDrawVerbas();
   iaDrawDebitos();
 }
-// Só leitura — honorários/débitos com terceiros identificados no cálculo, exibidos
-// à parte pra não sumir da conferência, mas sem entrar na soma do Histórico.
+// Débitos com terceiros identificados no cálculo — listados aqui pra facilitar a
+// conferência de quem é cada credor, e somados no Total Principal/Corrigido junto
+// com a tabela de verbas, EXCETO o item de FGTS (duplica o "FGTS 8%"/FGTS que a
+// tabela Resumo já traz — ver iaItemDebitoSomavel).
+function iaItemDebitoSomavel(v){ return !/fgts/i.test(v.pedido); }
 function iaDrawDebitos(){
   const wrap = document.querySelector('#ia-debitos-wrap');
   if(!wrap) return;
   if(!IA_DEBITOS.length){ wrap.innerHTML = ''; return; }
-  const linhas = IA_DEBITOS.map(v => `<div style="display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--border2);"><span>${esc(v.pedido)}</span><span class="mono" style="font-family:var(--mono);white-space:nowrap;">${iaMoney(v.total)}</span></div>`).join('');
+  const linhas = IA_DEBITOS.map(v => {
+    const somavel = iaItemDebitoSomavel(v);
+    const nota = somavel ? '' : ' <span style="color:var(--orange);font-weight:600;">(duplicata do FGTS já somado acima — não entra no total)</span>';
+    return `<div style="display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--border2);"><span>${esc(v.pedido)}${nota}</span><span class="mono" style="font-family:var(--mono);white-space:nowrap;">${iaMoney(v.total)}</span></div>`;
+  }).join('');
   wrap.innerHTML = `
     <div style="margin-top:14px;background:var(--orange-lt);border:1px solid rgba(230,126,34,.3);border-radius:var(--radius-lg);padding:12px 14px;">
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--orange);margin-bottom:6px;">📎 Débitos com terceiros identificados no cálculo (não somam no Histórico)</div>
-      <div class="hint" style="margin-bottom:8px;">Honorários periciais/advocatícios e contribuições sociais são devidos a terceiros (perito, patrono, INSS), não ao reclamante — por isso ficam de fora da soma de "Histórico". Ficam aqui só pra referência/conferência.</div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--orange);margin-bottom:6px;">📎 Débitos com terceiros identificados no cálculo</div>
+      <div class="hint" style="margin-bottom:8px;">Honorários periciais/advocatícios e contribuições sociais são devidos a terceiros (perito, patrono, INSS), não ao reclamante — mas já entram na soma do Total Principal (Histórico) e Total Corrigido (Provisão) acima. Exceção: o valor de FGTS aqui é o mesmo do pedido "FGTS 8%"/FGTS já contado na tabela principal, então fica de fora da soma pra não duplicar.</div>
       ${linhas}
     </div>`;
+}
+function iaTotaisComDebitos(){
+  const debitosSomaveis = IA_DEBITOS.filter(iaItemDebitoSomavel);
+  const total = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0) + debitosSomaveis.reduce((s,v) => s + iaNum(v.total), 0);
+  const totalPrincipal = IA_VERBAS.reduce((s,v) => s + iaNum(v.principal), 0) + debitosSomaveis.reduce((s,v) => s + iaNum(v.principal), 0);
+  return {total, totalPrincipal};
 }
 function iaDrawVerbas(){
   const wrap = document.querySelector('#ia-verbas-wrap');
   if(!IA_VERBAS.length){
     wrap.innerHTML = '<div class="hint" style="padding:12px 0;">Nenhuma verba ainda — suba um documento ou adicione manualmente.</div>';
-    document.querySelector('#ia-total').textContent = 'R$ 0,00';
-    document.querySelector('#ia-total-principal').textContent = 'R$ 0,00';
+    const {total, totalPrincipal} = iaTotaisComDebitos();
+    document.querySelector('#ia-total').textContent = iaMoney(total);
+    document.querySelector('#ia-total-principal').textContent = iaMoney(totalPrincipal);
     return;
   }
   const optsIndice = '<option value="auto">Auto (Tema 1191)</option><option value="ipca">IPCA-E</option><option value="tr_ipca">TR+IPCA-E</option><option value="selic">SELIC</option><option value="nenhum">Sem correção</option>';
@@ -4603,8 +4620,7 @@ function iaDrawVerbas(){
       <button type="button" class="ia-verba-del" onclick="iaRemoverVerba(${i})" title="Remover">✕</button>
     </div>`).join('');
   wrap.innerHTML = head + rows;
-  const total = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
-  const totalPrincipal = IA_VERBAS.reduce((s,v) => s + iaNum(v.principal), 0);
+  const {total, totalPrincipal} = iaTotaisComDebitos();
   document.querySelector('#ia-total').textContent = iaMoney(total);
   document.querySelector('#ia-total-principal').textContent = iaMoney(totalPrincipal);
 }
@@ -4617,9 +4633,9 @@ const IA_ACCRUAL_PCT_POR_FASE = {'1': 0.405, '2': 0.54, '3': 1.0};
 function iaLevarParaValores(){
   // Histórico = valor na data da distribuição, sem correção/juros (Principal).
   // Provisão = valor corrigido + juros (o Total de cada verba) — melhor estimativa
-  // atual do passivo. Nenhum dos dois soma os débitos com terceiros (IA_DEBITOS).
-  const totalPrincipal = IA_VERBAS.reduce((s,v) => s + iaNum(v.principal), 0);
-  const totalCorrigido = IA_VERBAS.reduce((s,v) => s + iaNum(v.total), 0);
+  // atual do passivo. Os dois já incluem os débitos com terceiros somáveis
+  // (IA_DEBITOS, exceto o item de FGTS duplicado) — ver iaTotaisComDebitos().
+  const {total: totalCorrigido, totalPrincipal} = iaTotaisComDebitos();
   if(!totalPrincipal && !totalCorrigido){ alert('Ainda não há total calculado — extraia ou preencha as verbas primeiro.'); return; }
   mudarAba('valores');
   const processo = document.getElementById('ia-processo').value.trim();
