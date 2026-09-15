@@ -4303,6 +4303,7 @@ function iaReconstruirTabelaResumo(paginasItens){
       const descricao = descItens.map(it => it.str).join(' ').replace(/\s+/g,' ').trim();
       if(!descricao) break; // linha sem descrição = acabou a tabela
       if(descricao.toLowerCase() === 'total') break; // linha de total geral, para antes dela
+      if(/^sub ?total\b/i.test(descricao)) continue; // linha de soma parcial da própria tabela — duplicaria verbas já somadas acima dela
 
       const valores = {valorCorrigido:0, juros:0, total:0};
       numItens.forEach(it => {
@@ -4350,6 +4351,7 @@ function iaReconstruirResumoSaldoDevedor(paginasItens){
       const descricao = descItens.map(it => it.str).join(' ').replace(/\s+/g,' ').trim();
       if(!descricao) break; // linha sem descrição = acabou a tabela
       if(/total devido pelo reclamado/i.test(descricao)) break;
+      if(/^sub ?total\b/i.test(descricao)) continue; // linha de soma parcial da própria tabela — duplicaria verbas já somadas acima dela
       if(!numeroItem) continue;
       const valor = iaNum(numeroItem.str);
       if(!valor) continue; // ignora linhas zeradas (ex.: Líquido Devido ao Reclamante = 0,00)
@@ -4391,6 +4393,7 @@ function iaReconstruirTabelaDebitos(paginasItens){
       if(!descricao) continue;
       if(/total devido pelo reclamado/i.test(descricao)) break;
       if(/^l[íi]quido devido/i.test(descricao)) continue; // só repete o total já capturado no Resumo
+      if(/^sub ?total\b/i.test(descricao)) continue; // linha de soma parcial da própria tabela (ex.: fecha um grupo de credores antes de custas) — não é um credor, duplicaria as linhas já somadas acima dela
       if(!numeroItem) continue;
       const valor = iaNum(numeroItem.str);
       if(!valor) continue; // ignora linhas tipo IRRF = 0,00
