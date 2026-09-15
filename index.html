@@ -1637,7 +1637,7 @@ html.gate-open #pwGate{display:none;}
             <option value="3">Fase 3 — Execução (100% do provável)</option>
           </select>
         </div>
-        <div class="hint" style="margin-top:6px;">Accrual = % da fase × soma do <b>Total Corrigido (Provisão)</b> das verbas marcadas como <b>Provável</b> na grade acima.</div>
+        <div class="hint" style="margin-top:6px;">Accrual = % da fase × <b>Total Corrigido (Provisão)</b> inteiro (todos os pedidos da grade + débitos com terceiros somáveis) — em Fase 3 (Execução), Accrual = 100% da Provisão.</div>
       </div>
 
       <div style="margin-top:14px;">
@@ -4628,9 +4628,12 @@ function iaDrawVerbas(){
   document.querySelector('#ia-total-principal').textContent = iaMoney(totalPrincipal);
 }
 
-// Percentual de Accrual por fase do processo — sobre a soma do Total Corrigido
-// (Provisão) das verbas marcadas como "Provável" (não sobre o Principal, nem
-// sobre as verbas "Possível"/"Remoto").
+// Percentual de Accrual por fase do processo — sobre o Total Corrigido (Provisão)
+// INTEIRO, todos os pedidos (tabela principal + débitos com terceiros somáveis),
+// sem depender de marcar cada verba como "Provável" (mudança 2026-09-15, a pedido
+// da usuária — antes filtrava só as verbas "Provável" da tabela principal e nunca
+// incluía a caixa de débitos, o que fazia o Accrual em Fase 3 [100%] sair menor
+// que a Provisão mesmo devendo ser igual).
 const IA_ACCRUAL_PCT_POR_FASE = {'1': 0.405, '2': 0.54, '3': 1.0};
 
 function iaLevarParaValores(){
@@ -4656,15 +4659,9 @@ function iaLevarParaValores(){
   let msgAccrual = '';
   let accrualFicouVazio = false;
   if(fase && IA_ACCRUAL_PCT_POR_FASE[fase] != null){
-    const totalCorrigidoProvavel = IA_VERBAS.filter(v => v.probabilidade === 'Provável').reduce((s,v) => s + iaNum(v.total), 0);
-    const accrual = totalCorrigidoProvavel * IA_ACCRUAL_PCT_POR_FASE[fase];
+    const accrual = totalCorrigido * IA_ACCRUAL_PCT_POR_FASE[fase];
     document.getElementById('v-novo-accrual').value = accrual.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-    if(totalCorrigidoProvavel === 0){
-      accrualFicouVazio = true;
-      msgAccrual = ' — Accrual saiu R$ 0,00 porque NENHUMA verba está marcada como "Provável" na grade acima (accrual só soma o Total Corrigido/Provisão das verbas "Provável") — confira se é isso mesmo ou se esqueceu de marcar a probabilidade';
-    } else {
-      msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% do provável)`;
-    }
+    msgAccrual = ` e "Novo Valor do Accrual" (${(IA_ACCRUAL_PCT_POR_FASE[fase]*100).toLocaleString('pt-BR')}% da Provisão)`;
   } else {
     accrualFicouVazio = true;
     msgAccrual = ' — Accrual NÃO foi calculado (falta selecionar a Fase do processo na aba IA)';
