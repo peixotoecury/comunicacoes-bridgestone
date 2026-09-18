@@ -1489,6 +1489,7 @@ html.gate-open #pwGate{display:none;}
               <option value="1">Fase 1 — Conhecimento e Instrução (40,5% do provável)</option>
               <option value="2">Fase 2 — Recursal (TRT/TST) (54% do provável)</option>
               <option value="3">Fase 3 — Execução (100% do provável)</option>
+              <option value="3p">Fase 3 — Recursal com Execução Provisória (100% do provável)</option>
             </select>
           </div>
         </div>
@@ -1635,6 +1636,7 @@ html.gate-open #pwGate{display:none;}
             <option value="1">Fase 1 — Conhecimento e Instrução (40,5% do provável)</option>
             <option value="2">Fase 2 — Recursal (TRT/TST) (54% do provável)</option>
             <option value="3">Fase 3 — Execução (100% do provável)</option>
+              <option value="3p">Fase 3 — Recursal com Execução Provisória (100% do provável)</option>
           </select>
         </div>
         <div class="hint" style="margin-top:6px;">Accrual = % da fase × <b>Total Corrigido (Provisão)</b> inteiro (todos os pedidos da grade + débitos com terceiros somáveis) — em Fase 3 (Execução), Accrual = 100% da Provisão.</div>
@@ -4634,7 +4636,7 @@ function iaDrawVerbas(){
 // da usuária — antes filtrava só as verbas "Provável" da tabela principal e nunca
 // incluía a caixa de débitos, o que fazia o Accrual em Fase 3 [100%] sair menor
 // que a Provisão mesmo devendo ser igual).
-const IA_ACCRUAL_PCT_POR_FASE = {'1': 0.405, '2': 0.54, '3': 1.0};
+const IA_ACCRUAL_PCT_POR_FASE = {'1': 0.405, '2': 0.54, '3': 1.0, '3p': 1.0};
 
 function iaLevarParaValores(){
   // Histórico = valor na data da distribuição, sem correção/juros (Principal).
