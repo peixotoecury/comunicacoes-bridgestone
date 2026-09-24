@@ -1373,7 +1373,7 @@ html.gate-open #pwGate{display:none;}
       </div>
 
       <div id="v-modo-advogado">
-      <div class="info-box"><span>ℹ️</span><span>O pedido é do advogado para a assistente — o e-mail vai para <b>Gabi</b>, com cópia para o Grupo Bridgestone, e abre direto ao salvar. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 400.000,00, aparece um botão pra abrir a nota extra pro <b>Nicolau</b>. Cada processo mantém <b>uma linha só</b> enquanto estiver Pendente — mandar primeiro o Cálculo e depois a Mudança de Fase (por exemplo) atualiza a mesma solicitação, em vez de criar outra desconectada. Quando a assistente confirmar a inserção (botão <b>✅ Concluir</b> no histórico), o sistema marca como Concluído e abre o e-mail de retorno pro advogado.</span></div>
+      <div class="info-box"><span>ℹ️</span><span>O pedido é do advogado para a assistente — o e-mail vai para <b>Gabi</b>, com cópia para o Grupo Bridgestone, e abre direto ao salvar. Se alguma diferença (Novo − Atual) for igual ou maior que R$ 200.000,00, aparece um botão pra abrir a nota extra pro <b>Nicolau</b>. Cada processo mantém <b>uma linha só</b> enquanto estiver Pendente — mandar primeiro o Cálculo e depois a Mudança de Fase (por exemplo) atualiza a mesma solicitação, em vez de criar outra desconectada. Quando a assistente confirmar a inserção (botão <b>✅ Concluir</b> no histórico), o sistema marca como Concluído e abre o e-mail de retorno pro advogado.</span></div>
       <form id="form-valores">
         <div class="section-title">Identificação</div>
         <div class="mc-form-grid cols-3">
@@ -1480,7 +1480,7 @@ html.gate-open #pwGate{display:none;}
           <div class="mc-form-group"><label>Novo Valor do Accrual (R$) <span class="req">*</span></label><input type="text" inputmode="decimal" placeholder="0,00" id="v-novo-accrual" oninput="recalcularDiferencasValores()" required></div>
           <div class="mc-form-group"><label>Diferença (Novo − Atual)</label><input type="text" id="v-diff-accrual" readonly></div>
         </div>
-        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 400.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
+        <div class="info-box" id="v-alerta-400k" style="display:none;background:var(--red-lt);border-color:rgba(192,57,43,.3);color:var(--red);">⚠️ Alguma diferença (Novo − Atual) está acima de R$ 200.000,00 — uma nota extra será aberta para o Nicolau ao salvar.</div>
         </div>
 
         <div id="v-grupo-fase" style="display:none;">
@@ -3702,7 +3702,7 @@ function verDetalhesEncerramento(id){
 }
 
 /* ===================== ABA 5: SOLICITAÇÃO DE INSERÇÃO DE VALORES ===================== */
-const LIMIAR_ALERTA_VALOR = 400000;
+const LIMIAR_ALERTA_VALOR = 200000;
 const NICOLAU_EMAIL = 'nicolau.coelho@peixotoecury.com.br';
 
 /* Aceita formato brasileiro: ponto = milhar, vírgula = decimal. "360.000" vira 360000, não 360. */
@@ -3889,8 +3889,8 @@ document.getElementById('form-valores').addEventListener('submit', async functio
   abrirEmail(destinatarios, cc, assunto, corpo);
 
   if(acima400k){
-    const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 400.000,00 — Processo ${numeroProcesso}`;
-    const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 400.000,00.\n\nProcesso: ${numeroProcesso}\nReclamante: ${nomeReclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
+    const assuntoNicolau = `⚠️ Diferença de Valor Acima de R$ 200.000,00 — Processo ${numeroProcesso}`;
+    const corpoNicolau = `Nicolau,\n\nNota de atenção: pelo menos uma das diferenças (Novo − Atual) abaixo, referente ao processo em epígrafe, é igual ou superior a R$ 200.000,00. Pela regra da conta, essa diferença em relação ao histórico precisa ser reportada ao cliente.\n\nProcesso: ${numeroProcesso}\nReclamante: ${nomeReclamante}\nReclamada: ${nn(registro.reclamada)}\n\n${resumoValores}\n\nAdvogado Solicitante: ${nn(registro.advogado_solicitante)}\nAssistente Responsável: ${nn(registro.assistente_responsavel)}`;
     mostrarEmailsPendentes([{ label: 'Nota pro Nicolau (acima de R$ 400k)', to: NICOLAU_EMAIL, cc, assunto: assuntoNicolau, corpo: corpoNicolau }]);
   }
 
