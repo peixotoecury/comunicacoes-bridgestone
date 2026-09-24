@@ -361,7 +361,7 @@ html.gate-open #pwGate{display:none;}
   <div class="dash-card">
     <div class="dash-card-head">🧮 Nova Solicitação de Cálculos</div>
     <div class="dash-card-body">
-      <div class="info-box">ℹ️ Vai sempre para <b>consulta@madiconsultoria.com.br</b>, com cópia para atendimento@madipericia.com, michele@madiconsultoria.com.br, Grupo Bridgestone e Grupo de Requantificação.</div>
+      <div class="info-box">ℹ️ Vai sempre para <b>atendimento@, alexandre@, marcelo@, biancacovre@ e claudiaramos@madipericia.com</b>, com cópia para o Grupo Bridgestone e o Grupo de Requantificação.<br>Título do e-mail: <b>SOLICITAÇÃO DE CÁLCULO - [TIPO DE SERVIÇO] - [PARTE] X [PARTE CONTRÁRIA] - [Nº DO PROCESSO] - PRAZO - [DD-MM-AAAA]</b></div>
       <form id="form-calculos">
         <div class="mc-form-grid">
           <div class="mc-form-group">
@@ -372,6 +372,10 @@ html.gate-open #pwGate{display:none;}
             <label>Nome do Reclamante <span class="req">*</span></label>
             <input type="text" id="c-reclamante" required placeholder="Nome completo">
           </div>
+        </div>
+        <div class="mc-form-group">
+          <label>Nome da Parte Contrária <span class="req">*</span></label>
+          <input type="text" id="c-parte-contraria" required placeholder="Ex: Bridgestone do Brasil">
         </div>
         <div class="mc-form-group">
           <label>Qual tipo de subsídio será necessário? <span class="req">*</span></label>
@@ -2128,11 +2132,14 @@ document.getElementById('form-calculos').addEventListener('submit', async functi
     outros_detalhes: document.getElementById('c-outros').value.trim() || null,
     responsavel_sigla: document.getElementById('c-responsavel').value.trim(),
   };
-  const destinatarios = 'consulta@madiconsultoria.com.br';
-  const cc = 'atendimento@madipericia.com,michele@madiconsultoria.com.br,grupobridgestone@peixotoecury.com.br,grupo.requantificacao@peixotoecury.com.br';
+  const parteContraria = document.getElementById('c-parte-contraria').value.trim();
+  const destinatarios = 'atendimento@madipericia.com,alexandre@madipericia.com,marcelo@madipericia.com,biancacovre@madipericia.com,claudiaramos@madipericia.com';
+  const cc = 'grupobridgestone@peixotoecury.com.br,grupo.requantificacao@peixotoecury.com.br';
   const prazoFmt = registro.prazo_envio ? registro.prazo_envio.split('-').reverse().join('/') : '';
-  const assunto = `Solicitação de Cálculos — ${registro.tipo_subsidio} — Processo ${registro.numero_processo}`;
-  const corpo = `Prezados,\n\nSolicitamos ${registro.tipo_subsidio} referente ao processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nTipo de subsídio: ${registro.tipo_subsidio}\nLink para acesso/download: ${registro.link_documentos}\nPrazo para envio: ${prazoFmt}\n${registro.outros_detalhes ? '\nOutros detalhes: ' + registro.outros_detalhes : ''}\n\nResponsável pela solicitação: ${registro.responsavel_sigla}`;
+  // Padrão: SOLICITAÇÃO DE CÁLCULO - [TIPO DE SERVIÇO] - [PARTE] X [PARTE CONTRÁRIA] - [Nº DO PROCESSO] - PRAZO - [DD-MM-AAAA]
+  const prazoTitulo = registro.prazo_envio ? registro.prazo_envio.split('-').reverse().join('-') : '';
+  const assunto = `SOLICITAÇÃO DE CÁLCULO - ${registro.tipo_subsidio.toUpperCase()} - ${registro.nome_reclamante} x ${parteContraria} - ${registro.numero_processo} - PRAZO - ${prazoTitulo}`;
+  const corpo = `Prezados,\n\nSolicitamos ${registro.tipo_subsidio} referente ao processo abaixo:\n\nProcesso: ${registro.numero_processo}\nReclamante: ${registro.nome_reclamante}\nParte contrária: ${parteContraria}\nTipo de subsídio: ${registro.tipo_subsidio}\nLink para acesso/download: ${registro.link_documentos}\nPrazo para envio: ${prazoFmt}\n${registro.outros_detalhes ? '\nOutros detalhes: ' + registro.outros_detalhes : ''}\n\nResponsável pela solicitação: ${registro.responsavel_sigla}`;
 
   const { error } = await sb.from('comunicacoes_calculos').insert(registro);
   if(error){
